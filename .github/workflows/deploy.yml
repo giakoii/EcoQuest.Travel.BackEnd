@@ -57,10 +57,10 @@ jobs:
               nohup dotnet EcoQuest.Travel.BackEnd.dll > output.log 2>&1 &
               echo "✅ Started application"
 
-  sleep 40
-  echo "📄 Checking output.log"
-  ls -l output.log || echo "❌ output.log not found"
-  cat output.log || echo "⚠️ Cannot read output.log"
+              sleep 40
+              echo "📄 Checking output.log"
+              ls -l output.log || echo "❌ output.log not found"
+              cat output.log || echo "⚠️ Cannot read output.log"
             
       - name: Notify app URL
         run: echo "App is running at http://${{ secrets.VPS_HOST }}:5269"
