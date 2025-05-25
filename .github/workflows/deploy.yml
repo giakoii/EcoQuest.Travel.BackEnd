@@ -39,19 +39,28 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
-            cp ~/envs/ecoquest/.env .env && echo "✅ Copied .env successfully" || echo "❌ Failed to copy .env"
-            export $(grep CONNECTION_STRING .env | xargs)
-            echo "🛑 Killing existing dotnet processes..."
-            pkill -f "EcoQuest.Travel.BackEnd.dll" || echo "⚠️ No process found"
-            echo "🚀 Starting new application"
-            nohup dotnet EcoQuest.Travel.BackEnd.dll > output.log 2>&1 &
-            echo "✅ Started application"
+            script: |
+              cd ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
+              cp ~/envs/ecoquest/.env .env && echo "✅ Copied .env successfully" || echo "❌ Failed to copy .env"
+              export $(grep CONNECTION_STRING .env | xargs)
             
-            sleep 40
-            echo "📄 Checking output.log"
-            ls -l output.log || echo "❌ output.log not found"
-            cat output.log || echo "⚠️ Cannot read output.log"
+              echo "🔍 Checking existing app process..."
+              PID=$(ps aux | grep "EcoQuest.Travel.BackEnd.dll" | grep -v grep | awk '{print $2}')
+              if [ -n "$PID" ]; then
+              echo "🛑 Killing process $PID"
+              kill -9 $PID
+              else
+              echo "⚠️ No process found"
+              fi
+            
+              echo "🚀 Starting new application"
+              nohup dotnet EcoQuest.Travel.BackEnd.dll > output.log 2>&1 &
+              echo "✅ Started application"
+
+              sleep 40
+              echo "📄 Checking output.log"
+              ls -l output.log || echo "❌ output.log not found"
+              cat output.log || echo "⚠️ Cannot read output.log"
             
       - name: Notify app URL
         run: echo "App is running at http://${{ secrets.VPS_HOST }}:5269"
