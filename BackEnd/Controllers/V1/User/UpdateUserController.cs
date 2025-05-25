@@ -8,8 +8,12 @@ using OpenIddict.Validation.AspNetCore;
 
 namespace BackEnd.Controllers.V1.User;
 
+/// <summary>
+/// UpdateUserController - Update User Information
+/// </summary>
 [Route("api/v1/user/[controller]")]
-public class UpdateProfileController : AbstractApiAsyncController<UpdateUserRequest, UpdateUserResponse, string>
+[ApiController]
+public class UpdateUserController : AbstractApiAsyncController<UpdateUserRequest, UpdateUserResponse, string>
 {
     private readonly IUserService _userService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -19,7 +23,7 @@ public class UpdateProfileController : AbstractApiAsyncController<UpdateUserRequ
     /// </summary>
     /// <param name="userService"></param>
     /// <param name="identityApiClient"></param>
-    public UpdateProfileController(IUserService userService, IIdentityApiClient identityApiClient)
+    public UpdateUserController(IUserService userService, IIdentityApiClient identityApiClient)
     {
         _userService = userService;
         _identityApiClient = identityApiClient;
