@@ -40,7 +40,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "./publish"
+          source: "./publish/*"
           target: "~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish"
 
       - name: SSH and deploy on VPS
