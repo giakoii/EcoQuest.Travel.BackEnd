@@ -1,5 +1,6 @@
 using System.Net;
 using AuthService;
+using BackEnd.Logics;
 using DotNetEnv;
 using BackEnd.Models;
 using BackEnd.Models.Helpers;
@@ -30,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseOpenIddict();
 });
 builder.Services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
+builder.Services.AddScoped<CloudinaryLogic>();
 builder.Services.AddScoped<IIdentityApiClient, IdentityApiClient>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBaseRepository<SystemConfig, string>, BaseRepository<SystemConfig, string>>();
