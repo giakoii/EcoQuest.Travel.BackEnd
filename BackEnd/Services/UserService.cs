@@ -2,7 +2,9 @@ using BackEnd.Controllers.V1.User;
 using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
+using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
+using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
@@ -14,6 +16,7 @@ public class UserService : IUserService
     private readonly IBaseRepository<Auth, Guid> _authRepository;
     private readonly IBaseRepository<Role, Guid> _roleRepository;
     private readonly IBaseRepository<SystemConfig, string> _systemConfigRepository;
+    private readonly CloudinaryLogic _cloudinary;
 
     /// <summary>
     /// Constructor
@@ -22,12 +25,14 @@ public class UserService : IUserService
     /// <param name="authRepository"></param>
     /// <param name="roleRepository"></param>
     /// <param name="systemConfigRepository"></param>
-    public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Auth, Guid> authRepository, IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository)
+    /// <param name="cloudinary"></param>
+    public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Auth, Guid> authRepository, IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository, CloudinaryLogic cloudinary)
     {
         _userRepository = userRepository;
         _authRepository = authRepository;
         _roleRepository = roleRepository;
         _systemConfigRepository = systemConfigRepository;
+        _cloudinary = cloudinary;
     }
 
     /// <summary>
@@ -134,6 +139,46 @@ public class UserService : IUserService
 
             _authRepository.Update(userExist);
             await _authRepository.SaveChangesAsync(userExist.Email);
+            
+            // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+        return response;
+    }
+
+    /// <summary>
+    /// Update user profile
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, IdentityEntity identityEntity)
+    {
+        var response = new UpdateUserResponse() { Success = false };
+        
+        // Get account
+        var account = await _authRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefaultAsync();
+        
+        // Get user profile
+        var user = await _userRepository.Find(x => x.Id == account.Id).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            response.SetMessage(MessageId.E11001);
+            return response;
+        }
+        
+        // Update user profile
+        await _userRepository.ExecuteInTransactionAsync(async () =>
+        {
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.Gender = request.Gender;
+            user.DateOfBirth = request.BirthDate;
+            user.AvatarUrl = await _cloudinary.UploadImageAsync(request.ImageUrl!);
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync(identityEntity.Email);
             
             // True
             response.Success = true;

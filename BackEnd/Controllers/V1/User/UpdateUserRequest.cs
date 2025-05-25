@@ -8,7 +8,8 @@ public class UpdateUserRequest : AbstractApiRequest
     public IFormFile? ImageUrl { get; set; }
 
     [Required(ErrorMessage = "BirthDate is required")]
-    public string BirthDate { get; set; } = null!;
+    [DataType(DataType.Date)]
+    public DateTime BirthDate { get; set; }
 
     [Required(ErrorMessage = "Gender is required")]
     public byte Gender { get; set; }
