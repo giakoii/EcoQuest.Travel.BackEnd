@@ -42,7 +42,9 @@ jobs:
             cd ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
             cp ~/envs/ecoquest/.env .env && echo "✅ Copied .env successfully" || echo "❌ Failed to copy .env"
             export $(grep CONNECTION_STRING .env | xargs)
-            # pkill -f "EcoQuest.Travel.BackEnd.dll" || true
+            echo "🛑 Killing existing dotnet processes..."
+            pkill -f "EcoQuest.Travel.BackEnd.dll" || echo "⚠️ No process found"
+            echo "🚀 Starting new application"
             nohup dotnet EcoQuest.Travel.BackEnd.dll > output.log 2>&1 &
             echo "✅ Started application"
             
