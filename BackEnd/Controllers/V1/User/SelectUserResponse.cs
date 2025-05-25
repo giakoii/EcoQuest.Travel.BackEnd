@@ -9,7 +9,7 @@ public class SelectUserResponse : AbstractApiResponse<SelectUserEntity>
 
 public class SelectUserEntity
 {
-    public string ImageUrl { get; set; }
+    public string AvartarUrl { get; set; }
     
     public string Email { get; set; }
 

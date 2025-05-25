@@ -10,4 +10,6 @@ public interface IUserService
     Task<InsertUserVerifyResponse> InsertUserVerify(InsertUserVerifyRequest request);
     
     Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, IdentityEntity identityEntity);
+    
+    Task<SelectUserResponse> SelectUser(SelectUserRequest request, IdentityEntity identityEntity);
 }

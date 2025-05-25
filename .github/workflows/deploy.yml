@@ -57,18 +57,11 @@ jobs:
             cp ~/envs/ecoquest/.env .env && echo "✅ Copied .env successfully" || echo "❌ Failed to copy .env"
             export $(grep CONNECTION_STRING .env | xargs)
 
-            echo "🔍 Checking existing app process..."
-            PID=$(ps aux | grep "EcoQuest.Travel.BackEnd.dll" | grep -v grep | awk '{print $2}')
-            if [ -n "$PID" ]; then
-              echo "🛑 Killing process $PID"
-              kill -9 $PID
-            else
-              echo "⚠️ No process found"
-            fi
-
-            echo "🚀 Starting new application"
-            nohup dotnet EcoQuest.Travel.BackEnd.dll > output.log 2>&1 &
-            echo "✅ Started application"
+            echo "🚀 Restarting ecoquest-backend.service via systemctl"
+            sudo systemctl restart ecoquest-backend.service
+            
+            echo "📄 Checking ecoquest-backend.service status"
+            sudo systemctl status ecoquest-backend.service --no-pager
 
             sleep 40
             echo "📄 Checking output.log"

@@ -3,8 +3,8 @@ using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
+using BackEnd.Utils;
 using BackEnd.Utils.Const;
-using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
@@ -138,7 +138,7 @@ public class UserService : IUserService
             userExist.EmailConfirmed = true;
 
             _authRepository.Update(userExist);
-            await _authRepository.SaveChangesAsync(userExist.Email);
+            await _authRepository.SaveChangesAsync(userExist.Email!);
             
             // True
             response.Success = true;
@@ -162,7 +162,7 @@ public class UserService : IUserService
         var account = await _authRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefaultAsync();
         
         // Get user profile
-        var user = await _userRepository.Find(x => x.Id == account.Id).FirstOrDefaultAsync();
+        var user = await _userRepository.Find(x => x.Id == account!.Id).FirstOrDefaultAsync();
         if (user == null)
         {
             response.SetMessage(MessageId.E11001);
@@ -186,5 +186,48 @@ public class UserService : IUserService
             return true;
         });
         return response;
+    }
+
+    /// <summary>
+    /// Select user
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public Task<SelectUserResponse> SelectUser(SelectUserRequest request, IdentityEntity identityEntity)
+    {
+        var response = new SelectUserResponse { Success = false };
+        
+        // Get account
+        var account = _authRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefault();
+        if (account == null)
+        {
+            response.SetMessage(MessageId.E11001);
+            return Task.FromResult(response);
+        }
+        
+        // Get user information
+        var user = _userRepository.Find(x => x.AuthId == account.Id).FirstOrDefault();
+        if (user == null)
+        {
+            response.SetMessage(MessageId.E11001);
+            return Task.FromResult(response);
+        }
+        
+        // Set response
+        response.Response = new SelectUserEntity
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            BirthDate = StringUtil.ConvertToDateAsDdMmYyyy(user.DateOfBirth),
+            Email = account.Email!,
+            Gender = user.Gender,
+            AvartarUrl = user.AvatarUrl!,
+        };
+        
+        // True
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        return Task.FromResult(response);
     }
 }
