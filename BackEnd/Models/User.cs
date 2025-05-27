@@ -1,13 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace BackEnd.Models;
 
 public partial class User
 {
-    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
 
     public Guid AuthId { get; set; }
 
     public string FirstName { get; set; } = null!;
-    
+
     public string LastName { get; set; } = null!;
 
     public DateTime? DateOfBirth { get; set; }
@@ -17,8 +20,6 @@ public partial class User
     public string? Address { get; set; }
 
     public string? AvatarUrl { get; set; }
-    
-    public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -28,5 +29,15 @@ public partial class User
 
     public string UpdatedBy { get; set; } = null!;
 
-    public virtual Auth Auth { get; set; } = null!;
+    public bool? IsActive { get; set; }
+
+    public virtual Account Auth { get; set; } = null!;
+
+    public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
+
+    public virtual ICollection<Destination> Destinations { get; set; } = new List<Destination>();
+
+    public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
+
+    public virtual ICollection<Trip> Trips { get; set; } = new List<Trip>();
 }

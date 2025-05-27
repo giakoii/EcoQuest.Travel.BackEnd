@@ -1,8 +1,11 @@
-﻿namespace BackEnd.Models;
+﻿using System;
+using System.Collections.Generic;
 
-public partial class Auth
+namespace BackEnd.Models;
+
+public partial class Account
 {
-    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
 
     public Guid RoleId { get; set; }
 
@@ -17,7 +20,7 @@ public partial class Auth
     public string? ConcurrencyStamp { get; set; }
 
     public string? PhoneNumber { get; set; }
-    
+
     public DateTimeOffset? LockoutEnd { get; set; }
 
     public DateTime CreatedAt { get; set; }
@@ -29,11 +32,14 @@ public partial class Auth
     public DateTime UpdatedAt { get; set; }
 
     public string UpdatedBy { get; set; } = null!;
-    
+
     public int AccessFailedCount { get; set; }
+
     public string? Key { get; set; }
 
     public virtual Role Role { get; set; } = null!;
+
+    public virtual User? User { get; set; }
 
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

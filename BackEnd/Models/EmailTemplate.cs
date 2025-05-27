@@ -1,4 +1,7 @@
-﻿namespace BackEnd.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BackEnd.Models;
 
 public partial class EmailTemplate
 {

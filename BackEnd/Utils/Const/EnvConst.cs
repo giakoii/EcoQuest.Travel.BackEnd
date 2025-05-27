@@ -25,4 +25,6 @@ public class EnvConst
     public const string CloudApiKey = "CLOUD_APIKEY";
     
     public const string CloudApiSecret = "CLOUD_APISECRET";
+    
+    public const string OpenAiKey = "OPENAI_KEY";
 }

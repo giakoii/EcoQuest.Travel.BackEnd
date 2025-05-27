@@ -38,7 +38,7 @@ public class AppDbContext : EcoQuestTravelContext
     }
     
     /// <summary>
-    /// Set common value for all entities
+    /// Set common value for all Entities
     /// </summary>
     /// <param name="updateUser"></param>
     /// <param name="needLogicalDelete"></param>

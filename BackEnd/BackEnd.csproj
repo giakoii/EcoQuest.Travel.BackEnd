@@ -39,4 +39,11 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Controllers\V1\Blog\" />
+      <Folder Include="Controllers\V1\Destination\" />
+      <Folder Include="DTOs\Blog\" />
+      <Folder Include="DTOs\Destination\" />
+    </ItemGroup>
+
 </Project>

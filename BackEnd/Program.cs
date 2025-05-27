@@ -33,6 +33,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
 builder.Services.AddScoped<CloudinaryLogic>();
 builder.Services.AddScoped<IIdentityApiClient, IdentityApiClient>();
+builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBaseRepository<SystemConfig, string>, BaseRepository<SystemConfig, string>>();
 builder.Services.AddScoped<IBaseRepository<Role, Guid>, BaseRepository<Role, Guid>>();
@@ -59,7 +60,7 @@ builder.Services.AddSwaggerDocument(config =>
 // Allow API to be read from outside
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder => builder
+    options.AddDefaultPolicy(build=> build
                             .AllowAnyOrigin()
                             .AllowAnyMethod()
                             .AllowAnyHeader());
@@ -119,7 +120,6 @@ builder.Services.AddOpenIddict()
             .EnableEndSessionEndpointPassthrough()
             .EnableAuthorizationEndpointPassthrough()
             .DisableTransportSecurityRequirement();
-        
     })
     .AddValidation(options =>
     {

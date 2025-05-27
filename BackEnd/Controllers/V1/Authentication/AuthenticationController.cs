@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BackEnd.DTOs.Account;
 using BackEnd.Helpers;
 using BackEnd.Models.Helpers;
 using Microsoft.AspNetCore;
@@ -72,7 +73,7 @@ public class AuthenticationController : ControllerBase
     private async Task<IActionResult> TokensForPasswordGrantType(AuthRequest request)
     {
         // Check user exists
-        var userExist = _context.Users.FirstOrDefault(x => x.Email == request.Email);
+        var userExist = _context.Accounts.FirstOrDefault(x => x.Email == request.Email);
         if (userExist == null)
         {
             return BadRequest(new OpenIddictResponse
@@ -101,7 +102,7 @@ public class AuthenticationController : ControllerBase
                 userExist.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
             }
 
-            _context.Users.Update(userExist);
+            _context.Accounts.Update(userExist);
             return BadRequest(new OpenIddictResponse
             {
                 Error = OpenIddictConstants.Errors.InvalidGrant,
@@ -138,7 +139,7 @@ public class AuthenticationController : ControllerBase
         );
 
         // Set claims
-        identity.SetClaim(OpenIddictConstants.Claims.Subject, userExist.Id.ToString(), OpenIddictConstants.Destinations.AccessToken);
+        identity.SetClaim(OpenIddictConstants.Claims.Subject, userExist.AccountId.ToString(), OpenIddictConstants.Destinations.AccessToken);
         identity.SetClaim("UserId", request.Email, OpenIddictConstants.Destinations.AccessToken);
         identity.SetClaim(OpenIddictConstants.Claims.Email, userExist.Email, OpenIddictConstants.Destinations.AccessToken);
         identity.SetClaim(OpenIddictConstants.Claims.Role, role?.Name, OpenIddictConstants.Destinations.AccessToken);

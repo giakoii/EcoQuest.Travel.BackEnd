@@ -1,4 +1,4 @@
-namespace BackEnd.Controllers.V1.Authentication;
+namespace BackEnd.DTOs.Account;
 
 public class AuthRequest
 {

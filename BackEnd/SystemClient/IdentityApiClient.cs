@@ -9,8 +9,8 @@ public class IdentityApiClient : IIdentityApiClient
     {
         var identity = user.Identity as ClaimsIdentity;
         
-        // Get Id
-        var id = identity?.FindFirst(OpenIddictConstants.Claims.Subject)?.Value ?? string.Empty;
+        // Get id
+        var id = Guid.Parse(identity?.FindFirst(OpenIddictConstants.Claims.Subject)?.Value ?? string.Empty);
         
         // Get username
         var userNm = identity.FindFirst("UserId")?.Value ?? string.Empty;

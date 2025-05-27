@@ -13,7 +13,7 @@ namespace BackEnd.Controllers.V1.User;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class SelectProfileController : AbstractApiGetAsyncController<SelectUserRequest, SelectUserResponse, SelectUserEntity>
+public class SelectUserController : AbstractApiGetAsyncController<SelectUserRequest, SelectUserResponse, SelectUserEntity>
 {
     private readonly IUserService _userService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -23,7 +23,7 @@ public class SelectProfileController : AbstractApiGetAsyncController<SelectUserR
     /// </summary>
     /// <param name="userService"></param>
     /// <param name="identityApiClient"></param>
-    public SelectProfileController(IUserService userService, IIdentityApiClient identityApiClient)
+    public SelectUserController(IUserService userService, IIdentityApiClient identityApiClient)
     {
         _userService = userService;
         _identityApiClient = identityApiClient;

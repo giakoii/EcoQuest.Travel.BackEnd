@@ -1,3 +1,4 @@
+using BackEnd.Controllers;
 using BackEnd.Controllers.V1.User;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -13,26 +14,31 @@ namespace BackEnd.Services;
 public class UserService : IUserService
 {
     private readonly IBaseRepository<User, Guid> _userRepository;
-    private readonly IBaseRepository<Auth, Guid> _authRepository;
+    private readonly IBaseRepository<Account, Guid> _accountRepository;
     private readonly IBaseRepository<Role, Guid> _roleRepository;
     private readonly IBaseRepository<SystemConfig, string> _systemConfigRepository;
+    private readonly IEmailTemplateRepository _emailTemplateRepository;
     private readonly CloudinaryLogic _cloudinary;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="userRepository"></param>
-    /// <param name="authRepository"></param>
+    /// <param name="accountRepository"></param>
     /// <param name="roleRepository"></param>
     /// <param name="systemConfigRepository"></param>
     /// <param name="cloudinary"></param>
-    public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Auth, Guid> authRepository, IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository, CloudinaryLogic cloudinary)
+    /// <param name="emailTemplateRepository"></param>
+    public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Account, Guid> accountRepository, 
+        IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository, CloudinaryLogic cloudinary, 
+        IEmailTemplateRepository emailTemplateRepository)
     {
         _userRepository = userRepository;
-        _authRepository = authRepository;
+        _accountRepository = accountRepository;
         _roleRepository = roleRepository;
         _systemConfigRepository = systemConfigRepository;
         _cloudinary = cloudinary;
+        _emailTemplateRepository = emailTemplateRepository;
     }
 
     /// <summary>
@@ -45,7 +51,7 @@ public class UserService : IUserService
         var response = new InsertUserResponse {Success = false};
         
         // Check if account already exists
-        var existingUser = await _authRepository.Find(x => x.Email == request.Email).FirstOrDefaultAsync();
+        var existingUser = await _accountRepository.Find(x => x.Email == request.Email).FirstOrDefaultAsync();
         if (existingUser != null)
         {
             response.SetMessage(MessageId.E11004);
@@ -68,7 +74,7 @@ public class UserService : IUserService
         await _userRepository.ExecuteInTransactionAsync(async () =>
         {
             // Insert new account
-            var newAccount = new Auth
+            var newAccount = new Account
             {
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12),
@@ -79,20 +85,24 @@ public class UserService : IUserService
                 SecurityStamp = Guid.NewGuid().ToString(),
                 RoleId = role.Id,
             };
-            await _authRepository.AddAsync(newAccount);
-            await _authRepository.SaveChangesAsync(newAccount.Email, true);
+            await _accountRepository.AddAsync(newAccount);
+            await _accountRepository.SaveChangesAsync(newAccount.Email);
             
             // Insert new user
             var newUser = new User
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                AuthId = newAccount.Id,
+                AuthId = newAccount.AccountId,
             };
             
             // Save changes to the database
             await _userRepository.AddAsync(newUser);
             await _userRepository.SaveChangesAsync(newAccount.Email);
+            
+            // Send email verification
+            var detailErrorList = new List<DetailError>();
+            await UserInsertSendMail.SendMailVerifyInformation(_emailTemplateRepository, newAccount.Email, key, detailErrorList);
             
             // True
             response.Success = true;
@@ -118,9 +128,9 @@ public class UserService : IUserService
         string emailDecrypt = values[0];
         
         // Check user exists
-        var userExist = await _authRepository.Find(x => x.Email == emailDecrypt && 
+        var userExist = await _accountRepository.Find(x => x.Email == emailDecrypt && 
                                                         x.EmailConfirmed == false &&
-                                                        x.IsActive == false &&
+                                                        x.IsActive == true &&
                                                         x.Key == request.Key).FirstOrDefaultAsync();
         if (userExist == null)
         {
@@ -137,8 +147,8 @@ public class UserService : IUserService
             userExist.IsActive = true;
             userExist.EmailConfirmed = true;
 
-            _authRepository.Update(userExist);
-            await _authRepository.SaveChangesAsync(userExist.Email!);
+            _accountRepository.Update(userExist);
+            await _accountRepository.SaveChangesAsync(userExist.Email!);
             
             // True
             response.Success = true;
@@ -159,10 +169,10 @@ public class UserService : IUserService
         var response = new UpdateUserResponse() { Success = false };
         
         // Get account
-        var account = await _authRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefaultAsync();
+        var account = await _accountRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefaultAsync();
         
         // Get user profile
-        var user = await _userRepository.Find(x => x.Id == account!.Id).FirstOrDefaultAsync();
+        var user = await _userRepository.Find(x => x.UserId == account!.AccountId).FirstOrDefaultAsync();
         if (user == null)
         {
             response.SetMessage(MessageId.E11001);
@@ -199,7 +209,7 @@ public class UserService : IUserService
         var response = new SelectUserResponse { Success = false };
         
         // Get account
-        var account = _authRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefault();
+        var account = _accountRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefault();
         if (account == null)
         {
             response.SetMessage(MessageId.E11001);
@@ -207,7 +217,7 @@ public class UserService : IUserService
         }
         
         // Get user information
-        var user = _userRepository.Find(x => x.AuthId == account.Id).FirstOrDefault();
+        var user = _userRepository.Find(x => x.AuthId == account.AccountId).FirstOrDefault();
         if (user == null)
         {
             response.SetMessage(MessageId.E11001);

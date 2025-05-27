@@ -1,4 +1,7 @@
-﻿namespace BackEnd.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BackEnd.Models;
 
 public partial class Role
 {
@@ -10,7 +13,7 @@ public partial class Role
 
     public string? ConcurrencyStamp { get; set; }
 
-    public virtual ICollection<Auth> Users { get; set; } = new List<Auth>();
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
-    public virtual ICollection<Auth> UsersNavigation { get; set; } = new List<Auth>();
+    public virtual ICollection<Account> Users { get; set; } = new List<Account>();
 }
