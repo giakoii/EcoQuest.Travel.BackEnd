@@ -31,7 +31,13 @@ public partial class Hotel
 
     public bool? IsActive { get; set; }
 
+    public Guid? PartnerId { get; set; }
+
     public virtual Destination? Destination { get; set; }
 
+    public virtual ICollection<HotelRoom> HotelRooms { get; set; } = new List<HotelRoom>();
+
     public virtual User? Owner { get; set; }
+
+    public virtual Partner? Partner { get; set; }
 }

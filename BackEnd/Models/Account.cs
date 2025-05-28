@@ -37,6 +37,8 @@ public partial class Account
 
     public string? Key { get; set; }
 
+    public virtual ICollection<Partner> Partners { get; set; } = new List<Partner>();
+
     public virtual Role Role { get; set; } = null!;
 
     public virtual User? User { get; set; }

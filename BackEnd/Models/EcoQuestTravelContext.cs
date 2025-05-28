@@ -26,6 +26,10 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<Hotel> Hotels { get; set; }
 
+    public virtual DbSet<HotelRoom> HotelRooms { get; set; }
+    
+    public virtual DbSet<Partner> Partners { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<SystemConfig> SystemConfigs { get; set; }
@@ -34,7 +38,7 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<VwEmailTemplateVerifyUser?> VwEmailTemplateVerifyUsers { get; set; }
+    public virtual DbSet<VwEmailTemplateVerifyUser> VwEmailTemplateVerifyUsers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -267,6 +271,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("name");
             entity.Property(e => e.OwnerId).HasColumnName("owner_id");
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
@@ -282,6 +287,86 @@ public partial class EcoQuestTravelContext : DbContext
             entity.HasOne(d => d.Owner).WithMany(p => p.Hotels)
                 .HasForeignKey(d => d.OwnerId)
                 .HasConstraintName("FK__Hotels__owner_id__778AC167");
+
+            entity.HasOne(d => d.Partner).WithMany(p => p.Hotels)
+                .HasForeignKey(d => d.PartnerId)
+                .HasConstraintName("FK_Hotels_Partner");
+        });
+
+        modelBuilder.Entity<HotelRoom>(entity =>
+        {
+            entity.HasKey(e => e.RoomId).HasName("PK__HotelRoo__19675A8A9F4DAD98");
+
+            entity.Property(e => e.RoomId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("room_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.IsAvailable)
+                .HasDefaultValue(true)
+                .HasColumnName("is_available");
+            entity.Property(e => e.MaxGuests).HasColumnName("max_guests");
+            entity.Property(e => e.PricePerNight)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("price_per_night");
+            entity.Property(e => e.RoomType)
+                .HasMaxLength(100)
+                .HasColumnName("room_type");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Hotel).WithMany(p => p.HotelRooms)
+                .HasForeignKey(d => d.HotelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__HotelRoom__hotel__1DB06A4F");
+        });
+
+        modelBuilder.Entity<Partner>(entity =>
+        {
+            entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
+
+            entity.Property(e => e.PartnerId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("partner_id");
+            entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(255)
+                .HasColumnName("company_name");
+            entity.Property(e => e.ContactName)
+                .HasMaxLength(100)
+                .HasColumnName("contact_name");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
+                .HasColumnName("phone");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+            entity.Property(e => e.Verified)
+                .HasDefaultValue(false)
+                .HasColumnName("verified");
+
+            entity.HasOne(d => d.Account).WithMany(p => p.Partners)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Partners__accoun__17036CC0");
         });
 
         modelBuilder.Entity<Role>(entity =>

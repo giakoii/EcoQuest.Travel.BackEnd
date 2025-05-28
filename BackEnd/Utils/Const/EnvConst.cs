@@ -27,4 +27,8 @@ public class EnvConst
     public const string CloudApiSecret = "CLOUD_APISECRET";
     
     public const string OpenAiKey = "OPENAI_KEY";
+    
+    public const string GoogleClientId = "GOOGLE_CLIENT_ID";
+    
+    public const string GoogleClientSecret = "GOOGLE_CLIENT_SECRET";
 }

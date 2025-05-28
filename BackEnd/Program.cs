@@ -9,6 +9,7 @@ using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -129,11 +130,18 @@ builder.Services.AddOpenIddict()
 
 // Add authentication services
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = OpenIddictConstants.Schemes.Bearer;
-    options.DefaultChallengeScheme = OpenIddictConstants.Schemes.Bearer;
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-});
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId = Environment.GetEnvironmentVariable(EnvConst.GoogleClientId)!;
+        options.ClientSecret = Environment.GetEnvironmentVariable(EnvConst.GoogleClientSecret)!;
+        options.CallbackPath = "/google-callback";
+    });
+
 
 
 // DB context that inherits AppDbContext

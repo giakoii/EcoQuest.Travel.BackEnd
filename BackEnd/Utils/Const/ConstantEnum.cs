@@ -4,10 +4,9 @@ public static class ConstantEnum
 {
     public enum UserRole
     {
-        Customer,
-        SaleEmployee,
-        PlannedCustomer,	
-        Owner,
+        Customer = 1,
+        Supplier = 2,
+        Admin = 3,	
     }
     
     /// <summary>

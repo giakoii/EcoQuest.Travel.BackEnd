@@ -9,9 +9,8 @@ public static class DbInitializer
     public static async Task SeedRoles(RoleManager<Role> roleManager)
     {
         string[] roleNames = { ConstantEnum.UserRole.Customer.ToString(), 
-            ConstantEnum.UserRole.Owner.ToString(), 
-            ConstantEnum.UserRole.SaleEmployee.ToString(),
-            ConstantEnum.UserRole.PlannedCustomer.ToString()
+            ConstantEnum.UserRole.Admin.ToString(), 
+            ConstantEnum.UserRole.Supplier.ToString(),
         };
 
         foreach (var roleName in roleNames)
