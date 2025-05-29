@@ -1,11 +1,14 @@
 using BackEnd.Controllers;
 using BackEnd.Controllers.V1.User;
+using BackEnd.DTOs.Account;
+using BackEnd.DTOs.User;
 using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
 using BackEnd.Utils;
 using BackEnd.Utils.Const;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
@@ -39,6 +42,81 @@ public class UserService : IUserService
         _systemConfigRepository = systemConfigRepository;
         _cloudinary = cloudinary;
         _emailTemplateRepository = emailTemplateRepository;
+    }
+
+    public async Task<LoginResponse> AuthLogin([FromBody] AuthRequest request)
+    {
+        var response = new LoginResponse { Success = false };
+        
+        // Check user exists
+        var userExist = _accountRepository.Find(x => x.Email == request.Email).FirstOrDefault();
+        if (userExist == null)
+        {
+            response.Success = false;
+            response.SetMessage(MessageId.E11001);
+            return response;
+        }
+
+        // Check if User updating
+        if (userExist.IsActive == false || userExist.LockoutEnd != null && userExist.Key != null)
+        {
+            response.Success = false;
+            response.SetMessage(MessageId.E00000, "Your account has been locked");
+            return response;
+        }
+
+        // Check password
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, userExist.PasswordHash))
+        {
+            userExist.AccessFailedCount++;
+            if (userExist.AccessFailedCount >= 5)
+            {
+                userExist.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
+            }
+            _accountRepository.Update(userExist);
+            await _accountRepository.SaveChangesAsync(userExist.Email!);
+
+            response.Success = false;
+            response.SetMessage(MessageId.E00000, "The username or password is incorrect");
+            return response;
+        }
+
+        // Check lockout
+        if (userExist.LockoutEnd != null && userExist.LockoutEnd > DateTime.UtcNow)
+        {
+            response.Success = false;
+            response.SetMessage(MessageId.E00000, "Your account has been locked");
+            return response;
+        }
+
+        // Check user is active
+        if (!userExist.IsActive)
+        {
+            response.Success = false;
+            response.SetMessage(MessageId.E00000, "Your account is not active");
+            return response;
+        }
+
+        userExist.AccessFailedCount = 0;
+        userExist.LockoutEnd = null;
+        _accountRepository.Update(userExist);
+        await _accountRepository.SaveChangesAsync(userExist.Email!);
+        
+        var role = await _roleRepository.Find(x => x.Id == userExist.RoleId).FirstOrDefaultAsync();
+        var user = await _userRepository.Find(x => x.AuthId == userExist.AccountId).FirstOrDefaultAsync();
+        
+        var entityResponse = new LoginEntity
+        {
+            Email = userExist.Email!,
+            Name = $"{user!.FirstName} {user.LastName}",
+            RoleName = role!.Name!
+        };
+        
+        // True
+        response.Success = true;
+        response.Response = entityResponse;
+        response.SetMessage(MessageId.I00001);
+        return response;
     }
 
     /// <summary>
@@ -106,6 +184,65 @@ public class UserService : IUserService
             
             // True
             response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+        
+        return response;
+    }
+    
+    /// <summary>
+    /// Insert user use OAUTH2.0
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="firstName"></param>
+    /// <param name="lastName"></param>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    public async Task<InsertUserResponse> InsertUser(string email, string firstName, string lastName, Guid roleId)
+    {
+        var response = new InsertUserResponse {Success = false};
+        
+        // Check if account already exists
+        var existingUser = await _accountRepository.Find(x => x.Email == email).FirstOrDefaultAsync();
+        if (existingUser != null)
+        {
+            response.SetMessage(MessageId.E11004);
+            return response;
+        }
+        
+        // Begin transaction
+        await _userRepository.ExecuteInTransactionAsync(async () =>
+        {
+            // Insert new account
+            var newAccount = new Account
+            {
+                Email = email,
+                PasswordHash = null,
+                LockoutEnd = null,
+                EmailConfirmed = true,
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+                SecurityStamp = Guid.NewGuid().ToString(),
+                RoleId = roleId,
+            };
+            await _accountRepository.AddAsync(newAccount);
+            await _accountRepository.SaveChangesAsync(newAccount.Email);
+            
+            // Insert new user
+            var newUser = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                AuthId = newAccount.AccountId,
+            };
+            
+            // Save changes to the database
+            await _userRepository.AddAsync(newUser);
+            await _userRepository.SaveChangesAsync(email);
+            
+            // True
+            response.Success = true;
+            response.Response = newAccount.AccountId.ToString();
             response.SetMessage(MessageId.I00001);
             return true;
         });
@@ -240,4 +377,70 @@ public class UserService : IUserService
         response.SetMessage(MessageId.I00001);
         return Task.FromResult(response);
     }
+
+    /// <summary>
+    /// Google login
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="firstName"></param>
+    /// <param name="lastName"></param>
+    /// <param name="pictureUrl"></param>
+    /// <returns></returns>
+    public async Task<LoginResponse> GoogleLogin(string email, string firstName, string lastName, string pictureUrl)
+    {
+        var response = new LoginResponse { Success = false };
+
+        // Check if user exists in the database
+        var accountExists = await _accountRepository.Find(x => x.Email == email).FirstOrDefaultAsync();
+        
+
+        // Select Customer role
+        var customerRole = await _roleRepository.Find(x => x.Name == ConstantEnum.UserRole.Customer.ToString())
+            .FirstOrDefaultAsync();
+        
+        var accountId = accountExists.AccountId;
+        if (accountExists == null)
+        {
+
+            var newUser = await InsertUser(email, firstName!, lastName!, customerRole!.Id);
+            if (newUser.Success == false)
+            {
+                response.Success = false;
+                response.SetMessage(newUser.MessageId, newUser.Message);
+                return response;
+            }
+
+            accountId = Guid.Parse(newUser.Response);
+        }
+        
+        var entityResponse = new LoginEntity
+        {
+            AccountId = accountId,
+            Email = email,
+            Name = $"{firstName} {lastName}",
+            RoleName = customerRole!.Name!
+        };
+        
+        // True
+        response.Success = true;
+        response.Response = entityResponse;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
+}
+
+public class LoginResponse : AbstractApiResponse<LoginEntity>
+{
+    public override LoginEntity Response { get; set; }
+}
+
+public class LoginEntity
+{
+    public Guid AccountId { get; set; }
+    
+    public string Email { get; set; }
+    
+    public string Name { get; set; }
+    
+    public string RoleName { get; set; }
 }

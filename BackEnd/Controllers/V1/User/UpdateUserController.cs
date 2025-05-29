@@ -36,7 +36,7 @@ public class UpdateUserController : AbstractApiAsyncController<UpdateUserRequest
     /// <returns></returns>
     [HttpPut]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<UpdateUserResponse> ProcessRequest(UpdateUserRequest request)
+    public override async Task<UpdateUserResponse> ProcessRequest([FromForm] UpdateUserRequest request)
     {
         return await ProcessRequest(request, _logger, new UpdateUserResponse());
     }

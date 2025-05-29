@@ -11,4 +11,6 @@ public class AuthRequest
     /// Password
     /// </summary>
     public string Password { get; set; }
+    
+    public string? Code { get; set; }
 }

@@ -1,6 +1,6 @@
 using BackEnd.Controllers;
 
-namespace BackEnd.Controllers.V1.User;
+namespace BackEnd.DTOs.User;
 
 public class InsertUserResponse : AbstractApiResponse<string>
 {

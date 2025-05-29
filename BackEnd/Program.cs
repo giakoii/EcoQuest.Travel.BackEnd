@@ -1,5 +1,6 @@
 using System.Net;
-using AuthService;
+using System.Security.Claims;
+using BackEnd;
 using BackEnd.Logics;
 using DotNetEnv;
 using BackEnd.Models;
@@ -8,6 +9,7 @@ using BackEnd.Repositories;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString);
     options.UseOpenIddict();
 });
+
+builder.Services.AddScoped<ITempCodeService, TempCodeService>();
+builder.Services.AddMemoryCache();
+
 builder.Services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
 builder.Services.AddScoped<CloudinaryLogic>();
 builder.Services.AddScoped<IIdentityApiClient, IdentityApiClient>();
@@ -97,7 +103,8 @@ builder.Services.AddOpenIddict()
         options.AllowRefreshTokenFlow();
         options.AllowClientCredentialsFlow();
         options.AllowCustomFlow("logout");
-        options.AllowAuthorizationCodeFlow();
+        options.AllowCustomFlow("external");
+        options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
         options.RegisterScopes(OpenIddictConstants.Scopes.OfflineAccess);
         // Register the signing and encryption credentials
         options.UseReferenceAccessTokens();
@@ -139,9 +146,15 @@ builder.Services.AddAuthentication(options =>
     {
         options.ClientId = Environment.GetEnvironmentVariable(EnvConst.GoogleClientId)!;
         options.ClientSecret = Environment.GetEnvironmentVariable(EnvConst.GoogleClientSecret)!;
-        options.CallbackPath = "/google-callback";
-    });
+        options.CallbackPath = "/signin-google";
+        
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
 
+        options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+        options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+        options.ClaimActions.MapJsonKey("picture", "picture");
+    });
 
 
 // DB context that inherits AppDbContext
@@ -158,8 +171,8 @@ builder.Services.AddHostedService<Worker>();
 var app = builder.Build();
 app.Urls.Clear();
 app.Urls.Add("http://0.0.0.0:5269");
-app.UseCors();
 app.UseRouting();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();

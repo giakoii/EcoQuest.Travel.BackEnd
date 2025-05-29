@@ -35,7 +35,7 @@ public class TripService : ITripService
                 EndDate = request.EndDate,
                 NumberOfPeople = request.NumberOfPeople,
                 TotalEstimatedCost = request.TotalEstimatedCost,
-                UserId = identityEntity.UserId,
+                UserId = Guid.Parse(identityEntity.UserId),
             };
             _tripRepository.Add(newTrip);
             _tripRepository.SaveChanges(identityEntity.Email);

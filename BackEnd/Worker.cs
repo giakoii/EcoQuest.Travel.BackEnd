@@ -1,9 +1,9 @@
-using DotNetEnv;
 using BackEnd.Models.Helpers;
 using BackEnd.Utils.Const;
+using DotNetEnv;
 using OpenIddict.Abstractions;
 
-namespace AuthService;
+namespace BackEnd;
 
 /// <summary>
 /// Perform the necessary operations when the application starts
