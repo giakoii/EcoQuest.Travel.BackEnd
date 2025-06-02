@@ -71,7 +71,7 @@ public class MessageId
     public readonly static string E10000 = "E10000";
 
     /// <summary>
-    /// User not found
+    /// Ecq300 not found
     /// </summary>
     public readonly static string E11001 = "E11001";
     
@@ -86,7 +86,7 @@ public class MessageId
     public readonly static string E11003 = "E11003";
     
     /// <summary>
-    ///  User is exist
+    /// User is exist
     /// </summary>
     public readonly static string E11004 = "E11004";
     

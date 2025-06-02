@@ -3,7 +3,7 @@ using BackEnd.Controllers;
 
 namespace BackEnd.Controllers.V1.User;
 
-public class UpdateUserRequest : AbstractApiRequest
+public class Ecq300UpdateUserRequest : AbstractApiRequest
 {
     public IFormFile? ImageUrl { get; set; }
 

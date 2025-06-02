@@ -21,8 +21,6 @@ public partial class Destination
 
     public string? Province { get; set; }
 
-    public Guid? AddedBy { get; set; }
-
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;
@@ -33,11 +31,13 @@ public partial class Destination
 
     public bool? IsActive { get; set; }
 
-    public virtual User? AddedByNavigation { get; set; }
+    public virtual ICollection<AttractionDetail> AttractionDetails { get; set; } = new List<AttractionDetail>();
 
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
 
     public virtual ICollection<DestinationImage> DestinationImages { get; set; } = new List<DestinationImage>();
 
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
+
+    public virtual ICollection<RestaurantDetail> RestaurantDetails { get; set; } = new List<RestaurantDetail>();
 }

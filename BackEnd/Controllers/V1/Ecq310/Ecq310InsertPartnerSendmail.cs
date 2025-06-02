@@ -2,12 +2,9 @@ using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 
-namespace BackEnd.Controllers.V1.User;
+namespace BackEnd.Controllers.V1.Ecq310;
 
-/// <summary>
-/// UserInsertSendMail - Send mail to verify the user registration
-/// </summary>
-public static class UserInsertSendMail
+public static class Ecq310InsertPartnerSendmail
 {
     /// <summary>
     /// Send mail to verify the user registration 
@@ -17,17 +14,17 @@ public static class UserInsertSendMail
     /// <param name="key"></param>
     /// <param name="detailErrors"></param>
     /// <returns></returns>
-    public static async Task<bool> SendMailVerifyInformation(IEmailTemplateRepository emailTemplateRepository, string email, string key, List<DetailError> detailErrors)
+    public static async Task<bool> SendMailAccountInformation(IEmailTemplateRepository emailTemplateRepository, string email, string passwordGenerate, List<DetailError> detailErrors)
     {
         // Get the mail template
-        var mailTemplate = await emailTemplateRepository.GetVerifyUserEmailTemplateAsync();
+        var mailTemplate = await emailTemplateRepository.GetAccountInformationEmailTemplateAsync();
         var mailTitle = mailTemplate!.Title.Replace("${title}", mailTemplate.Title);
         
-        var encodedKey = Uri.EscapeDataString(key);
         // Replace the variables in the mail template
         var replacements = new Dictionary<string, string>
         {
-            { "${verification_link}", encodedKey }
+            { "${email}", email },
+            { "${password_generate}", passwordGenerate }
         };
         
         // Replace the variables in the mail template

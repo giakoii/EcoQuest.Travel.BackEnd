@@ -56,7 +56,7 @@ public abstract class AbstractApiGetAsyncController<T, U, V> : ControllerBase
     {
 
         // Get identity information 
-        _identityEntity = _identityApiClient?.GetIdentity(User);
+        _identityEntity = _identityApiClient.GetIdentity(User);
         var loggingUtil = new LoggingUtil(logger, _identityEntity?.Email ?? "System");
         loggingUtil.StartLog(request);
 

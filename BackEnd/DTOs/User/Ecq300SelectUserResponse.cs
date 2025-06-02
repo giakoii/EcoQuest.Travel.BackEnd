@@ -2,12 +2,12 @@ using BackEnd.Controllers;
 
 namespace BackEnd.Controllers.V1.User;
 
-public class SelectUserResponse : AbstractApiResponse<SelectUserEntity>
+public class Ecq300SelectUserResponse : AbstractApiResponse<Ecq300SelectUserEntity>
 {
-    public override SelectUserEntity Response { get; set; }
+    public override Ecq300SelectUserEntity Response { get; set; }
 }
 
-public class SelectUserEntity
+public class Ecq300SelectUserEntity
 {
     public string AvartarUrl { get; set; }
     

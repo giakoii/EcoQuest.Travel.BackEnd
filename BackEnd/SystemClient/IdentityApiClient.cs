@@ -5,7 +5,7 @@ namespace BackEnd.SystemClient;
 
 public class IdentityApiClient : IIdentityApiClient
 {
-    public IdentityEntity? GetIdentity(ClaimsPrincipal user)
+    public IdentityEntity GetIdentity(ClaimsPrincipal user)
     {
         var identity = user.Identity as ClaimsIdentity;
         

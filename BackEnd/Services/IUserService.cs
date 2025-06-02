@@ -1,9 +1,8 @@
-using BackEnd.Controllers;
 using BackEnd.Controllers.V1.User;
 using BackEnd.DTOs.Account;
+using BackEnd.DTOs.Ecq310;
 using BackEnd.DTOs.User;
 using BackEnd.SystemClient;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Services;
 
@@ -11,15 +10,15 @@ public interface IUserService
 {
     Task<LoginResponse> AuthLogin(AuthRequest request);
     
-    Task<InsertUserResponse> InsertUser(InsertUserRequest request);
+    Task<Ecq010InsertUserResponse> InsertUser(Ecq010InsertUserRequest request);
 
-    Task<InsertUserResponse> InsertUser(string email, string firstName, string lastName, Guid roleId);
+    Task<Ecq010InsertUserResponse> InsertUser(string email, string firstName, string lastName, Guid roleId);
 
-    Task<InsertUserVerifyResponse> InsertUserVerify(InsertUserVerifyRequest request);
+    Task<Ecq010InsertUserVerifyResponse> InsertUserVerify(Ecq010InsertUserVerifyRequest request);
     
-    Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, IdentityEntity identityEntity);
+    Task<Ecq300UpdateUserResponse> UpdateUser(Ecq300UpdateUserRequest request, IdentityEntity identityEntity);
     
-    Task<SelectUserResponse> SelectUser(SelectUserRequest request, IdentityEntity identityEntity);
+    Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, IdentityEntity identityEntity);
     
     Task<LoginResponse> GoogleLogin(string email, string firstName, string lastName, string pictureUrl);
 }

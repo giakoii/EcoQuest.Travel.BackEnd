@@ -13,9 +13,9 @@ public class CloudinaryLogic
         public CloudinaryLogic()
         {
             Env.Load();
-            var account = new Account(Environment.GetEnvironmentVariable(EnvConst.CloudinaryCloudName), 
-                Environment.GetEnvironmentVariable(EnvConst.CloudApiKey), 
-                Environment.GetEnvironmentVariable(EnvConst.CloudApiSecret));
+            var account = new Account(Environment.GetEnvironmentVariable(ConstEnv.CloudinaryCloudName), 
+                Environment.GetEnvironmentVariable(ConstEnv.CloudApiKey), 
+                Environment.GetEnvironmentVariable(ConstEnv.CloudApiSecret));
             _cloudinary = new Cloudinary(account);
         }
 

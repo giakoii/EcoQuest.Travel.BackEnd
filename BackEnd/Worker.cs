@@ -43,7 +43,7 @@ public class Worker : IHostedService
                 var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ClientId = "service_client",
-                    ClientSecret = Environment.GetEnvironmentVariable(EnvConst.ClientSecret),
+                    ClientSecret = Environment.GetEnvironmentVariable(ConstEnv.ClientSecret),
                     DisplayName = "Service client application",
                     Permissions =
                     {

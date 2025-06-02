@@ -21,12 +21,12 @@ public class TripService : ITripService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public InsertTripResponse InsertTrip(InsertTripRequest request, IdentityEntity identityEntity)
+    public async Task<InsertTripResponse> InsertTrip(InsertTripRequest request, IdentityEntity identityEntity)
     {
         var response = new InsertTripResponse { Success = false };
         
         // Begin transaction
-        _tripRepository.ExecuteInTransaction((() =>
+        await _tripRepository.ExecuteInTransactionAsync(async () =>
         {
             var newTrip = new Trip
             {
@@ -38,13 +38,13 @@ public class TripService : ITripService
                 UserId = Guid.Parse(identityEntity.UserId),
             };
             _tripRepository.Add(newTrip);
-            _tripRepository.SaveChanges(identityEntity.Email);
+            await _tripRepository.SaveChangesAsync(identityEntity.Email);
             
             // True
             response.Success = true;
             response.SetMessage(MessageId.I00001);
             return true;
-        }));
+        });
         return response;
     }
 

@@ -30,7 +30,8 @@ public class AuthenticationController : ControllerBase
     /// <param name="scopeManager"></param>
     /// <param name="userService"></param>
     /// <param name="tempCodeService"></param>
-    public AuthenticationController(IOpenIddictScopeManager scopeManager, IUserService userService, ITempCodeService tempCodeService)
+    public AuthenticationController(IOpenIddictScopeManager scopeManager, IUserService userService,
+        ITempCodeService tempCodeService)
     {
         _scopeManager = scopeManager;
         _userService = userService;
@@ -64,7 +65,9 @@ public class AuthenticationController : ControllerBase
         // Refresh token
         if (openIdRequest!.IsRefreshTokenGrantType())
         {
-            var claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+            var claimsPrincipal =
+                (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme))
+                .Principal;
             return SignIn(claimsPrincipal!, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
@@ -119,7 +122,7 @@ public class AuthenticationController : ControllerBase
         });
 
         // Redirect to the frontend with the temporary code
-        return Redirect($"{UrlConst.UrlFrontEnd}?code={tempCode}&state=google_login");
+        return Redirect($"{ConstUrl.UrlFrontEnd}?code={tempCode}&state=google_login");
     }
 
     /// <summary>
@@ -151,6 +154,8 @@ public class AuthenticationController : ControllerBase
         identity.SetClaim(Claims.Subject, userPasswordLogin.Response.AccountId.ToString(),
             Destinations.AccessToken);
         identity.SetClaim(Claims.Name, userPasswordLogin.Response.Name,
+            Destinations.AccessToken);
+        identity.SetClaim("UserId", userPasswordLogin.Response.AccountId.ToString(),
             Destinations.AccessToken);
         identity.SetClaim(Claims.Email, userPasswordLogin.Response.Email,
             Destinations.AccessToken);

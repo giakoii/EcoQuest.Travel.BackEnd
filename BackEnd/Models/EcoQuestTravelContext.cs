@@ -1,4 +1,6 @@
-﻿using DotNetEnv;
+﻿using System;
+using System.Collections.Generic;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -16,6 +18,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<Account> Accounts { get; set; }
 
+    public virtual DbSet<AttractionDetail> AttractionDetails { get; set; }
+
     public virtual DbSet<Blog> Blogs { get; set; }
 
     public virtual DbSet<Destination> Destinations { get; set; }
@@ -27,8 +31,14 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<Hotel> Hotels { get; set; }
 
     public virtual DbSet<HotelRoom> HotelRooms { get; set; }
-    
+
     public virtual DbSet<Partner> Partners { get; set; }
+
+    public virtual DbSet<PartnerPartnerType> PartnerPartnerTypes { get; set; }
+
+    public virtual DbSet<PartnerType> PartnerTypes { get; set; }
+
+    public virtual DbSet<RestaurantDetail> RestaurantDetails { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
@@ -38,7 +48,23 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<VwAttraction> VwAttractions { get; set; }
+
+    public virtual DbSet<VwEcq310SelectPartner> VwEcq310SelectPartners { get; set; }
+
+    public virtual DbSet<VwEmailTemplateAccountInformation> VwEmailTemplateAccountInformations { get; set; }
+
     public virtual DbSet<VwEmailTemplateVerifyUser> VwEmailTemplateVerifyUsers { get; set; }
+
+    public virtual DbSet<VwHotel> VwHotels { get; set; }
+
+    public virtual DbSet<VwHotelRoom> VwHotelRooms { get; set; }
+
+    public virtual DbSet<VwPartnerPartnerType> VwPartnerPartnerTypes { get; set; }
+
+    public virtual DbSet<VwPartnerType> VwPartnerTypes { get; set; }
+
+    public virtual DbSet<VwRestaurant> VwRestaurants { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -57,7 +83,7 @@ public partial class EcoQuestTravelContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseOpenIddict();
+        modelBuilder.UseOpenIddict();   
         modelBuilder.Entity<Account>(entity =>
         {
             entity.HasKey(e => e.AccountId).HasName("PK_Auths");
@@ -109,6 +135,44 @@ public partial class EcoQuestTravelContext : DbContext
                     });
         });
 
+        modelBuilder.Entity<AttractionDetail>(entity =>
+        {
+            entity.HasKey(e => e.PartnerId).HasName("PK__Attracti__576F1B2706C3586C");
+
+            entity.Property(e => e.PartnerId)
+                .ValueGeneratedNever()
+                .HasColumnName("partner_id");
+            entity.Property(e => e.AttractionType)
+                .HasMaxLength(100)
+                .HasColumnName("attraction_type");
+            entity.Property(e => e.CloseTime).HasColumnName("close_time");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.OpenTime).HasColumnName("open_time");
+            entity.Property(e => e.TicketPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("ticket_price");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Destination).WithMany(p => p.AttractionDetails)
+                .HasForeignKey(d => d.DestinationId)
+                .HasConstraintName("FK_AttractionDetails_Destinations");
+
+            entity.HasOne(d => d.Partner).WithOne(p => p.AttractionDetail)
+                .HasForeignKey<AttractionDetail>(d => d.PartnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Attractio__partn__2CF2ADDF");
+        });
+
         modelBuilder.Entity<Blog>(entity =>
         {
             entity.HasKey(e => e.BlogId).HasName("PK__Blogs__2975AA28AF9F4DBF");
@@ -151,7 +215,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.DestinationId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("destination_id");
-            entity.Property(e => e.AddedBy).HasColumnName("added_by");
             entity.Property(e => e.AddressLine)
                 .HasMaxLength(255)
                 .HasColumnName("address_line");
@@ -180,10 +243,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.Ward)
                 .HasMaxLength(50)
                 .HasColumnName("ward");
-
-            entity.HasOne(d => d.AddedByNavigation).WithMany(p => p.Destinations)
-                .HasForeignKey(d => d.AddedBy)
-                .HasConstraintName("FK__Destinati__added__71D1E811");
         });
 
         modelBuilder.Entity<DestinationImage>(entity =>
@@ -271,7 +330,6 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("name");
             entity.Property(e => e.OwnerId).HasColumnName("owner_id");
-            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
@@ -286,11 +344,7 @@ public partial class EcoQuestTravelContext : DbContext
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Hotels)
                 .HasForeignKey(d => d.OwnerId)
-                .HasConstraintName("FK__Hotels__owner_id__778AC167");
-
-            entity.HasOne(d => d.Partner).WithMany(p => p.Hotels)
-                .HasForeignKey(d => d.PartnerId)
-                .HasConstraintName("FK_Hotels_Partner");
+                .HasConstraintName("FK_Hotels_Owner");
         });
 
         modelBuilder.Entity<HotelRoom>(entity =>
@@ -329,7 +383,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__HotelRoom__hotel__1DB06A4F");
         });
-
+        
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -352,9 +406,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .HasColumnName("phone");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(100)
@@ -367,6 +418,102 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Partners__accoun__17036CC0");
+        });
+
+        modelBuilder.Entity<PartnerPartnerType>(entity =>
+        {
+            entity.HasKey(e => new { e.PartnerId, e.TypeId }).HasName("PK__Partner___C5AF1B7EDF2815DF");
+
+            entity.ToTable("Partner_PartnerType");
+
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Partner).WithMany(p => p.PartnerPartnerTypes)
+                .HasForeignKey(d => d.PartnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Partner_P__partn__339FAB6E");
+
+            entity.HasOne(d => d.Type).WithMany(p => p.PartnerPartnerTypes)
+                .HasForeignKey(d => d.TypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Partner_P__type___3493CFA7");
+        });
+
+        modelBuilder.Entity<PartnerType>(entity =>
+        {
+            entity.HasKey(e => e.TypeId).HasName("PK__PartnerT__2C000598803BD007");
+
+            entity.Property(e => e.TypeId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("type_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.TypeName)
+                .HasMaxLength(50)
+                .HasColumnName("type_name");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+        });
+
+        modelBuilder.Entity<RestaurantDetail>(entity =>
+        {
+            entity.HasKey(e => e.PartnerId).HasName("PK__Restaura__576F1B278408A9C8");
+
+            entity.Property(e => e.PartnerId)
+                .ValueGeneratedNever()
+                .HasColumnName("partner_id");
+            entity.Property(e => e.CloseTime).HasColumnName("close_time");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.CuisineType)
+                .HasMaxLength(100)
+                .HasColumnName("cuisine_type");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.HasVegetarian).HasColumnName("has_vegetarian");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.MaxPrice)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("max_price");
+            entity.Property(e => e.MinPrice)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("min_price");
+            entity.Property(e => e.OpenTime).HasColumnName("open_time");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Destination).WithMany(p => p.RestaurantDetails)
+                .HasForeignKey(d => d.DestinationId)
+                .HasConstraintName("FK_RestaurantDetails_Destinations");
+
+            entity.HasOne(d => d.Partner).WithOne(p => p.RestaurantDetail)
+                .HasForeignKey<RestaurantDetail>(d => d.PartnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Restauran__partn__2180FB33");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -483,6 +630,90 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasConstraintName("FK_Users_Auths_AuthId");
         });
 
+        modelBuilder.Entity<VwAttraction>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Attraction");
+
+            entity.Property(e => e.AddressLine)
+                .HasMaxLength(255)
+                .HasColumnName("address_line");
+            entity.Property(e => e.AttractionType)
+                .HasMaxLength(100)
+                .HasColumnName("attraction_type");
+            entity.Property(e => e.City)
+                .HasMaxLength(50)
+                .HasColumnName("city");
+            entity.Property(e => e.CloseTime).HasColumnName("close_time");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.DestinationName)
+                .HasMaxLength(200)
+                .HasColumnName("destination_name");
+            entity.Property(e => e.District)
+                .HasMaxLength(50)
+                .HasColumnName("district");
+            entity.Property(e => e.OpenTime).HasColumnName("open_time");
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
+            entity.Property(e => e.Province).HasColumnName("province");
+            entity.Property(e => e.TicketPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("ticket_price");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Ward)
+                .HasMaxLength(50)
+                .HasColumnName("ward");
+        });
+
+        modelBuilder.Entity<VwEcq310SelectPartner>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Ecq310SelectPartner");
+
+            entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(255)
+                .HasColumnName("company_name");
+            entity.Property(e => e.ContactName)
+                .HasMaxLength(100)
+                .HasColumnName("contact_name");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
+            entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
+            entity.Property(e => e.Verified).HasColumnName("verified");
+        });
+
+        modelBuilder.Entity<VwEmailTemplateAccountInformation>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_EmailTemplate_Account_Information");
+
+            entity.Property(e => e.Body).HasColumnName("body");
+            entity.Property(e => e.CreateBy)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("create_by");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.ScreenName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("screen_name");
+            entity.Property(e => e.Title).HasColumnName("title");
+            entity.Property(e => e.UpdateBy)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("update_by");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+        });
+
         modelBuilder.Entity<VwEmailTemplateVerifyUser>(entity =>
         {
             entity
@@ -509,6 +740,142 @@ public partial class EcoQuestTravelContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("update_by");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<VwHotel>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Hotel");
+
+            entity.Property(e => e.Address)
+                .HasMaxLength(500)
+                .HasColumnName("address");
+            entity.Property(e => e.AddressLine)
+                .HasMaxLength(255)
+                .HasColumnName("address_line");
+            entity.Property(e => e.City)
+                .HasMaxLength(50)
+                .HasColumnName("city");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.DestinationName)
+                .HasMaxLength(200)
+                .HasColumnName("destination_name");
+            entity.Property(e => e.District)
+                .HasMaxLength(50)
+                .HasColumnName("district");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .HasColumnName("email");
+            entity.Property(e => e.HotelDescription).HasColumnName("hotel_description");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.HotelName)
+                .HasMaxLength(200)
+                .HasColumnName("hotel_name");
+            entity.Property(e => e.OwnerId).HasColumnName("owner_id");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(50)
+                .HasColumnName("phone_number");
+            entity.Property(e => e.Province).HasColumnName("province");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Ward)
+                .HasMaxLength(50)
+                .HasColumnName("ward");
+        });
+
+        modelBuilder.Entity<VwHotelRoom>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Hotel_Room");
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.IsAvailable).HasColumnName("is_available");
+            entity.Property(e => e.MaxGuests).HasColumnName("max_guests");
+            entity.Property(e => e.PricePerNight)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("price_per_night");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+            entity.Property(e => e.RoomType)
+                .HasMaxLength(100)
+                .HasColumnName("room_type");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+        });
+
+        modelBuilder.Entity<VwPartnerPartnerType>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Partner_PartnerType");
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
+            entity.Property(e => e.TypeName)
+                .HasMaxLength(50)
+                .HasColumnName("type_name");
+        });
+
+        modelBuilder.Entity<VwPartnerType>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_PartnerType");
+
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
+            entity.Property(e => e.TypeName)
+                .HasMaxLength(50)
+                .HasColumnName("type_name");
+        });
+
+        modelBuilder.Entity<VwRestaurant>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Restaurant");
+
+            entity.Property(e => e.AddressLine)
+                .HasMaxLength(255)
+                .HasColumnName("address_line");
+            entity.Property(e => e.City)
+                .HasMaxLength(50)
+                .HasColumnName("city");
+            entity.Property(e => e.CloseTime).HasColumnName("close_time");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CuisineType)
+                .HasMaxLength(100)
+                .HasColumnName("cuisine_type");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.DestinationName)
+                .HasMaxLength(200)
+                .HasColumnName("destination_name");
+            entity.Property(e => e.District)
+                .HasMaxLength(50)
+                .HasColumnName("district");
+            entity.Property(e => e.HasVegetarian).HasColumnName("has_vegetarian");
+            entity.Property(e => e.MaxPrice)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("max_price");
+            entity.Property(e => e.MinPrice)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("min_price");
+            entity.Property(e => e.OpenTime).HasColumnName("open_time");
+            entity.Property(e => e.PartnerId).HasColumnName("partner_id");
+            entity.Property(e => e.Province).HasColumnName("province");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Ward)
+                .HasMaxLength(50)
+                .HasColumnName("ward");
         });
 
         OnModelCreatingPartial(modelBuilder);

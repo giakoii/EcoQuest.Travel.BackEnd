@@ -12,10 +12,12 @@ using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +26,7 @@ var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
 // Get the connection string from environment variables
-var connectionString = Environment.GetEnvironmentVariable(EnvConst.ConnectionString);
+var connectionString = Environment.GetEnvironmentVariable(ConstEnv.ConnectionString);
 
 builder.Services.AddDataProtection();
 
@@ -42,9 +44,13 @@ builder.Services.AddScoped<CloudinaryLogic>();
 builder.Services.AddScoped<IIdentityApiClient, IdentityApiClient>();
 builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPartnerService, PartnerService>();
+
 builder.Services.AddScoped<IBaseRepository<SystemConfig, string>, BaseRepository<SystemConfig, string>>();
 builder.Services.AddScoped<IBaseRepository<Role, Guid>, BaseRepository<Role, Guid>>();
 builder.Services.AddScoped<IBaseRepository<User, Guid>, BaseRepository<User, Guid>>();
+builder.Services.AddScoped<IBaseRepository<Partner, Guid>, BaseRepository<Partner, Guid>>();
+builder.Services.AddScoped<IBaseRepository<PartnerPartnerType, Guid>, BaseRepository<PartnerPartnerType, Guid>>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -62,6 +68,7 @@ builder.Services.AddSwaggerDocument(config =>
             Description = "Copy this into the value field: Bearer {token}"
         }
     );
+
 });
 
 // Allow API to be read from outside
@@ -144,8 +151,8 @@ builder.Services.AddAuthentication(options =>
     .AddCookie()
     .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     {
-        options.ClientId = Environment.GetEnvironmentVariable(EnvConst.GoogleClientId)!;
-        options.ClientSecret = Environment.GetEnvironmentVariable(EnvConst.GoogleClientSecret)!;
+        options.ClientId = Environment.GetEnvironmentVariable(ConstEnv.GoogleClientId)!;
+        options.ClientSecret = Environment.GetEnvironmentVariable(ConstEnv.GoogleClientSecret)!;
         options.CallbackPath = "/signin-google";
         
         options.Scope.Add("profile");
@@ -165,16 +172,41 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(ConstRole.Admin, policy =>
+    {
+        policy.RequireRole(ConstRole.Admin);
+        policy.AddAuthenticationSchemes(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+    });
+});
+
+
+
 // Add the worker service
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
+
 app.Urls.Clear();
 app.Urls.Add("http://0.0.0.0:5269");
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.Urls.Clear();
+app.Urls.Add("http://0.0.0.0:5269");
+app.UseRouting();
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseHttpsRedirection();
+app.MapControllers();
+app.UseOpenApi();
+app.UseSwaggerUi();
+app.UseDeveloperExceptionPage();
+app.UseStatusCodePages(); 
+app.Run();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseOpenApi();

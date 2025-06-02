@@ -2,7 +2,7 @@ using BackEnd.Controllers;
 
 namespace BackEnd.Controllers.V1.User;
 
-public class SelectUserRequest : AbstractApiRequest
+public class Ecq300SelectUserRequest : AbstractApiRequest
 {
     
 }

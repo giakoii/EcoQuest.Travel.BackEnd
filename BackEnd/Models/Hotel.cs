@@ -19,8 +19,6 @@ public partial class Hotel
 
     public Guid? DestinationId { get; set; }
 
-    public Guid? OwnerId { get; set; }
-
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;
@@ -31,13 +29,11 @@ public partial class Hotel
 
     public bool? IsActive { get; set; }
 
-    public Guid? PartnerId { get; set; }
+    public Guid? OwnerId { get; set; }
 
     public virtual Destination? Destination { get; set; }
 
     public virtual ICollection<HotelRoom> HotelRooms { get; set; } = new List<HotelRoom>();
 
-    public virtual User? Owner { get; set; }
-
-    public virtual Partner? Partner { get; set; }
+    public virtual Partner? Owner { get; set; }
 }

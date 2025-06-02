@@ -149,6 +149,26 @@ public class StringUtil
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
+    public static string ConvertToDateAsDdMmYyyy(TimeOnly? date)
+    {
+        return date.HasValue ? date.Value.ToString("dd/MM/yyyy") : string.Empty;
+    }
+    
+    /// <summary>
+    /// Convert to DD/MM/YYYY
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static string ConvertToDateAsDdMmYyyy(TimeOnly date)
+    {
+        return date.ToString("dd/MM/yyyy");
+    }
+    
+    /// <summary>
+    /// Convert to DD/MM/YYYY
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
     public static string ConvertToDateAsDdMmYyyy(DateTime? date)
     {
         return date.HasValue ? date.Value.ToString("dd/MM/yyyy") : string.Empty;

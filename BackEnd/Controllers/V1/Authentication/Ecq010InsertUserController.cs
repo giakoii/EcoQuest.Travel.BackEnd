@@ -4,14 +4,14 @@ using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.User;
+namespace BackEnd.Controllers.V1.Authentication;
 
 /// <summary>
-/// InsertUserController - Insert new user
+/// Ecq010InsertUserController - Insert new user
 /// </summary>
 [Route("/api/v1/[controller]")]
 [ApiController]
-public class InsertUserController : AbstractApiAsyncControllerNotToken<InsertUserRequest, InsertUserResponse, string>
+public class Ecq010InsertUserController : AbstractApiAsyncControllerNotToken<Ecq010InsertUserRequest, Ecq010InsertUserResponse, string>
 {
     private readonly IUserService _userService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -20,7 +20,7 @@ public class InsertUserController : AbstractApiAsyncControllerNotToken<InsertUse
     /// Constructor
     /// </summary>
     /// <param name="userService"></param>
-    public InsertUserController(IUserService userService)
+    public Ecq010InsertUserController(IUserService userService)
     {
         _userService = userService;
     }
@@ -31,9 +31,9 @@ public class InsertUserController : AbstractApiAsyncControllerNotToken<InsertUse
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
-    public override async Task<InsertUserResponse> ProcessRequest(InsertUserRequest request)
+    public override async Task<Ecq010InsertUserResponse> ProcessRequest(Ecq010InsertUserRequest request)
     {
-        return await ProcessRequest(request, _logger, new InsertUserResponse());
+        return await ProcessRequest(request, _logger, new Ecq010InsertUserResponse());
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public class InsertUserController : AbstractApiAsyncControllerNotToken<InsertUse
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<InsertUserResponse> Exec(InsertUserRequest request)
+    protected override async Task<Ecq010InsertUserResponse> Exec(Ecq010InsertUserRequest request)
     {
         return await _userService.InsertUser(request);
     }
@@ -52,9 +52,9 @@ public class InsertUserController : AbstractApiAsyncControllerNotToken<InsertUse
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override InsertUserResponse ErrorCheck(InsertUserRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq010InsertUserResponse ErrorCheck(Ecq010InsertUserRequest request, List<DetailError> detailErrorList)
     {
-        var response = new InsertUserResponse() { Success = false };
+        var response = new Ecq010InsertUserResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

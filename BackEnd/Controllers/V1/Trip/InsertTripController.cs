@@ -13,7 +13,7 @@ namespace BackEnd.Controllers.V1.Trip;
 /// </summary>
 [Route("api/v1/[controller]")]
 [ApiController]
-public class InsertTripController : AbstractApiController<InsertTripRequest, InsertTripResponse, string>
+public class InsertTripController : AbstractApiAsyncController<InsertTripRequest, InsertTripResponse, string>
 {
     private readonly ITripService _tripService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -31,9 +31,9 @@ public class InsertTripController : AbstractApiController<InsertTripRequest, Ins
 
     [HttpPost]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override InsertTripResponse ProcessRequest(InsertTripRequest request)
+    public override async Task<InsertTripResponse> ProcessRequest(InsertTripRequest request)
     {
-        return ProcessRequest(request, _logger, new InsertTripResponse());
+        return await ProcessRequest(request, _logger, new InsertTripResponse());
     }
 
     /// <summary>
@@ -41,9 +41,9 @@ public class InsertTripController : AbstractApiController<InsertTripRequest, Ins
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override InsertTripResponse Exec(InsertTripRequest request)
+    protected override async Task<InsertTripResponse> Exec(InsertTripRequest request)
     {
-        return _tripService.InsertTrip(request, _identityEntity);
+        return await _tripService.InsertTrip(request, _identityEntity);
     }
 
     /// <summary>

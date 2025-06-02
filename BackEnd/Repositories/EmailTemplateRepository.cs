@@ -18,6 +18,11 @@ public class EmailTemplateRepository : IEmailTemplateRepository
         return await _context.VwEmailTemplateVerifyUsers.FirstOrDefaultAsync();
     }
 
+    public async Task<VwEmailTemplateAccountInformation?> GetAccountInformationEmailTemplateAsync()
+    {
+        return await _context.VwEmailTemplateAccountInformations.FirstOrDefaultAsync();
+    }
+
     public IEnumerable<SystemConfig> GetSystemConfigs()
     {
         return _context.SystemConfigs;

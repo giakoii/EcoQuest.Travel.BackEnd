@@ -1,6 +1,6 @@
 namespace BackEnd.Utils.Const;
 
-public class EnvConst
+public class ConstEnv
 {
     public const string ClientSecret = "CLIENT_SECRET";
     

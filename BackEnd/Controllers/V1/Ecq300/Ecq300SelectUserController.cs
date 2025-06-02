@@ -1,3 +1,4 @@
+using BackEnd.Controllers.V1.User;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
@@ -6,14 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using NLog;
 using OpenIddict.Validation.AspNetCore;
 
-namespace BackEnd.Controllers.V1.User;
+namespace BackEnd.Controllers.V1.Ecq300;
 
 /// <summary>
-/// UpdateUserController - Update User Information
+/// SelectProfileController - Select Ecq300 Profile
 /// </summary>
-[Route("api/v1/user/[controller]")]
 [ApiController]
-public class UpdateUserController : AbstractApiAsyncController<UpdateUserRequest, UpdateUserResponse, string>
+[Route("api/v1/[controller]")]
+public class Ecq300SelectUserController : AbstractApiGetAsyncController<Ecq300SelectUserRequest, Ecq300SelectUserResponse, Ecq300SelectUserEntity>
 {
     private readonly IUserService _userService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -23,27 +24,32 @@ public class UpdateUserController : AbstractApiAsyncController<UpdateUserRequest
     /// </summary>
     /// <param name="userService"></param>
     /// <param name="identityApiClient"></param>
-    public UpdateUserController(IUserService userService, IIdentityApiClient identityApiClient)
+    public Ecq300SelectUserController(IUserService userService, IIdentityApiClient identityApiClient)
     {
         _userService = userService;
         _identityApiClient = identityApiClient;
     }
-
+    
     /// <summary>
-    /// Incoming Put
+    /// Incoming Get
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpPut]
+    [HttpGet]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<UpdateUserResponse> ProcessRequest([FromForm] UpdateUserRequest request)
+    public override async Task<Ecq300SelectUserResponse> Get(Ecq300SelectUserRequest request)
     {
-        return await ProcessRequest(request, _logger, new UpdateUserResponse());
+        return await Get(request, _logger, new Ecq300SelectUserResponse());
     }
 
-    protected override async Task<UpdateUserResponse> Exec(UpdateUserRequest request)
+    /// <summary>
+    /// Main processing
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    protected override async Task<Ecq300SelectUserResponse> Exec(Ecq300SelectUserRequest request)
     {
-        return await _userService.UpdateUser(request, _identityEntity);
+        return await _userService.SelectUser(request, _identityEntity);
     }
 
     /// <summary>
@@ -52,9 +58,9 @@ public class UpdateUserController : AbstractApiAsyncController<UpdateUserRequest
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override UpdateUserResponse ErrorCheck(UpdateUserRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq300SelectUserResponse ErrorCheck(Ecq300SelectUserRequest request, List<DetailError> detailErrorList)
     {
-        var response = new UpdateUserResponse() { Success = false };
+        var response = new Ecq300SelectUserResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

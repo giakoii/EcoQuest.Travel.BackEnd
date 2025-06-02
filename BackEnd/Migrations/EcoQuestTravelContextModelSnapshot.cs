@@ -239,7 +239,7 @@ namespace BackEnd.Migrations
                     b.ToTable("SystemConfig", (string)null);
                 });
 
-            modelBuilder.Entity("BackEnd.Models.User", b =>
+            modelBuilder.Entity("BackEnd.Models.Ecq300", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -606,7 +606,7 @@ namespace BackEnd.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("BackEnd.Models.User", b =>
+            modelBuilder.Entity("BackEnd.Models.Ecq300", b =>
                 {
                     b.HasOne("BackEnd.Models.Auth", "Auth")
                         .WithMany()

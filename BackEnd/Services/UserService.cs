@@ -1,4 +1,5 @@
 using BackEnd.Controllers;
+using BackEnd.Controllers.V1.Authentication;
 using BackEnd.Controllers.V1.User;
 using BackEnd.DTOs.Account;
 using BackEnd.DTOs.User;
@@ -17,6 +18,7 @@ namespace BackEnd.Services;
 public class UserService : IUserService
 {
     private readonly IBaseRepository<User, Guid> _userRepository;
+    private readonly IBaseRepository<Partner, Guid> _partnerRepository;
     private readonly IBaseRepository<Account, Guid> _accountRepository;
     private readonly IBaseRepository<Role, Guid> _roleRepository;
     private readonly IBaseRepository<SystemConfig, string> _systemConfigRepository;
@@ -27,6 +29,7 @@ public class UserService : IUserService
     /// Constructor
     /// </summary>
     /// <param name="userRepository"></param>
+    /// <param name="partnerRepository"></param>
     /// <param name="accountRepository"></param>
     /// <param name="roleRepository"></param>
     /// <param name="systemConfigRepository"></param>
@@ -34,7 +37,7 @@ public class UserService : IUserService
     /// <param name="emailTemplateRepository"></param>
     public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Account, Guid> accountRepository, 
         IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository, CloudinaryLogic cloudinary, 
-        IEmailTemplateRepository emailTemplateRepository)
+        IEmailTemplateRepository emailTemplateRepository, IBaseRepository<Partner, Guid> partnerRepository)
     {
         _userRepository = userRepository;
         _accountRepository = accountRepository;
@@ -42,6 +45,7 @@ public class UserService : IUserService
         _systemConfigRepository = systemConfigRepository;
         _cloudinary = cloudinary;
         _emailTemplateRepository = emailTemplateRepository;
+        _partnerRepository = partnerRepository;
     }
 
     public async Task<LoginResponse> AuthLogin([FromBody] AuthRequest request)
@@ -49,16 +53,16 @@ public class UserService : IUserService
         var response = new LoginResponse { Success = false };
         
         // Check user exists
-        var userExist = _accountRepository.Find(x => x.Email == request.Email).FirstOrDefault();
-        if (userExist == null)
+        var accountExist = _accountRepository.Find(x => x.Email == request.Email).FirstOrDefault();
+        if (accountExist == null)
         {
             response.Success = false;
             response.SetMessage(MessageId.E11001);
             return response;
         }
 
-        // Check if User updating
-        if (userExist.IsActive == false || userExist.LockoutEnd != null && userExist.Key != null)
+        // Check if Ecq300 updating
+        if (accountExist.IsActive == false || accountExist.LockoutEnd != null && accountExist.Key != null)
         {
             response.Success = false;
             response.SetMessage(MessageId.E00000, "Your account has been locked");
@@ -66,15 +70,15 @@ public class UserService : IUserService
         }
 
         // Check password
-        if (!BCrypt.Net.BCrypt.Verify(request.Password, userExist.PasswordHash))
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, accountExist.PasswordHash))
         {
-            userExist.AccessFailedCount++;
-            if (userExist.AccessFailedCount >= 5)
+            accountExist.AccessFailedCount++;
+            if (accountExist.AccessFailedCount >= 5)
             {
-                userExist.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
+                accountExist.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
             }
-            _accountRepository.Update(userExist);
-            await _accountRepository.SaveChangesAsync(userExist.Email!);
+            _accountRepository.Update(accountExist);
+            await _accountRepository.SaveChangesAsync(accountExist.Email!);
 
             response.Success = false;
             response.SetMessage(MessageId.E00000, "The username or password is incorrect");
@@ -82,7 +86,7 @@ public class UserService : IUserService
         }
 
         // Check lockout
-        if (userExist.LockoutEnd != null && userExist.LockoutEnd > DateTime.UtcNow)
+        if (accountExist.LockoutEnd != null && accountExist.LockoutEnd > DateTime.UtcNow)
         {
             response.Success = false;
             response.SetMessage(MessageId.E00000, "Your account has been locked");
@@ -90,27 +94,37 @@ public class UserService : IUserService
         }
 
         // Check user is active
-        if (!userExist.IsActive)
+        if (!accountExist.IsActive)
         {
             response.Success = false;
             response.SetMessage(MessageId.E00000, "Your account is not active");
             return response;
         }
 
-        userExist.AccessFailedCount = 0;
-        userExist.LockoutEnd = null;
-        _accountRepository.Update(userExist);
-        await _accountRepository.SaveChangesAsync(userExist.Email!);
+        accountExist.AccessFailedCount = 0;
+        accountExist.LockoutEnd = null;
+        _accountRepository.Update(accountExist);
+        await _accountRepository.SaveChangesAsync(accountExist.Email!);
         
-        var role = await _roleRepository.Find(x => x.Id == userExist.RoleId).FirstOrDefaultAsync();
-        var user = await _userRepository.Find(x => x.AuthId == userExist.AccountId).FirstOrDefaultAsync();
-        
+        var role = await _roleRepository.Find(x => x.Id == accountExist.RoleId).FirstOrDefaultAsync();
+
         var entityResponse = new LoginEntity
         {
-            Email = userExist.Email!,
-            Name = $"{user!.FirstName} {user.LastName}",
-            RoleName = role!.Name!
+            AccountId = accountExist.AccountId,
+            Email = accountExist.Email!,
         };
+        if (role!.Name ==  ConstantEnum.UserRole.Admin.ToString() || role.Name == ConstantEnum.UserRole.Customer.ToString())
+        {
+            var user = await _userRepository.Find(x => x.AuthId == accountExist.AccountId).FirstOrDefaultAsync();
+            entityResponse.Name = $"{user!.FirstName} {user.LastName}";
+            entityResponse.RoleName = role!.Name!;
+        }
+        else
+        {
+            var partner = await _partnerRepository.Find(x => x.AccountId == accountExist.AccountId).FirstOrDefaultAsync();
+            entityResponse.Name = $"{partner!.CompanyName} - {partner.ContactName}";
+            entityResponse.RoleName = role!.Name!;
+        }
         
         // True
         response.Success = true;
@@ -124,9 +138,9 @@ public class UserService : IUserService
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public async Task<InsertUserResponse> InsertUser(InsertUserRequest request)
+    public async Task<Ecq010InsertUserResponse> InsertUser(Ecq010InsertUserRequest request)
     {
-        var response = new InsertUserResponse {Success = false};
+        var response = new Ecq010InsertUserResponse {Success = false};
         
         // Check if account already exists
         var existingUser = await _accountRepository.Find(x => x.Email == request.Email).FirstOrDefaultAsync();
@@ -169,9 +183,9 @@ public class UserService : IUserService
             // Insert new user
             var newUser = new User
             {
+                UserId = newAccount.AccountId,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                AuthId = newAccount.AccountId,
             };
             
             // Save changes to the database
@@ -180,7 +194,7 @@ public class UserService : IUserService
             
             // Send email verification
             var detailErrorList = new List<DetailError>();
-            await UserInsertSendMail.SendMailVerifyInformation(_emailTemplateRepository, newAccount.Email, key, detailErrorList);
+            await Ecq300UserInsertSendMail.SendMailVerifyInformation(_emailTemplateRepository, newAccount.Email, key, detailErrorList);
             
             // True
             response.Success = true;
@@ -199,9 +213,9 @@ public class UserService : IUserService
     /// <param name="lastName"></param>
     /// <param name="roleId"></param>
     /// <returns></returns>
-    public async Task<InsertUserResponse> InsertUser(string email, string firstName, string lastName, Guid roleId)
+    public async Task<Ecq010InsertUserResponse> InsertUser(string email, string firstName, string lastName, Guid roleId)
     {
-        var response = new InsertUserResponse {Success = false};
+        var response = new Ecq010InsertUserResponse {Success = false};
         
         // Check if account already exists
         var existingUser = await _accountRepository.Find(x => x.Email == email).FirstOrDefaultAsync();
@@ -255,9 +269,9 @@ public class UserService : IUserService
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public async Task<InsertUserVerifyResponse> InsertUserVerify(InsertUserVerifyRequest request)
+    public async Task<Ecq010InsertUserVerifyResponse> InsertUserVerify(Ecq010InsertUserVerifyRequest request)
     {
-        var response = new InsertUserVerifyResponse() { Success = false };
+        var response = new Ecq010InsertUserVerifyResponse() { Success = false };
         
         // Decrypt
         var keyDecrypt = CommonLogic.DecryptText(request.Key, _systemConfigRepository);
@@ -301,9 +315,9 @@ public class UserService : IUserService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq300UpdateUserResponse> UpdateUser(Ecq300UpdateUserRequest request, IdentityEntity identityEntity)
     {
-        var response = new UpdateUserResponse() { Success = false };
+        var response = new Ecq300UpdateUserResponse() { Success = false };
         
         // Get account
         var account = await _accountRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefaultAsync();
@@ -341,9 +355,9 @@ public class UserService : IUserService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public Task<SelectUserResponse> SelectUser(SelectUserRequest request, IdentityEntity identityEntity)
+    public Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, IdentityEntity identityEntity)
     {
-        var response = new SelectUserResponse { Success = false };
+        var response = new Ecq300SelectUserResponse { Success = false };
         
         // Get account
         var account = _accountRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefault();
@@ -362,7 +376,7 @@ public class UserService : IUserService
         }
         
         // Set response
-        response.Response = new SelectUserEntity
+        response.Response = new Ecq300SelectUserEntity
         {
             FirstName = user.FirstName,
             LastName = user.LastName,

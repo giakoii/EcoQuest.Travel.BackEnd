@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using BackEnd.Controllers;
 
-namespace BackEnd.Controllers.V1.User;
+namespace BackEnd.DTOs.User;
 
-public class InsertUserRequest : AbstractApiRequest
+public class Ecq010InsertUserRequest : AbstractApiRequest
 {
     [Required(ErrorMessage = "Email is required"), EmailAddress(ErrorMessage = "Email is invalid")]
     public string Email { get; set; }

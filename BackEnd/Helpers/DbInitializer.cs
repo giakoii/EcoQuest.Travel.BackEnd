@@ -10,7 +10,7 @@ public static class DbInitializer
     {
         string[] roleNames = { ConstantEnum.UserRole.Customer.ToString(), 
             ConstantEnum.UserRole.Admin.ToString(), 
-            ConstantEnum.UserRole.Supplier.ToString(),
+            ConstantEnum.UserRole.Partner.ToString(),
         };
 
         foreach (var roleName in roleNames)

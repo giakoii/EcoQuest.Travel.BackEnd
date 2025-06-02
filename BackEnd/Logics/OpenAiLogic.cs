@@ -14,7 +14,7 @@ public class OpenAiLogic
     {
         _httpClient =  httpClient;
         Env.Load();
-        _apiKey = Environment.GetEnvironmentVariable(EnvConst.OpenAiKey)!;
+        _apiKey = Environment.GetEnvironmentVariable(ConstEnv.OpenAiKey)!;
     }
     
     /// <summary>

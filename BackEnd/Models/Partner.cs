@@ -13,8 +13,6 @@ public partial class Partner
 
     public string ContactName { get; set; } = null!;
 
-    public string? Phone { get; set; }
-
     public string? Description { get; set; }
 
     public bool? Verified { get; set; }
@@ -31,5 +29,11 @@ public partial class Partner
 
     public virtual Account Account { get; set; } = null!;
 
+    public virtual AttractionDetail? AttractionDetail { get; set; }
+
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
+
+    public virtual ICollection<PartnerPartnerType> PartnerPartnerTypes { get; set; } = new List<PartnerPartnerType>();
+
+    public virtual RestaurantDetail? RestaurantDetail { get; set; }
 }
