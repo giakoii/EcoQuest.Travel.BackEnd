@@ -2,17 +2,16 @@ using System.Net;
 using System.Security.Claims;
 using BackEnd;
 using BackEnd.Logics;
-using DotNetEnv;
 using BackEnd.Models;
 using BackEnd.Models.Helpers;
 using BackEnd.Repositories;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -45,12 +44,15 @@ builder.Services.AddScoped<IIdentityApiClient, IdentityApiClient>();
 builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
+builder.Services.AddScoped<IDestinationService, DestinationService>();
 
 builder.Services.AddScoped<IBaseRepository<SystemConfig, string>, BaseRepository<SystemConfig, string>>();
 builder.Services.AddScoped<IBaseRepository<Role, Guid>, BaseRepository<Role, Guid>>();
 builder.Services.AddScoped<IBaseRepository<User, Guid>, BaseRepository<User, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Partner, Guid>, BaseRepository<Partner, Guid>>();
 builder.Services.AddScoped<IBaseRepository<PartnerPartnerType, Guid>, BaseRepository<PartnerPartnerType, Guid>>();
+builder.Services.AddScoped<IBaseRepository<Destination, Guid>, BaseRepository<Destination, Guid>>();
+builder.Services.AddScoped<IBaseRepository<DestinationImage, Guid>, BaseRepository<DestinationImage, Guid>>();
 
 // Add services to the container.
 builder.Services.AddControllers();

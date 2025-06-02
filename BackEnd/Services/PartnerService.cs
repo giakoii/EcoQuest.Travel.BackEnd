@@ -108,8 +108,7 @@ public class PartnerService : IPartnerService
 
                 var enumName = Enum.GetName(typeof(ConstantEnum.PartnerType), enumValue);
 
-                var partnerTypeEntity =
-                    await _partnerTypeRepository.Find(x => x.TypeName == enumName).FirstOrDefaultAsync();
+                var partnerTypeEntity = await _partnerTypeRepository.Find(x => x.TypeName == enumName).FirstOrDefaultAsync();
 
                 var partnerPartnerType = new PartnerPartnerType
                 {
@@ -237,7 +236,6 @@ public class PartnerService : IPartnerService
                 DestinationName = h.DestinationName,
                 AddressLine = h.AddressLine,
                 Ward = h.Ward,
-                City = h.City,
                 District = h.District,
                 Province = h.Province,
             })
@@ -282,7 +280,6 @@ public class PartnerService : IPartnerService
                 AddressLine = r.AddressLine,
                 Province = r.Province,
                 District = r.District,
-                City = r.City,
                 Ward = r.Ward,
             })
             .ToListAsync();
@@ -304,7 +301,6 @@ public class PartnerService : IPartnerService
                 DestinationName = a.DestinationName,
                 AddressLine = a.AddressLine,
                 Ward = a.Ward,
-                City = a.City,
                 District = a.District,
                 Province = a.Province
             })
@@ -314,6 +310,96 @@ public class PartnerService : IPartnerService
         response.Success = true;
         response.SetMessage(MessageId.I00001);
         response.Response = partnerSelect;
+        return response;
+    }
+
+    /// <summary>
+    /// Update partner information
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq310UpdatePartnerResponse> UpdatePartner(Ecq310UpdatePartnerRequest request, IdentityEntity identityEntity)
+    {
+       var response = new Ecq310UpdatePartnerResponse { Success = false };
+
+        // Check if partner exists
+        var partner = _partnerRepository.Find(x => x.PartnerId == request.PartnerId).FirstOrDefault();
+        if (partner == null)
+        {
+            response.SetMessage(MessageId.E00000, CommonMessages.PartnerNotFound);
+            return response;
+        }
+
+        // Begin transaction
+        await _partnerRepository.ExecuteInTransactionAsync(async () =>
+        {
+            // Update partner details
+            partner.Description = request.Description;
+            partner.CompanyName = request.CompanyName;
+            partner.ContactName = request.ContactName!;
+            
+            // Check partner types user registered
+            if (!request.PartnerType.Contains((byte) ConstantEnum.PartnerType.Hotel))
+            {
+                var hotel = await _partnerRepository.GetView<VwHotel>().FirstOrDefaultAsync(x => x.OwnerId == partner.PartnerId);
+                if (hotel != null)
+                {
+                    response.SetMessage(MessageId.E00000, $"It is not possible to convert the service others because you still have an active {ConstantEnum.PartnerType.Hotel}.");
+                    return false;
+                }
+            } else if (!request.PartnerType.Contains((byte) ConstantEnum.PartnerType.Restaurant))
+            {
+                var restaurant = await _partnerRepository.GetView<VwRestaurant>().FirstOrDefaultAsync(x => x.PartnerId == partner.PartnerId);
+                if (restaurant != null)
+                {
+                    response.SetMessage(MessageId.E00000, $"It is not possible to convert the service others because you still have an active {ConstantEnum.PartnerType.Restaurant}.");
+                    return false;
+                }
+            } else if (!request.PartnerType.Contains((byte) ConstantEnum.PartnerType.Attraction))
+            {
+                var attraction = await _partnerRepository.GetView<VwAttraction>().FirstOrDefaultAsync(x => x.PartnerId == partner.PartnerId);
+                if (attraction != null)
+                {
+                    response.SetMessage(MessageId.E00000, $"It is not possible to convert the service others because you still have an active {ConstantEnum.PartnerType.Attraction}.");
+                    return false;
+                }
+            }
+
+            // Delete old partner types
+            var existingPartnerTypes = await _partnerPartnerTypeRepository.Find(x => x.PartnerId == partner.PartnerId).ToListAsync();
+            if (existingPartnerTypes.Any())
+            {
+                foreach (var existingPartnerType in existingPartnerTypes)
+                {
+                    await _partnerPartnerTypeRepository.UpdateAsync(existingPartnerType!);
+                }
+                await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email, true);
+            }
+
+            foreach (var typeId in request.PartnerType!)
+            {
+                // Convert byte to enum
+                var enumValue = (ConstantEnum.PartnerType) typeId;
+                // Get enum name
+                var enumName = Enum.GetName(typeof(ConstantEnum.PartnerType), enumValue);
+
+                // Assign partner type to partner
+                var partnerTypeEntity = await _partnerTypeRepository.Find(x => x.TypeName == enumName).FirstOrDefaultAsync();
+                var partnerPartnerType = new PartnerPartnerType
+                {
+                    PartnerId = request.PartnerId,
+                    TypeId = partnerTypeEntity!.TypeId,
+                };
+                await _partnerPartnerTypeRepository.AddAsync(partnerPartnerType);
+            }
+            await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email);
+            
+            // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
         return response;
     }
 }

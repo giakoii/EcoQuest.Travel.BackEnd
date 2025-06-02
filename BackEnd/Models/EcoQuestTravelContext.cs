@@ -218,9 +218,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.AddressLine)
                 .HasMaxLength(255)
                 .HasColumnName("address_line");
-            entity.Property(e => e.City)
-                .HasMaxLength(50)
-                .HasColumnName("city");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
@@ -642,9 +639,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.AttractionType)
                 .HasMaxLength(100)
                 .HasColumnName("attraction_type");
-            entity.Property(e => e.City)
-                .HasMaxLength(50)
-                .HasColumnName("city");
             entity.Property(e => e.CloseTime).HasColumnName("close_time");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.DestinationId).HasColumnName("destination_id");
@@ -754,9 +748,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.AddressLine)
                 .HasMaxLength(255)
                 .HasColumnName("address_line");
-            entity.Property(e => e.City)
-                .HasMaxLength(50)
-                .HasColumnName("city");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.DestinationId).HasColumnName("destination_id");
             entity.Property(e => e.DestinationName)
@@ -847,9 +838,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.AddressLine)
                 .HasMaxLength(255)
                 .HasColumnName("address_line");
-            entity.Property(e => e.City)
-                .HasMaxLength(50)
-                .HasColumnName("city");
             entity.Property(e => e.CloseTime).HasColumnName("close_time");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.CuisineType)
