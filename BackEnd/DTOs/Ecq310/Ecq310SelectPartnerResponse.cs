@@ -58,9 +58,7 @@ public class Ecq310SelectPartnerEntityAttractionDetail
     public string? AddressLine { get; set; }
 
     public string? Ward { get; set; }
-
-    public string? City { get; set; }
-
+    
     public string? District { get; set; }
 
     public string? Province { get; set; }
@@ -93,9 +91,7 @@ public class Ecq310SelectPartnerEntityRestaurant
     public string? AddressLine { get; set; }
 
     public string? Ward { get; set; }
-
-    public string? City { get; set; }
-
+    
     public string? District { get; set; }
 
     public string? Province { get; set; }
@@ -128,9 +124,7 @@ public class Ecq310SelectPartnerEntityHotel
     public string? AddressLine { get; set; }
 
     public string? Ward { get; set; }
-
-    public string? City { get; set; }
-
+    
     public string? District { get; set; }
 
     public string? Province { get; set; }

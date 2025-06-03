@@ -1,4 +1,4 @@
-using BackEnd.DTOs.Trip;
+using BackEnd.DTOs.Ecq210;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
@@ -6,29 +6,29 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Trip;
+namespace BackEnd.Controllers.V1.Ecq210;
 
 /// <summary>
-/// SelectTripController - Select the trip of the user
+/// Ecq210SelectHotelController - Select hotel
 /// </summary>
-[Route("api/v1/[controller]")]
 [ApiController]
-public class SelectTripController : AbstractApiController<SelectTripRequest, SelectTripResponse, SelectTripEntity>
+[Route("api/v1/[controller]")]
+public class Ecq210SelectHotelController : AbstractApiAsyncController<Ecq210SelectHotelRequest, Ecq210SelectHotelResponse, Ecq210SelectHotelEntity>
 {
-    private readonly ITripService _tripService;
+    private readonly IHotelService _hotelService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="tripService"></param>
+    /// <param name="hotelService"></param>
     /// <param name="identityApiClient"></param>
-    public SelectTripController(ITripService tripService, IIdentityApiClient identityApiClient)
+    public Ecq210SelectHotelController(IHotelService hotelService, IIdentityApiClient identityApiClient)
     {
-        _tripService = tripService;
+        _hotelService = hotelService;
         _identityApiClient = identityApiClient;
     }
-    
+
     /// <summary>
     /// Incoming Get
     /// </summary>
@@ -36,9 +36,9 @@ public class SelectTripController : AbstractApiController<SelectTripRequest, Sel
     /// <returns></returns>
     [HttpGet]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override SelectTripResponse ProcessRequest([FromQuery] SelectTripRequest request)
+    public override async Task<Ecq210SelectHotelResponse> ProcessRequest([FromQuery] Ecq210SelectHotelRequest request)
     {
-        return ProcessRequest(request, _logger, new SelectTripResponse());
+        return await ProcessRequest(request, _logger, new Ecq210SelectHotelResponse());
     }
 
     /// <summary>
@@ -46,9 +46,9 @@ public class SelectTripController : AbstractApiController<SelectTripRequest, Sel
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override SelectTripResponse Exec(SelectTripRequest request)
+    protected override async Task<Ecq210SelectHotelResponse> Exec(Ecq210SelectHotelRequest request)
     {
-        return _tripService.SelectTrip(request, _identityEntity);
+        return await _hotelService.SelectHotel(request);
     }
 
     /// <summary>
@@ -57,9 +57,9 @@ public class SelectTripController : AbstractApiController<SelectTripRequest, Sel
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override SelectTripResponse ErrorCheck(SelectTripRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq210SelectHotelResponse ErrorCheck(Ecq210SelectHotelRequest request, List<DetailError> detailErrorList)
     {
-        var response = new SelectTripResponse() { Success = false };
+        var response = new Ecq210SelectHotelResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

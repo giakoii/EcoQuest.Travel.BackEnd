@@ -14,7 +14,7 @@ namespace BackEnd.Controllers.V1.Ecq300;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq300SelectUserController : AbstractApiGetAsyncController<Ecq300SelectUserRequest, Ecq300SelectUserResponse, Ecq300SelectUserEntity>
+public class Ecq300SelectUserController : AbstractApiAsyncController<Ecq300SelectUserRequest, Ecq300SelectUserResponse, Ecq300SelectUserEntity>
 {
     private readonly IUserService _userService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -37,9 +37,9 @@ public class Ecq300SelectUserController : AbstractApiGetAsyncController<Ecq300Se
     /// <returns></returns>
     [HttpGet]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<Ecq300SelectUserResponse> Get(Ecq300SelectUserRequest request)
+    public override async Task<Ecq300SelectUserResponse> ProcessRequest([FromQuery] Ecq300SelectUserRequest request)
     {
-        return await Get(request, _logger, new Ecq300SelectUserResponse());
+        return await ProcessRequest(request, _logger, new Ecq300SelectUserResponse());
     }
 
     /// <summary>

@@ -10,20 +10,20 @@ namespace BackEnd.Services;
 public class DestinationService : IDestinationService
 {
     private readonly IBaseRepository<Destination, Guid> _destinationRepository;
-    private readonly IBaseRepository<DestinationImage, Guid> _destinationImageRepository;
+    private readonly IBaseRepository<Image, Guid> _imageRepository;
     private readonly CloudinaryLogic _cloudinary;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="destinationRepository"></param>
-    /// <param name="destinationImageRepository"></param>
+    /// <param name="imageRepository"></param>
     /// <param name="cloudinary"></param>
     public DestinationService(IBaseRepository<Destination, Guid> destinationRepository,
-        IBaseRepository<DestinationImage, Guid> destinationImageRepository, CloudinaryLogic cloudinary)
+        IBaseRepository<Image, Guid> imageRepository, CloudinaryLogic cloudinary)
     {
         _destinationRepository = destinationRepository;
-        _destinationImageRepository = destinationImageRepository;
+        _imageRepository = imageRepository;
         _cloudinary = cloudinary;
     }
 
@@ -31,7 +31,6 @@ public class DestinationService : IDestinationService
     /// Insert a new destination
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="user"></param>
     /// <returns></returns>
     public async Task<Ecq200InsertDestinationResponse> InsertDestination(Ecq200InsertDestinationRequest request)
     {
@@ -72,15 +71,16 @@ public class DestinationService : IDestinationService
                 foreach (var image in request.DestinationImages)
                 {
                     var imageUrl = await _cloudinary.UploadImageAsync(image);
-                    var destinationImage = new DestinationImage
+                    var destinationImage = new Image
                     {
-                        DestinationId = newDestination.DestinationId,
-                        ImageUrl = imageUrl
+                        EntityId = newDestination.DestinationId,
+                        ImageUrl = imageUrl,
+                        EntityType = ConstantEnum.EntityImage.Destination.ToString(),
                     };
-                    await _destinationImageRepository.AddAsync(destinationImage);
+                    await _imageRepository.AddAsync(destinationImage);
                 }
             }
-            await _destinationImageRepository.SaveChangesAsync("User");
+            await _imageRepository.SaveChangesAsync("User");
             
             // True
             response.Success = true;

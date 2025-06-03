@@ -1,4 +1,7 @@
-﻿namespace BackEnd.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BackEnd.Models;
 
 public partial class Destination
 {
@@ -11,7 +14,7 @@ public partial class Destination
     public string? AddressLine { get; set; }
 
     public string? Ward { get; set; }
-    
+
     public string? District { get; set; }
 
     public string? Province { get; set; }
@@ -29,8 +32,6 @@ public partial class Destination
     public virtual ICollection<AttractionDetail> AttractionDetails { get; set; } = new List<AttractionDetail>();
 
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
-
-    public virtual ICollection<DestinationImage> DestinationImages { get; set; } = new List<DestinationImage>();
 
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
 

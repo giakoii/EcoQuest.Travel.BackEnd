@@ -20,4 +20,6 @@ public class Ecq210InsertHotelRequest : AbstractApiRequest
 
     [Required(ErrorMessage = "DestinationId is required")]
     public Guid DestinationId { get; set; }
+    
+    public List<IFormFile>? HotelImages { get; set; }
 }

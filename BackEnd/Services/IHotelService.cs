@@ -6,4 +6,6 @@ namespace BackEnd.Services;
 public interface IHotelService
 {
     Task<Ecq210InsertHotelResponse> InsertHotel(Ecq210InsertHotelRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq210SelectHotelResponse> SelectHotel(Ecq210SelectHotelRequest request);
 }

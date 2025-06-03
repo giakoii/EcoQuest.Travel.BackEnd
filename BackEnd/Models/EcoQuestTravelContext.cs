@@ -24,13 +24,13 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<Destination> Destinations { get; set; }
 
-    public virtual DbSet<DestinationImage> DestinationImages { get; set; }
-
     public virtual DbSet<EmailTemplate> EmailTemplates { get; set; }
 
     public virtual DbSet<Hotel> Hotels { get; set; }
 
     public virtual DbSet<HotelRoom> HotelRooms { get; set; }
+
+    public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Partner> Partners { get; set; }
 
@@ -60,6 +60,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<VwHotelRoom> VwHotelRooms { get; set; }
 
+    public virtual DbSet<VwImage> VwImages { get; set; }
+
     public virtual DbSet<VwPartnerPartnerType> VwPartnerPartnerTypes { get; set; }
 
     public virtual DbSet<VwPartnerType> VwPartnerTypes { get; set; }
@@ -83,7 +85,7 @@ public partial class EcoQuestTravelContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseOpenIddict();   
+        modelBuilder.UseOpenIddict();           
         modelBuilder.Entity<Account>(entity =>
         {
             entity.HasKey(e => e.AccountId).HasName("PK_Auths");
@@ -242,35 +244,6 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasColumnName("ward");
         });
 
-        modelBuilder.Entity<DestinationImage>(entity =>
-        {
-            entity.HasKey(e => e.ImageId).HasName("PK__Destinat__DC9AC955E496E1A0");
-
-            entity.Property(e => e.ImageId)
-                .HasDefaultValueSql("(newid())")
-                .HasColumnName("image_id");
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            entity.Property(e => e.CreatedBy)
-                .HasMaxLength(100)
-                .HasColumnName("created_by");
-            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
-            entity.Property(e => e.ImageUrl)
-                .HasMaxLength(500)
-                .HasColumnName("image_url");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValue(true)
-                .HasColumnName("is_active");
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            entity.Property(e => e.UpdatedBy)
-                .HasMaxLength(100)
-                .HasColumnName("updated_by");
-
-            entity.HasOne(d => d.Destination).WithMany(p => p.DestinationImages)
-                .HasForeignKey(d => d.DestinationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Destinati__desti__06CD04F7");
-        });
-
         modelBuilder.Entity<EmailTemplate>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__EmailTemplate");
@@ -380,7 +353,34 @@ public partial class EcoQuestTravelContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__HotelRoom__hotel__1DB06A4F");
         });
-        
+
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("PK__Destinat__DC9AC955E496E1A0");
+
+            entity.Property(e => e.ImageId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("image_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.EntityId).HasColumnName("entity_id");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(50)
+                .HasColumnName("entity_type");
+            entity.Property(e => e.ImageUrl)
+                .HasMaxLength(500)
+                .HasColumnName("image_url");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+        });
+
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -797,6 +797,31 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.RoomType)
                 .HasMaxLength(100)
                 .HasColumnName("room_type");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+        });
+
+        modelBuilder.Entity<VwImage>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Image");
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.EntityId).HasColumnName("entity_id");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(50)
+                .HasColumnName("entity_type");
+            entity.Property(e => e.ImageId).HasColumnName("image_id");
+            entity.Property(e => e.ImageUrl)
+                .HasMaxLength(500)
+                .HasColumnName("image_url");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(100)

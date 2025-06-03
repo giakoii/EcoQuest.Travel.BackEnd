@@ -14,7 +14,7 @@ namespace BackEnd.Controllers.V1.Ecq310;
 [Authorize(Policy = "Admin")]
 [Route("api/v1/admin/[controller]")]
 [ApiController]
-public class Ecq310SelectPartnerController : AbstractApiGetAsyncController<Ecq310SelectPartnerRequest, Ecq310SelectPartnerResponse, Ecq310SelectPartnerEntity>
+public class Ecq310SelectPartnerController : AbstractApiAsyncController<Ecq310SelectPartnerRequest, Ecq310SelectPartnerResponse, Ecq310SelectPartnerEntity>
 {
     private readonly IPartnerService _partnerService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -36,9 +36,9 @@ public class Ecq310SelectPartnerController : AbstractApiGetAsyncController<Ecq31
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq310SelectPartnerResponse> Get(Ecq310SelectPartnerRequest request)
+    public override async Task<Ecq310SelectPartnerResponse> ProcessRequest([FromQuery] Ecq310SelectPartnerRequest request)
     {
-        return await Get(request, _logger, new Ecq310SelectPartnerResponse());
+        return await ProcessRequest(request, _logger, new Ecq310SelectPartnerResponse());
     }
 
     /// <summary>

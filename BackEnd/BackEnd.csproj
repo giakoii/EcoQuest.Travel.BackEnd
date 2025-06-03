@@ -43,11 +43,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="DTOs\Blog\" />
-      <Folder Include="DTOs\Destination\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="Settings/ConstanstCSV/MessageId.csv">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>Always</CopyToPublishDirectory>

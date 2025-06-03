@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class DestinationImage
+public partial class VwImage
 {
     public Guid ImageId { get; set; }
 
-    public Guid DestinationId { get; set; }
+    public Guid EntityId { get; set; }
 
     public string? ImageUrl { get; set; }
 
@@ -21,5 +21,5 @@ public partial class DestinationImage
 
     public bool? IsActive { get; set; }
 
-    public virtual Destination Destination { get; set; } = null!;
+    public string EntityType { get; set; } = null!;
 }

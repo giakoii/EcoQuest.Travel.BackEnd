@@ -53,7 +53,7 @@ builder.Services.AddScoped<IBaseRepository<User, Guid>, BaseRepository<User, Gui
 builder.Services.AddScoped<IBaseRepository<Partner, Guid>, BaseRepository<Partner, Guid>>();
 builder.Services.AddScoped<IBaseRepository<PartnerPartnerType, Guid>, BaseRepository<PartnerPartnerType, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Destination, Guid>, BaseRepository<Destination, Guid>>();
-builder.Services.AddScoped<IBaseRepository<DestinationImage, Guid>, BaseRepository<DestinationImage, Guid>>();
+builder.Services.AddScoped<IBaseRepository<Image, Guid>, BaseRepository<Image, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Hotel, Guid>, BaseRepository<Hotel, Guid>>();
 
 // Add services to the container.
