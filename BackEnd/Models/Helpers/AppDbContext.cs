@@ -11,8 +11,6 @@ public class AppDbContext : EcoQuestTravelContext
     {
     }
     
-    public IdentityEntity IdentityEntity { get; set; }
-    
     /// <summary>
     /// Save changes async with common value
     /// </summary>

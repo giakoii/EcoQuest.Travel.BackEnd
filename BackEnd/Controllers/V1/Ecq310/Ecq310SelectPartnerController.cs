@@ -48,7 +48,7 @@ public class Ecq310SelectPartnerController : AbstractApiGetAsyncController<Ecq31
     /// <returns></returns>
     protected override async Task<Ecq310SelectPartnerResponse> Exec(Ecq310SelectPartnerRequest request)
     {
-        return await _partnerService.SelectPartner(request);
+        return await _partnerService.SelectPartner(request.PartnerId);
     }
 
     /// <summary>

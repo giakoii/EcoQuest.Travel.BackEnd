@@ -179,11 +179,11 @@ public class PartnerService : IPartnerService
     }
 
     /// <summary>
-    /// Select partner by Id
+    /// Select partner by partnerId
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="partnerId"></param>
     /// <returns></returns>
-    public async Task<Ecq310SelectPartnerResponse> SelectPartner(Ecq310SelectPartnerRequest request)
+    public async Task<Ecq310SelectPartnerResponse> SelectPartner(Guid partnerId)
     {
         var response = new Ecq310SelectPartnerResponse { Success = false };
         // Select partners
@@ -198,7 +198,7 @@ public class PartnerService : IPartnerService
                 CompanyName = x.CompanyName,
                 ContactName = x.ContactName,
             })
-            .FirstOrDefaultAsync(x => x.PartnerId == request.PartnerId);
+            .FirstOrDefaultAsync(x => x.PartnerId == partnerId);
         if (partnerSelect == null)
         {
             response.SetMessage(MessageId.E00000, CommonMessages.PartnerNotFound);

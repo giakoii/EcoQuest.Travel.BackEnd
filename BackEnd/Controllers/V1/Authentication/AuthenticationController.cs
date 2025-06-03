@@ -158,6 +158,8 @@ public class AuthenticationController : ControllerBase
         identity.SetClaim("UserId", userPasswordLogin.Response.AccountId.ToString(),
             Destinations.AccessToken);
         identity.SetClaim(Claims.Email, userPasswordLogin.Response.Email,
+            Destinations.AccessToken);       
+        identity.SetClaim(Claims.PhoneNumber, userPasswordLogin.Response.Email,
             Destinations.AccessToken);
         identity.SetClaim(Claims.Role, userPasswordLogin.Response.RoleName,
             Destinations.AccessToken);

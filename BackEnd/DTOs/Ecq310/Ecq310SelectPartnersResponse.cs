@@ -10,9 +10,7 @@ public class Ecq310SelectPartnersResponse : AbstractApiResponse<List<Ecq310Selec
 public class Ecq310SelectPartnersEntity
 {
     public Guid PartnerId { get; set; }
-
-    public Guid AccountId { get; set; }
-
+    
     public string? CompanyName { get; set; }
 
     public string ContactName { get; set; }

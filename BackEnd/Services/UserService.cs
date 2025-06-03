@@ -112,6 +112,7 @@ public class UserService : IUserService
         {
             AccountId = accountExist.AccountId,
             Email = accountExist.Email!,
+            PhoneNumber = accountExist.PhoneNumber!,
         };
         if (role!.Name ==  ConstantEnum.UserRole.Admin.ToString() || role.Name == ConstantEnum.UserRole.Customer.ToString())
         {
@@ -353,14 +354,14 @@ public class UserService : IUserService
     /// Select user
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="identityEntity"></param>
+    /// <param name="email"></param>
     /// <returns></returns>
-    public Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, IdentityEntity identityEntity)
+    public Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, string email)
     {
         var response = new Ecq300SelectUserResponse { Success = false };
         
         // Get account
-        var account = _accountRepository.Find(x => x.Email == identityEntity.Email).FirstOrDefault();
+        var account = _accountRepository.Find(x => x.Email == email).FirstOrDefault();
         if (account == null)
         {
             response.SetMessage(MessageId.E11001);
@@ -457,4 +458,6 @@ public class LoginEntity
     public string Name { get; set; }
     
     public string RoleName { get; set; }
+    
+    public string PhoneNumber { get; set; }
 }

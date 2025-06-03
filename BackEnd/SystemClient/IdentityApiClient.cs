@@ -18,6 +18,9 @@ public class IdentityApiClient : IIdentityApiClient
         // Get email
         var email = identity.FindFirst(OpenIddictConstants.Claims.Email)?.Value ?? string.Empty;
         
+        // Get phone number
+        var phoneNumber = identity.FindFirst(OpenIddictConstants.Claims.PhoneNumber)?.Value ?? string.Empty;
+        
         // Create IdentityEntity
         var identityEntity = new IdentityEntity
         {
