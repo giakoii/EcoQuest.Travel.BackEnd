@@ -27,5 +27,7 @@ public partial class Blog
 
     public virtual User Author { get; set; } = null!;
 
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
     public virtual Destination? Destination { get; set; }
 }
