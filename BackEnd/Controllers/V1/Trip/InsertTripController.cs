@@ -11,8 +11,8 @@ namespace BackEnd.Controllers.V1.Trip;
 /// <summary>
 /// InsertTripController - Creates a new trip
 /// </summary>
-[Route("api/v1/[controller]")]
-[ApiController]
+// [Route("api/v1/[controller]")]
+// [ApiController]
 public class InsertTripController : AbstractApiAsyncController<InsertTripRequest, InsertTripResponse, string>
 {
     private readonly ITripService _tripService;

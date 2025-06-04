@@ -9,4 +9,6 @@ public class CommonMessages
     public static readonly string DestinationAlreadyExists = "Destination already exists";
     
     public static readonly  string PartnerTypeInvalid = "Your partner type is invalid";
+    
+    public static readonly string BlogNotFound = "Blog not found";
 }

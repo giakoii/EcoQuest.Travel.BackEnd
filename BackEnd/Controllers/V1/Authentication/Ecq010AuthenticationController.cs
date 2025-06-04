@@ -17,7 +17,7 @@ namespace BackEnd.Controllers.V1.Authentication;
 /// <summary>
 /// Authentication controller - Exchange token
 /// </summary>
-public class AuthenticationController : ControllerBase
+public class Ecq010AuthenticationController : ControllerBase
 {
     private readonly IOpenIddictScopeManager _scopeManager;
     private readonly IUserService _userService;
@@ -30,7 +30,7 @@ public class AuthenticationController : ControllerBase
     /// <param name="scopeManager"></param>
     /// <param name="userService"></param>
     /// <param name="tempCodeService"></param>
-    public AuthenticationController(IOpenIddictScopeManager scopeManager, IUserService userService,
+    public Ecq010AuthenticationController(IOpenIddictScopeManager scopeManager, IUserService userService,
         ITempCodeService tempCodeService)
     {
         _scopeManager = scopeManager;
@@ -81,7 +81,7 @@ public class AuthenticationController : ControllerBase
     [HttpGet("google/login")]
     public IActionResult LoginWithGoogle()
     {
-        var redirectUrl = Url.Action("GoogleCallback", "Authentication");
+        var redirectUrl = Url.Action("GoogleCallback", "Ecq010Authentication");
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
         return Challenge(properties, "Google");
     }

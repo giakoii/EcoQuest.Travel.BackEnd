@@ -11,8 +11,8 @@ namespace BackEnd.Controllers.V1.Trip;
 /// <summary>
 /// SelectTripController - Select the trip of the user
 /// </summary>
-[Route("api/v1/[controller]")]
-[ApiController]
+// [Route("api/v1/[controller]")]
+// [ApiController]
 public class SelectTripController : AbstractApiController<SelectTripRequest, SelectTripResponse, SelectTripEntity>
 {
     private readonly ITripService _tripService;
