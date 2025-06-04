@@ -3,13 +3,19 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class Trip
+public partial class VwTrip
 {
     public Guid TripId { get; set; }
 
     public Guid UserId { get; set; }
 
+    public string FirstName { get; set; } = null!;
+
+    public string LastName { get; set; } = null!;
+
     public string? TripName { get; set; }
+
+    public string? Description { get; set; }
 
     public DateOnly? StartDate { get; set; }
 
@@ -19,6 +25,8 @@ public partial class Trip
 
     public decimal? TotalEstimatedCost { get; set; }
 
+    public byte Status { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;
@@ -26,16 +34,4 @@ public partial class Trip
     public DateTime UpdatedAt { get; set; }
 
     public string UpdatedBy { get; set; } = null!;
-
-    public bool? IsActive { get; set; }
-
-    public string? Description { get; set; }
-
-    public byte Status { get; set; }
-
-    public virtual ICollection<TripDestination> TripDestinations { get; set; } = new List<TripDestination>();
-
-    public virtual ICollection<TripSchedule> TripSchedules { get; set; } = new List<TripSchedule>();
-
-    public virtual User User { get; set; } = null!;
 }

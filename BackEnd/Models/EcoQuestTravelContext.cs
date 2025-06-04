@@ -33,7 +33,7 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<HotelRoom> HotelRooms { get; set; }
 
     public virtual DbSet<Image> Images { get; set; }
-
+    
     public virtual DbSet<Partner> Partners { get; set; }
 
     public virtual DbSet<PartnerPartnerType> PartnerPartnerTypes { get; set; }
@@ -47,6 +47,10 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<SystemConfig> SystemConfigs { get; set; }
 
     public virtual DbSet<Trip> Trips { get; set; }
+
+    public virtual DbSet<TripDestination> TripDestinations { get; set; }
+
+    public virtual DbSet<TripSchedule> TripSchedules { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -73,6 +77,8 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<VwPartnerType> VwPartnerTypes { get; set; }
 
     public virtual DbSet<VwRestaurant> VwRestaurants { get; set; }
+
+    public virtual DbSet<VwTrip> VwTrips { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -416,7 +422,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-
+        
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -600,12 +606,14 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
                 .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.EndDate).HasColumnName("end_date");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
             entity.Property(e => e.NumberOfPeople).HasColumnName("number_of_people");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.TotalEstimatedCost)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("total_estimated_cost");
@@ -622,6 +630,60 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Trips__user_id__7C4F7684");
+        });
+
+        modelBuilder.Entity<TripDestination>(entity =>
+        {
+            entity.HasKey(e => e.TripDestinationId).HasName("PK__TripDest__329279A66A899C6A");
+
+            entity.Property(e => e.TripDestinationId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("trip_destination_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.Note).HasColumnName("note");
+            entity.Property(e => e.OrderIndex).HasColumnName("order_index");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+
+            entity.HasOne(d => d.Destination).WithMany(p => p.TripDestinations)
+                .HasForeignKey(d => d.DestinationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TripDesti__desti__4E53A1AA");
+
+            entity.HasOne(d => d.Trip).WithMany(p => p.TripDestinations)
+                .HasForeignKey(d => d.TripId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TripDesti__trip___4D5F7D71");
+        });
+
+        modelBuilder.Entity<TripSchedule>(entity =>
+        {
+            entity.HasKey(e => e.ScheduleId).HasName("PK__TripSche__C46A8A6F9AE6C18A");
+
+            entity.Property(e => e.ScheduleId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("schedule_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.Location)
+                .HasMaxLength(255)
+                .HasColumnName("location");
+            entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
+            entity.Property(e => e.StartTime).HasColumnName("start_time");
+            entity.Property(e => e.Title)
+                .HasMaxLength(200)
+                .HasColumnName("title");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+
+            entity.HasOne(d => d.Trip).WithMany(p => p.TripSchedules)
+                .HasForeignKey(d => d.TripId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TripSched__trip___531856C7");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -985,6 +1047,41 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.Ward)
                 .HasMaxLength(50)
                 .HasColumnName("ward");
+        });
+
+        modelBuilder.Entity<VwTrip>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Trip");
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(100)
+                .HasColumnName("first_name");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(100)
+                .HasColumnName("last_name");
+            entity.Property(e => e.NumberOfPeople).HasColumnName("number_of_people");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.TotalEstimatedCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_estimated_cost");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.TripName)
+                .HasMaxLength(200)
+                .HasColumnName("trip_name");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

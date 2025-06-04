@@ -11,4 +11,8 @@ public class CommonMessages
     public static readonly  string PartnerTypeInvalid = "Your partner type is invalid";
     
     public static readonly string BlogNotFound = "Blog not found";
+    
+    public static readonly string CommentNotFound = "Comment not found";
+    
+    public static readonly string TripNotFound = "Trip not found";
 }

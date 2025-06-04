@@ -1,4 +1,4 @@
-using BackEnd.DTOs.Trip;
+using BackEnd.DTOs.Ecq110;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
@@ -6,39 +6,39 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Trip;
+namespace BackEnd.Controllers.V1.Ecq110;
 
 /// <summary>
-/// SelectTripController - Select the trip of the user
+/// Ecq110UpdateTripController - Update trip
 /// </summary>
-// [Route("api/v1/[controller]")]
-// [ApiController]
-public class SelectTripController : AbstractApiController<SelectTripRequest, SelectTripResponse, SelectTripEntity>
+[ApiController]
+[Route("api/v1/[controller]")]
+public class Ecq110UpdateTripController : AbstractApiAsyncController<Ecq110UpdateTripRequest, Ecq110UpdateTripResponse, string>
 {
     private readonly ITripService _tripService;
-    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="tripService"></param>
     /// <param name="identityApiClient"></param>
-    public SelectTripController(ITripService tripService, IIdentityApiClient identityApiClient)
+    public Ecq110UpdateTripController(ITripService tripService, IIdentityApiClient identityApiClient)
     {
         _tripService = tripService;
         _identityApiClient = identityApiClient;
     }
-    
+
     /// <summary>
-    /// Incoming Get
+    /// Incoming Put
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpGet]
+    [HttpPut]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override SelectTripResponse ProcessRequest([FromQuery] SelectTripRequest request)
+    public override async Task<Ecq110UpdateTripResponse> ProcessRequest(Ecq110UpdateTripRequest request)
     {
-        return ProcessRequest(request, _logger, new SelectTripResponse());
+        return await ProcessRequest(request, _logger, new Ecq110UpdateTripResponse());
     }
 
     /// <summary>
@@ -46,20 +46,20 @@ public class SelectTripController : AbstractApiController<SelectTripRequest, Sel
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override SelectTripResponse Exec(SelectTripRequest request)
+    protected override async Task<Ecq110UpdateTripResponse> Exec(Ecq110UpdateTripRequest request)
     {
-        return _tripService.SelectTrip(request, _identityEntity);
+        return await _tripService.UpdateTrip(request, _identityEntity);
     }
 
     /// <summary>
-    /// Error Check
+    /// Error check
     /// </summary>
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override SelectTripResponse ErrorCheck(SelectTripRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq110UpdateTripResponse ErrorCheck(Ecq110UpdateTripRequest request, List<DetailError> detailErrorList)
     {
-        var response = new SelectTripResponse() { Success = false };
+        var response = new Ecq110UpdateTripResponse { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

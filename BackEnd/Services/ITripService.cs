@@ -1,10 +1,17 @@
-using BackEnd.DTOs.Trip;
+using BackEnd.DTOs.Ecq110;
 using BackEnd.SystemClient;
 
 namespace BackEnd.Services;
 
 public interface ITripService
 {
-    Task<InsertTripResponse> InsertTrip(InsertTripRequest request, IdentityEntity identityEntity);
-    SelectTripResponse SelectTrip(SelectTripRequest request, IdentityEntity identityEntity);
+    Task<Ecq110SelectTripResponse> SelectTrip(Guid tripId);
+    
+    Task<Ecq110SelectTripsResponse> SelectTrips();
+    
+    Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq110UpdateTripResponse> UpdateTrip(Ecq110UpdateTripRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq110DeleteTripResponse> DeleteTrip(Ecq110DeleteTripRequest request, IdentityEntity identityEntity);
 }

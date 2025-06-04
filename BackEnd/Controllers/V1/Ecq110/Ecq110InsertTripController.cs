@@ -1,4 +1,4 @@
-using BackEnd.DTOs.Trip;
+using BackEnd.DTOs.Ecq110;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
@@ -6,34 +6,39 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Trip;
+namespace BackEnd.Controllers.V1.Ecq110;
 
 /// <summary>
-/// InsertTripController - Creates a new trip
+/// Ecq110InsertTripController - Insert a new trip
 /// </summary>
-// [Route("api/v1/[controller]")]
-// [ApiController]
-public class InsertTripController : AbstractApiAsyncController<InsertTripRequest, InsertTripResponse, string>
+[ApiController]
+[Route("api/v1/[controller]")]
+public class Ecq110InsertTripController : AbstractApiAsyncController<Ecq110InsertTripRequest, Ecq110InsertTripResponse, string>
 {
     private readonly ITripService _tripService;
-    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="tripService"></param>
     /// <param name="identityApiClient"></param>
-    public InsertTripController(ITripService tripService, IIdentityApiClient identityApiClient)
+    public Ecq110InsertTripController(ITripService tripService, IIdentityApiClient identityApiClient)
     {
         _tripService = tripService;
         _identityApiClient = identityApiClient;
     }
 
+    /// <summary>
+    /// Incoming Post
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<InsertTripResponse> ProcessRequest(InsertTripRequest request)
+    public override async Task<Ecq110InsertTripResponse> ProcessRequest(Ecq110InsertTripRequest request)
     {
-        return await ProcessRequest(request, _logger, new InsertTripResponse());
+        return await ProcessRequest(request, _logger, new Ecq110InsertTripResponse());
     }
 
     /// <summary>
@@ -41,20 +46,20 @@ public class InsertTripController : AbstractApiAsyncController<InsertTripRequest
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<InsertTripResponse> Exec(InsertTripRequest request)
+    protected override async Task<Ecq110InsertTripResponse> Exec(Ecq110InsertTripRequest request)
     {
         return await _tripService.InsertTrip(request, _identityEntity);
     }
 
     /// <summary>
-    /// Error Check
+    /// Error check
     /// </summary>
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override InsertTripResponse ErrorCheck(InsertTripRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq110InsertTripResponse ErrorCheck(Ecq110InsertTripRequest request, List<DetailError> detailErrorList)
     {
-        var response = new InsertTripResponse() { Success = false };
+        var response = new Ecq110InsertTripResponse { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error
@@ -62,6 +67,7 @@ public class InsertTripController : AbstractApiAsyncController<InsertTripRequest
             response.DetailErrorList = detailErrorList;
             return response;
         }
+
         // True
         response.Success = true;
         return response;

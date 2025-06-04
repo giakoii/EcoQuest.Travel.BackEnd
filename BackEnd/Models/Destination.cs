@@ -36,4 +36,6 @@ public partial class Destination
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
 
     public virtual ICollection<RestaurantDetail> RestaurantDetails { get; set; } = new List<RestaurantDetail>();
+
+    public virtual ICollection<TripDestination> TripDestinations { get; set; } = new List<TripDestination>();
 }
