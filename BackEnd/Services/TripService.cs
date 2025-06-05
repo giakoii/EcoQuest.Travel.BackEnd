@@ -45,8 +45,8 @@ public class TripService : ITripService
                 NumberOfPeople = x.NumberOfPeople,
                 TotalEstimatedCost = x.TotalEstimatedCost,
                 Status = x.Status,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
             }).FirstOrDefaultAsync();
         if (trip == null)
         {
@@ -83,7 +83,7 @@ public class TripService : ITripService
                 NumberOfPeople = x.NumberOfPeople ?? 0,
                 TotalEstimatedCost = x.TotalEstimatedCost,
                 Status = x.Status,
-                CreatedAt = x.CreatedAt
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
             }).ToListAsync();
 
         // True

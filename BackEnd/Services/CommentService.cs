@@ -2,6 +2,7 @@ using BackEnd.DTOs.Ecq100;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
+using BackEnd.Utils;
 using BackEnd.Utils.Const;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,8 +32,8 @@ public class CommentService : ICommentService
             {
                 CommentId = x.CommentId,
                 Content = x.Content,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
                 BlogTitle = x.BlogTitle,
                 CommenterName = x.CommenterName,
                 UserId = x.UserId,

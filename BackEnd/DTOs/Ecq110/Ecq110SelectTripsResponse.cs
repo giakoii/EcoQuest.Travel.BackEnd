@@ -20,5 +20,5 @@ public class Ecq110TripListEntity
     public int NumberOfPeople { get; set; }
     public decimal? TotalEstimatedCost { get; set; }
     public byte Status { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public string CreatedAt { get; set; }
 }

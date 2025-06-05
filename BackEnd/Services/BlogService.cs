@@ -3,6 +3,7 @@ using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
+using BackEnd.Utils;
 using BackEnd.Utils.Const;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,8 +40,8 @@ public class BlogService : IBlogService
            BlogId = x.BlogId,
            Title = x.Title,
            Content = x.Content,
-           CreatedAt = x.CreatedAt,
-           UpdatedAt = x.UpdatedAt,
+           CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+           UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
            AuthorId = x.AuthorId,
            AuthorFirstName = x.AuthorFirstName,
            AuthorLastName = x.AuthorLastName,
@@ -88,8 +89,8 @@ public class BlogService : IBlogService
                 BlogId = x.BlogId,
                 Title = x.Title,
                 Content = x.Content,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
                 AuthorId = x.AuthorId,
                 AuthorFirstName = x.AuthorFirstName,
                 AuthorLastName = x.AuthorLastName,
