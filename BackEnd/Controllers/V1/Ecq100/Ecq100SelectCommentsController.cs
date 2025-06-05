@@ -27,7 +27,7 @@ public class Ecq100SelectCommentsController : AbstractApiAsyncControllerNotToken
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq100SelectCommentsResponse> ProcessRequest(Ecq100SelectCommentsRequest request)
+    public override async Task<Ecq100SelectCommentsResponse> ProcessRequest([FromQuery] Ecq100SelectCommentsRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq100SelectCommentsResponse());
     }
@@ -37,7 +37,7 @@ public class Ecq100SelectCommentsController : AbstractApiAsyncControllerNotToken
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq100SelectCommentsResponse> Exec([FromQuery] Ecq100SelectCommentsRequest request)
+    protected override async Task<Ecq100SelectCommentsResponse> Exec(Ecq100SelectCommentsRequest request)
     {
         return await _commentService.SelectComments(request.BlogId);
     }

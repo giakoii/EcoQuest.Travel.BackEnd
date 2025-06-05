@@ -31,7 +31,7 @@ public class Ecq100SelectBlogsController : AbstractApiAsyncControllerNotToken<Ec
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq100SelectBlogsResponse> ProcessRequest(Ecq100SelectBlogsRequest request)
+    public override async Task<Ecq100SelectBlogsResponse> ProcessRequest([FromQuery] Ecq100SelectBlogsRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq100SelectBlogsResponse());
     }
@@ -41,7 +41,7 @@ public class Ecq100SelectBlogsController : AbstractApiAsyncControllerNotToken<Ec
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq100SelectBlogsResponse> Exec([FromQuery] Ecq100SelectBlogsRequest request)
+    protected override async Task<Ecq100SelectBlogsResponse> Exec(Ecq100SelectBlogsRequest request)
     {
         return await _blogService.SelectBlogs();
     }
