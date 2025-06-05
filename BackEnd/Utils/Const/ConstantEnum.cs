@@ -22,6 +22,7 @@ public static class ConstantEnum
         Restaurant = 2,
         Attraction = 3,
         Destination = 4,
+        Blog
     }
 
     public enum TripStatus

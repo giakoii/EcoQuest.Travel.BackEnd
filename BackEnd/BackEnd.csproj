@@ -25,7 +25,6 @@
         </PackageReference>
         <PackageReference Include="NLog" Version="5.3.4" />
         <PackageReference Include="NLog.Config" Version="4.7.15" />
-        <PackageReference Include="NSwag.AspNetCore" Version="14.2.0" />
         <PackageReference Include="OpenIddict" Version="6.0.0" />
         <PackageReference Include="OpenIddict.Abstractions" Version="6.3.0" />
         <PackageReference Include="OpenIddict.AspNetCore" Version="6.0.0" />
@@ -34,6 +33,9 @@
         <PackageReference Include="OpenIddict.Server" Version="6.3.0" />
         <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="6.0.0" />
         <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="6.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="8.1.4" />
     </ItemGroup>
 
     <ItemGroup>

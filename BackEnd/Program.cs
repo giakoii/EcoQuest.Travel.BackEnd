@@ -1,5 +1,7 @@
 using System.Net;
+using System.Reflection;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using BackEnd;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -13,11 +15,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
-using NSwag;
-using NSwag.Generation.Processors.Security;
+using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
-using Sprache;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,21 +68,68 @@ builder.Services.AddScoped<IBaseRepository<TripDestination, Guid>, BaseRepositor
 builder.Services.AddControllers();
 
 // Swagger configuration to output API type definitions
-builder.Services.AddSwaggerDocument(config =>
+builder.Services.AddSwaggerGen(c =>
 {
-    config.OperationProcessors.Add(new OperationSecurityScopeProcessor("JWT Token"));
-    config.AddSecurity("JWT Token", Enumerable.Empty<string>(),
-        new OpenApiSecurityScheme()
-        {
-            Type = OpenApiSecuritySchemeType.ApiKey,
-            Name = nameof(Authorization),
-            In = OpenApiSecurityApiKeyLocation.Header,
-            Description = "Copy this into the value field: Bearer {token}"
-        }
-    );
-    config.DocumentProcessors.Add(new OrderOperationsProcessor());
-});
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "My API",
+        Version = "v1"
+    });
 
+    // Tự động nhóm theo mã màn hình (ví dụ: Ecq100 => Ecq100 - Blog)
+    c.TagActionsBy(api =>
+    {
+        var controllerName = api.ActionDescriptor.RouteValues["controller"];
+
+        // Lấy tiền tố ví dụ: Ecq100
+        var screenCode = controllerName?.Substring(0, 6) ?? "Other";
+
+        // Map tiền tố sang tên nhóm
+        var groupName = screenCode switch
+        {
+            
+            "Ecq010" => "Ecq010 - Đăng nhập",
+            "Ecq100" => "Ecq100 - Trang chủ",
+            "Ecq110" => "Ecq110 - Quản lý lịch trình",
+            "Ecq200" => "Ecq200 - Quản lý địa điểm du lịch",
+            "Ecq210" => "Ecq210 - Quản lý khách sạn",
+            "Ecq211" => "Ecq211 - Quản lý phòng khách sạn",
+            "Ecq220" => "Ecq220 - Quản lý nhà hàng",
+            "Ecq230" => "Ecq230 - Quản lý khu du lịch",
+            "Ecq240" => "Ecq240 - Thanh toán",
+            "Ecq300" => "Ecq300 - Quản lý Profile",
+            "Ecq310" => "Ecq310 - Admin Dashboard",
+            _ => screenCode
+        };
+
+        return new[] { groupName };
+    });
+
+    c.DocInclusionPredicate((name, api) => true);
+    c.CustomSchemaIds(type => type.FullName);
+
+    // Cấu hình JWT nếu cần
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+        {
+            new OpenApiSecurityScheme{
+                Reference = new OpenApiReference{
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 // Allow API to be read from outside
 builder.Services.AddCors(options =>
 {
@@ -206,23 +253,15 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.Urls.Clear();
-app.Urls.Add("http://0.0.0.0:5269");
-app.UseRouting();
-app.UseCors();
-app.UseAuthentication();
-app.UseAuthorization();
 app.UseHttpsRedirection();
 app.MapControllers();
-app.UseOpenApi();
-app.UseSwaggerUi();
-app.UseDeveloperExceptionPage();
-app.UseStatusCodePages(); 
-app.Run();
-app.UseHttpsRedirection();
-app.MapControllers();
-app.UseOpenApi();
-app.UseSwaggerUi();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Full API");
+    c.RoutePrefix = ""; // Swagger ở root
+});
 app.UseDeveloperExceptionPage();
 app.UseStatusCodePages(); 
 app.Run();

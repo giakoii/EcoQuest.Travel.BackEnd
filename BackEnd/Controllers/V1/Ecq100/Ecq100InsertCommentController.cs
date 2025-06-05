@@ -57,8 +57,7 @@ public class Ecq100InsertCommentController : AbstractApiAsyncController<Ecq100In
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq100InsertCommentResponse ErrorCheck(Ecq100InsertCommentRequest request,
-        List<DetailError> detailErrorList)
+    protected internal override Ecq100InsertCommentResponse ErrorCheck(Ecq100InsertCommentRequest request, List<DetailError> detailErrorList)
     {
         var response = new Ecq100InsertCommentResponse() { Success = false };
         if (detailErrorList.Count > 0)

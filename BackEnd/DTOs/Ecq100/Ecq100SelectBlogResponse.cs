@@ -38,4 +38,6 @@ public class Ecq100SelectBlogEntity
     public string? District { get; set; }
 
     public string? Province { get; set; }
+    
+    public List<string>? BlogImages { get; set; }
 }
