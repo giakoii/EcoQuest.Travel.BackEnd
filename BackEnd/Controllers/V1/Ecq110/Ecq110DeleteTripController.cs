@@ -34,7 +34,7 @@ public class Ecq110DeleteTripController : AbstractApiAsyncController<Ecq110Delet
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpDelete]
+    [HttpPatch]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq110DeleteTripResponse> ProcessRequest(Ecq110DeleteTripRequest request)
     {

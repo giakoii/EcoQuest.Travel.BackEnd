@@ -43,7 +43,7 @@ public class Ecq110SelectTripsController : AbstractApiAsyncControllerNotToken<Ec
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq110SelectTripsResponse> Exec(Ecq110SelectTripsRequest request)
+    protected override async Task<Ecq110SelectTripsResponse> Exec([FromQuery] Ecq110SelectTripsRequest request)
     {
         return await _tripService.SelectTrips();
     }

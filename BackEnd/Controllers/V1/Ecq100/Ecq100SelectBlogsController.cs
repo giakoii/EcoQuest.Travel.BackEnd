@@ -41,7 +41,7 @@ public class Ecq100SelectBlogsController : AbstractApiAsyncControllerNotToken<Ec
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq100SelectBlogsResponse> Exec(Ecq100SelectBlogsRequest request)
+    protected override async Task<Ecq100SelectBlogsResponse> Exec([FromQuery] Ecq100SelectBlogsRequest request)
     {
         return await _blogService.SelectBlogs();
     }

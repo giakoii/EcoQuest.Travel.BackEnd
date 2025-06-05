@@ -34,7 +34,7 @@ public class Ecq100DeleteCommentController : AbstractApiAsyncController<Ecq100De
    /// </summary>
    /// <param name="request"></param>
    /// <returns></returns>
-   [HttpDelete]
+   [HttpPatch]
    [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
    public override async Task<Ecq100DeleteCommentResponse> ProcessRequest(Ecq100DeleteCommentRequest request)
     {
