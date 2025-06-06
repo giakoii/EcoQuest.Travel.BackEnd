@@ -88,16 +88,16 @@ builder.Services.AddSwaggerGen(c =>
         var groupName = screenCode switch
         {
             
-            "Ecq010" => "Ecq010 - Đăng nhập",
-            "Ecq100" => "Ecq100 - Trang chủ",
-            "Ecq110" => "Ecq110 - Quản lý lịch trình",
-            "Ecq200" => "Ecq200 - Quản lý địa điểm du lịch",
-            "Ecq210" => "Ecq210 - Quản lý khách sạn",
-            "Ecq211" => "Ecq211 - Quản lý phòng khách sạn",
-            "Ecq220" => "Ecq220 - Quản lý nhà hàng",
-            "Ecq230" => "Ecq230 - Quản lý khu du lịch",
-            "Ecq240" => "Ecq240 - Thanh toán",
-            "Ecq300" => "Ecq300 - Quản lý Profile",
+            "Ecq010" => "Ecq010 - Sign In/Sign Up",
+            "Ecq100" => "Ecq100 - Home Page",
+            "Ecq110" => "Ecq110 - Manage Trip",
+            "Ecq200" => "Ecq200 - Manage Destination",
+            "Ecq210" => "Ecq210 - Manage Hotel",
+            "Ecq211" => "Ecq211 - Manage Hotel Room",
+            "Ecq220" => "Ecq220 - Manage Restaurant",
+            "Ecq230" => "Ecq230 - Manage Attraction",
+            "Ecq240" => "Ecq240 - Payment",
+            "Ecq300" => "Ecq300 - Manage Profile",
             "Ecq310" => "Ecq310 - Admin Dashboard",
             _ => screenCode
         };
@@ -259,8 +259,8 @@ app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Full API");
-    c.RoutePrefix = ""; // Swagger ở root
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API EcoQuest");
+    c.RoutePrefix = "";
 });
 app.UseDeveloperExceptionPage();
 app.UseStatusCodePages(); 

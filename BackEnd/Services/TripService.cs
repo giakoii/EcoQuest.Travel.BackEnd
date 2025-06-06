@@ -14,7 +14,7 @@ public class TripService : ITripService
     private readonly IBaseRepository<TripDestination, Guid> _tripDestinationRepository;
 
     public TripService(
-        IBaseRepository<Trip, Guid> tripRepository, 
+        IBaseRepository<Trip, Guid> tripRepository,
         IBaseRepository<TripDestination, Guid> tripDestinationRepository)
     {
         _tripRepository = tripRepository;
@@ -29,7 +29,7 @@ public class TripService : ITripService
     public async Task<Ecq110SelectTripResponse> SelectTrip(Guid tripId)
     {
         var response = new Ecq110SelectTripResponse { Success = false };
-        
+
         // Select trip by ID
         var trip = await _tripRepository.GetView<VwTrip>(x => x.TripId == tripId)
             .Select(x => new Ecq110TripEntity
@@ -67,7 +67,7 @@ public class TripService : ITripService
     public async Task<Ecq110SelectTripsResponse> SelectTrips()
     {
         var response = new Ecq110SelectTripsResponse { Success = false };
-        
+
         // Select all trips
         response.Response = await _tripRepository.GetView<VwTrip>()
             .Select(x => new Ecq110TripListEntity
@@ -98,14 +98,14 @@ public class TripService : ITripService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertTripResponse { Success = false };
 
         // Begin transaction
         await _tripRepository.ExecuteInTransactionAsync(async () =>
         {
-            // Create new trip with all Trip class properties
             var tripId = Guid.NewGuid();
             var trip = new Trip
             {
@@ -117,32 +117,28 @@ public class TripService : ITripService
                 NumberOfPeople = request.NumberOfPeople,
                 TotalEstimatedCost = request.TotalEstimatedCost,
                 Description = request.Description,
-                Status = (byte)ConstantEnum.TripStatus.Planned,
+                Status = (byte) ConstantEnum.TripStatus.Planned,
             };
-            
+
             // Save to repository
             await _tripRepository.AddAsync(trip);
             await _tripRepository.SaveChangesAsync(identityEntity.Email);
             
-            // Add trip destinations if provided
-            if (request.Destinations != null && request.Destinations.Count > 0)
+            var orderIndex = 1;
+            foreach (var destination in request.Destinations)
             {
-                foreach (var destination in request.Destinations)
+                var tripDestination = new TripDestination
                 {
-                    var tripDestination = new TripDestination
-                    {
-                        TripId = tripId,
-                        DestinationId = destination.DestinationId,
-                        OrderIndex = destination.OrderIndex,
-                        Note = destination.Note
-                    };
-                    
-                    await _tripDestinationRepository.AddAsync(tripDestination);
-                }
-                
-                await _tripDestinationRepository.SaveChangesAsync(identityEntity.Email);
+                    TripId = tripId,
+                    DestinationId = destination.DestinationId,
+                    OrderIndex = orderIndex,
+                    Note = destination.Note
+                };
+                await _tripDestinationRepository.AddAsync(tripDestination);
+                orderIndex++;
             }
-            
+            await _tripDestinationRepository.SaveChangesAsync(identityEntity.Email);
+
             // True
             response.Success = true;
             response.SetMessage(MessageId.I00001);
@@ -157,12 +153,14 @@ public class TripService : ITripService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110UpdateTripResponse> UpdateTrip(Ecq110UpdateTripRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110UpdateTripResponse> UpdateTrip(Ecq110UpdateTripRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110UpdateTripResponse { Success = false };
 
         // Find trip by ID
-        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true)
+            .FirstOrDefaultAsync();
         if (trip == null)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
@@ -201,12 +199,14 @@ public class TripService : ITripService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110DeleteTripResponse> DeleteTrip(Ecq110DeleteTripRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110DeleteTripResponse> DeleteTrip(Ecq110DeleteTripRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110DeleteTripResponse { Success = false };
 
         // Find trip by ID
-        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true)
+            .FirstOrDefaultAsync();
         if (trip == null)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);

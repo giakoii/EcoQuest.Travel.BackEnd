@@ -22,16 +22,14 @@ public class Ecq110InsertTripRequest : AbstractApiRequest
     
     public string? Description { get; set; }
     
-    // Trip destinations
-    public List<TripDestinationInfo>? Destinations { get; set; }
+    [Required(ErrorMessage = "At least one destination is required.")]
+    public List<TripDestinationInfo> Destinations { get; set; }
 }
 
 public class TripDestinationInfo
 {
-    [Required(ErrorMessage = "Destination ID is required.")]
+    [Required(ErrorMessage = "DestinationId is required.")]
     public Guid DestinationId { get; set; }
-    
-    public int OrderIndex { get; set; }
     
     public string? Note { get; set; }
 }
