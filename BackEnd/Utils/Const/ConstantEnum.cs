@@ -22,7 +22,23 @@ public static class ConstantEnum
         Restaurant = 2,
         Attraction = 3,
         Destination = 4,
-        Blog
+        Blog = 5,
+        HotelRoom = 6
+    }
+    
+    public enum BedType
+    {
+        Single = 1,
+        Twin = 2,
+        Double = 3,
+        Queen = 4,
+        King = 5,
+        SuperKing = 6,
+        Suite = 7,
+        Family = 8,
+        Bunk = 9,
+        Sofa = 10,
+        Other = 99
     }
 
     public enum TripStatus

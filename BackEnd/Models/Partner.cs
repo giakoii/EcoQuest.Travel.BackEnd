@@ -31,6 +31,8 @@ public partial class Partner
 
     public virtual AttractionDetail? AttractionDetail { get; set; }
 
+    public virtual ICollection<AttractionRating> AttractionRatings { get; set; } = new List<AttractionRating>();
+
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
 
     public virtual ICollection<PartnerPartnerType> PartnerPartnerTypes { get; set; } = new List<PartnerPartnerType>();

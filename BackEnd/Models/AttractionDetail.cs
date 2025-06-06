@@ -27,6 +27,18 @@ public partial class AttractionDetail
 
     public Guid? DestinationId { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
+    public string? Address { get; set; }
+
+    public bool? GuideAvailable { get; set; }
+
+    public int? AgeLimit { get; set; }
+
+    public int? DurationMinutes { get; set; }
+
+    public virtual ICollection<AttractionRating> AttractionRatings { get; set; } = new List<AttractionRating>();
+
     public virtual Destination? Destination { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;

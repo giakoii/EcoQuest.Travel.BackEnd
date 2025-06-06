@@ -122,7 +122,7 @@ public class StringUtil
     }
     #endregion
 
-    #region Date Time
+    #region Date
 
     /// <summary>
     /// Convert to DD/MM/YYYY
@@ -192,6 +192,40 @@ public class StringUtil
     public static string ConvertToDateAsMmDdYyyy(DateTime date)
     {
         return date.ToString("MM/dd/yyyy");
+    }
+
+    #endregion
+
+    #region DateTime
+
+    /// <summary>
+    /// Convert to DD/MM/YYYY HH:mm
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static string ConvertToDateTimeAsDdMmYyyyHhMm(DateOnly date)
+    {
+        return date.ToString("dd/MM/yyyy HH:mm");
+    }
+    
+    /// <summary>
+    /// Convert to DD/MM/YYYY HH:mm
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static string ConvertToDateTimeAsDdMmYyyyHhMm(DateOnly? date)
+    {
+        return date.HasValue ? date.Value.ToString("dd/MM/yyyy HH:mm") : string.Empty;
+    }
+    
+    /// <summary>
+    /// Convert to DD/MM/YYYY HH:mm
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static string ConvertToDateTimeAsDdMmYyyyHhMm(TimeOnly? date)
+    {
+        return date.HasValue ? date.Value.ToString("HH:mm") : string.Empty;
     }
 
     #endregion

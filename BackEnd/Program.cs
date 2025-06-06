@@ -50,6 +50,7 @@ builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ITripService, TripService>();
+builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
 
 builder.Services.AddScoped<IBaseRepository<SystemConfig, string>, BaseRepository<SystemConfig, string>>();
 builder.Services.AddScoped<IBaseRepository<Role, Guid>, BaseRepository<Role, Guid>>();
@@ -63,6 +64,8 @@ builder.Services.AddScoped<IBaseRepository<Blog, Guid>, BaseRepository<Blog, Gui
 builder.Services.AddScoped<IBaseRepository<Comment, Guid>, BaseRepository<Comment, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Trip, Guid>, BaseRepository<Trip, Guid>>();
 builder.Services.AddScoped<IBaseRepository<TripDestination, Guid>, BaseRepository<TripDestination, Guid>>();
+builder.Services.AddScoped<IBaseRepository<Hotel, Guid>, BaseRepository<Hotel, Guid>>();
+builder.Services.AddScoped<IBaseRepository<HotelRoom, Guid>, BaseRepository<HotelRoom, Guid>>();
 
 // Add services to the container.
 builder.Services.AddControllers();

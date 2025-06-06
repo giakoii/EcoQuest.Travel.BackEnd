@@ -33,6 +33,8 @@ public partial class Trip
 
     public byte Status { get; set; }
 
+    public string StartingPointAddress { get; set; } = null!;
+
     public virtual ICollection<TripDestination> TripDestinations { get; set; } = new List<TripDestination>();
 
     public virtual ICollection<TripSchedule> TripSchedules { get; set; } = new List<TripSchedule>();

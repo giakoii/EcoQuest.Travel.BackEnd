@@ -27,6 +27,8 @@ public partial class VwTrip
 
     public byte Status { get; set; }
 
+    public string StartingPointAddress { get; set; } = null!;
+
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;

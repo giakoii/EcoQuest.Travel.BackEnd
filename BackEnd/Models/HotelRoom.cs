@@ -29,5 +29,41 @@ public partial class HotelRoom
 
     public bool? IsActive { get; set; }
 
+    public int? Area { get; set; }
+
+    public string? BedType { get; set; }
+
+    public int? NumberOfBeds { get; set; }
+
+    public int? NumberOfRoomsAvailable { get; set; }
+
+    public bool? HasPrivateBathroom { get; set; }
+
+    public bool? HasAirConditioner { get; set; }
+
+    public bool? HasWifi { get; set; }
+
+    public bool? HasBreakfast { get; set; }
+
+    public bool? HasTv { get; set; }
+
+    public bool? HasMinibar { get; set; }
+
+    public bool? HasBalcony { get; set; }
+
+    public bool? HasWindow { get; set; }
+
+    public bool? IsRefundable { get; set; }
+
+    public DateTime? FreeCancellationUntil { get; set; }
+
+    public bool? SmokingAllowed { get; set; }
+
+    public TimeOnly? CheckinTime { get; set; }
+
+    public TimeOnly? CheckoutTime { get; set; }
+
+    public string? SpecialNote { get; set; }
+
     public virtual Hotel Hotel { get; set; } = null!;
 }

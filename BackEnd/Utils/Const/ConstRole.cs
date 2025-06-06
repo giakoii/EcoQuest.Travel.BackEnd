@@ -1,10 +1,10 @@
 namespace BackEnd.Utils.Const;
 
-public class ConstRole
+public static class ConstRole
 {
-    public static string Admin = "Admin";
+    public const string Admin = "Admin";
     
-    public static string Customer = "Customer";
+    public const string Customer = "Customer";
     
-    public static string Partner = "Partner";
+    public const string Partner = "Partner";
 }

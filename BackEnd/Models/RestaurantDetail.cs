@@ -31,7 +31,13 @@ public partial class RestaurantDetail
 
     public Guid? DestinationId { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
+    public string? Address { get; set; }
+
     public virtual Destination? Destination { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;
+
+    public virtual ICollection<RestaurantRating> RestaurantRatings { get; set; } = new List<RestaurantRating>();
 }
