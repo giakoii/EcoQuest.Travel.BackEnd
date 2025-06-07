@@ -1,5 +1,5 @@
 using BackEnd.Controllers;
-using BackEnd.Controllers.V1.Authentication;
+using BackEnd.Controllers.V1.Ecq010;
 using BackEnd.Controllers.V1.User;
 using BackEnd.DTOs.Account;
 using BackEnd.DTOs.User;
@@ -187,6 +187,7 @@ public class UserService : IUserService
                 UserId = newAccount.AccountId,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
+                AuthId = newAccount.AccountId,
             };
             
             // Save changes to the database

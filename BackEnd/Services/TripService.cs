@@ -12,13 +12,13 @@ public class TripService : ITripService
 {
     private readonly IBaseRepository<Trip, Guid> _tripRepository;
     private readonly IBaseRepository<TripDestination, Guid> _tripDestinationRepository;
+    private readonly IBaseRepository<TripSchedule, Guid> _tripScheduleRepository;
 
-    public TripService(
-        IBaseRepository<Trip, Guid> tripRepository,
-        IBaseRepository<TripDestination, Guid> tripDestinationRepository)
+    public TripService(IBaseRepository<Trip, Guid> tripRepository, IBaseRepository<TripDestination, Guid> tripDestinationRepository, IBaseRepository<TripSchedule, Guid> tripScheduleRepository)
     {
         _tripRepository = tripRepository;
         _tripDestinationRepository = tripDestinationRepository;
+        _tripScheduleRepository = tripScheduleRepository;
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public class TripService : ITripService
         // Verify ownership
         if (trip.UserId != Guid.Parse(identityEntity.UserId))
         {
-            response.SetMessage(MessageId.I00000, "You are not authorized to update this trip");
+            response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
             return response;
         }
 
@@ -216,7 +216,7 @@ public class TripService : ITripService
         // Verify ownership
         if (trip.UserId != Guid.Parse(identityEntity.UserId))
         {
-            response.SetMessage(MessageId.I00000, "You are not authorized to delete this trip");
+            response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
             return response;
         }
 
@@ -227,6 +227,58 @@ public class TripService : ITripService
         // True
         response.Success = true;
         response.SetMessage(MessageId.I00001);
+        return response;
+    }
+
+    /// <summary>
+    /// Insert a trip schedule
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110InsertTripScheduleRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq110InsertTripScheduleResponse { Success = false };
+
+        // Check if trip exists
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        if (trip == null)
+        {
+            response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
+            return response;
+        }
+
+        // Verify ownership
+        if (trip.UserId != Guid.Parse(identityEntity.UserId))
+        {
+            response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
+            return response;
+        }
+
+        // Begin transaction
+        await _tripScheduleRepository.ExecuteInTransactionAsync(async () =>
+        {
+            var tripSchedule = new TripSchedule
+            {
+                TripId = request.TripId,
+                ScheduleDate = request.ScheduleDate,
+                Title = request.Title,
+                Description = request.Description,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                Location = request.Location
+            };
+
+            // Save to repository
+            await _tripScheduleRepository.AddAsync(tripSchedule);
+            await _tripScheduleRepository.SaveChangesAsync(identityEntity.Email);
+
+            // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+
         return response;
     }
 }

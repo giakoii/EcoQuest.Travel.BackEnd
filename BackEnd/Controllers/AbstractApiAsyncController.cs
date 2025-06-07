@@ -47,7 +47,7 @@ namespace BackEnd.Controllers
             // Get identity information 
             _identityEntity = _identityApiClient.GetIdentity(User)!;
         
-            var loggingUtil = new LoggingUtil(logger, _identityEntity?.Email ?? "System");
+            var loggingUtil = new LoggingUtil(logger, _identityEntity?.Email!);
             loggingUtil.StartLog(request);
 
             // Check authentication information

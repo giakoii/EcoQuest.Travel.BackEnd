@@ -2,7 +2,7 @@ using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 
-namespace BackEnd.Controllers.V1.Authentication;
+namespace BackEnd.Controllers.V1.Ecq010;
 
 /// <summary>
 /// Ecq300UserInsertSendMail - Send mail to verify the user registration

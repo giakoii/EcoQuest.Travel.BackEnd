@@ -21,4 +21,6 @@ public class CommonMessages
     public static readonly string HotelRoomNotFound = "Hotel room not found";
     
     public static readonly string NotAuthorizedToManageHotel = "You are not authorized to manage this hotel";
+    
+    public static readonly string NotAuthorizedToManageTrip = "You are not authorized to manage this trip";
 }

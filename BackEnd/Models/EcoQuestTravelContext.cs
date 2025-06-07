@@ -1,4 +1,6 @@
-﻿using DotNetEnv;
+﻿using System;
+using System.Collections.Generic;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -792,8 +794,14 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
             entity.Property(e => e.Location)
                 .HasMaxLength(255)
                 .HasColumnName("location");
@@ -803,6 +811,10 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("title");
             entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
 
             entity.HasOne(d => d.Trip).WithMany(p => p.TripSchedules)
                 .HasForeignKey(d => d.TripId)

@@ -14,4 +14,6 @@ public interface ITripService
     Task<Ecq110UpdateTripResponse> UpdateTrip(Ecq110UpdateTripRequest request, IdentityEntity identityEntity);
     
     Task<Ecq110DeleteTripResponse> DeleteTrip(Ecq110DeleteTripRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110InsertTripScheduleRequest request, IdentityEntity identityEntity);
 }

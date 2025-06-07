@@ -1,26 +1,26 @@
-using BackEnd.Controllers.V1.User;
+using BackEnd.DTOs.User;
 using BackEnd.Services;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Authentication;
+namespace BackEnd.Controllers.V1.Ecq010;
 
 /// <summary>
-/// Ecq010InsertUserVerifyController - Verify the user registration
+/// Ecq010InsertUserController - Insert new user
 /// </summary>
-[Route("api/v1/[controller]")]
+[Route("/api/v1/[controller]")]
 [ApiController]
-public class Ecq010InsertUserVerifyController : AbstractApiAsyncControllerNotToken<Ecq010InsertUserVerifyRequest, Ecq010InsertUserVerifyResponse, string>
+public class Ecq010InsertUserController : AbstractApiAsyncControllerNotToken<Ecq010InsertUserRequest, Ecq010InsertUserResponse, string>
 {
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly IUserService _userService;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="userService"></param>
-    public Ecq010InsertUserVerifyController(IUserService userService)
+    public Ecq010InsertUserController(IUserService userService)
     {
         _userService = userService;
     }
@@ -30,10 +30,10 @@ public class Ecq010InsertUserVerifyController : AbstractApiAsyncControllerNotTok
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpPost]    
-    public override Task<Ecq010InsertUserVerifyResponse> ProcessRequest(Ecq010InsertUserVerifyRequest request)
+    [HttpPost]
+    public override async Task<Ecq010InsertUserResponse> ProcessRequest(Ecq010InsertUserRequest request)
     {
-        return ProcessRequest(request, _logger, new Ecq010InsertUserVerifyResponse());
+        return await ProcessRequest(request, _logger, new Ecq010InsertUserResponse());
     }
 
     /// <summary>
@@ -41,20 +41,20 @@ public class Ecq010InsertUserVerifyController : AbstractApiAsyncControllerNotTok
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Task<Ecq010InsertUserVerifyResponse> Exec(Ecq010InsertUserVerifyRequest request)
+    protected override async Task<Ecq010InsertUserResponse> Exec(Ecq010InsertUserRequest request)
     {
-        return _userService.InsertUserVerify(request);
+        return await _userService.InsertUser(request);
     }
-
+    
     /// <summary>
     /// Error Check
     /// </summary>
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq010InsertUserVerifyResponse ErrorCheck(Ecq010InsertUserVerifyRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq010InsertUserResponse ErrorCheck(Ecq010InsertUserRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq010InsertUserVerifyResponse() { Success = false };
+        var response = new Ecq010InsertUserResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

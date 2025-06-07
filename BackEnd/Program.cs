@@ -38,6 +38,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ITempCodeService, TempCodeService>();
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
 builder.Services.AddScoped<CloudinaryLogic>();
@@ -59,6 +60,7 @@ builder.Services.AddScoped<IBaseRepository<Partner, Guid>, BaseRepository<Partne
 builder.Services.AddScoped<IBaseRepository<PartnerPartnerType, Guid>, BaseRepository<PartnerPartnerType, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Destination, Guid>, BaseRepository<Destination, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Image, Guid>, BaseRepository<Image, Guid>>();
+builder.Services.AddScoped<IBaseRepository<TripSchedule, Guid>, BaseRepository<TripSchedule, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Hotel, Guid>, BaseRepository<Hotel, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Blog, Guid>, BaseRepository<Blog, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Comment, Guid>, BaseRepository<Comment, Guid>>();

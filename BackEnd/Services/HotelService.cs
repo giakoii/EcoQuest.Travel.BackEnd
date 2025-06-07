@@ -120,10 +120,6 @@ public class HotelService : IHotelService
                 OwnerId = h.OwnerId,
                 DestinationId = h.DestinationId,
                 DestinationName = h.DestinationName,
-                AddressLine = h.AddressLine,
-                Ward = h.Ward,
-                District = h.District,
-                Province = h.Province,
             })
             .FirstOrDefaultAsync();
 
