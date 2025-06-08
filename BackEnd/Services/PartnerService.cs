@@ -276,11 +276,7 @@ public class PartnerService : IPartnerService
                 MinPrice = r.MinPrice,
                 MaxPrice = r.MaxPrice,
                 DestinationId = r.DestinationId,
-                DestinationName = r.DestinationName,
-                AddressLine = r.AddressLine,
-                Province = r.Province,
-                District = r.District,
-                Ward = r.Ward,
+                //DestinationName = r.DestinationName,
             })
             .ToListAsync();
 
@@ -290,19 +286,15 @@ public class PartnerService : IPartnerService
             .Where(a => a.PartnerId == partnerSelect.PartnerId)
             .Select(a => new Ecq310SelectPartnerEntityAttractionDetail
             {
-                PartnerId = a.PartnerId,
-                AttractionType = a.AttractionType,
-                TicketPrice = a.TicketPrice,
-                OpenTime = StringUtil.ConvertToDateAsDdMmYyyy(a.OpenTime),
-                CloseTime = StringUtil.ConvertToDateAsDdMmYyyy(a.CloseTime),
-                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.CreatedAt),
-                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.UpdatedAt),
-                DestinationId = a.DestinationId,
-                DestinationName = a.DestinationName,
-                AddressLine = a.AddressLine,
-                Ward = a.Ward,
-                District = a.District,
-                Province = a.Province
+                // PartnerId = a.PartnerId,
+                // AttractionType = a.AttractionType,
+                // TicketPrice = a.TicketPrice,
+                // OpenTime = StringUtil.ConvertToDateAsDdMmYyyy(a.OpenTime),
+                // CloseTime = StringUtil.ConvertToDateAsDdMmYyyy(a.CloseTime),
+                // CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.CreatedAt),
+                // UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.UpdatedAt),
+                // DestinationId = a.DestinationId,
+                // DestinationName = a.DestinationName,
             })
             .ToListAsync();
         

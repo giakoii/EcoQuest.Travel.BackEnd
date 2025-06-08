@@ -120,6 +120,8 @@ public class HotelService : IHotelService
                 OwnerId = h.OwnerId,
                 DestinationId = h.DestinationId,
                 DestinationName = h.DestinationName,
+                AverageRating = h.AverageRating,
+                TotalRatings = h.TotalRatings,
             })
             .FirstOrDefaultAsync();
 
@@ -153,4 +155,50 @@ public class HotelService : IHotelService
         response.Response = hotelSelect;
         return response;
     }
+
+    /// <summary>
+    /// Select a list of all hotels with their basic information and images
+    /// </summary>
+    /// <returns></returns>
+    public async Task<Ecq210SelectHotelsResponse> SelectHotels()
+    {
+        var response = new Ecq210SelectHotelsResponse { Success = false };
+        
+        // Select hotels
+        var hotels = await _hotelRepository.GetView<VwHotel>()
+            .Select(h => new Ecq210HotelEntity
+            {
+                HotelId = h.HotelId,
+                Name = h.HotelName,
+                Description = h.HotelDescription,
+                AddressLine = h.AddressLine,
+                Ward = h.Ward,
+                District = h.District,
+                Province = h.Province,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.UpdatedAt),
+                OwnerId = h.OwnerId,
+                DestinationId = h.DestinationId,
+                DestinationName = h.DestinationName,
+                AverageRating = h.AverageRating,
+                TotalRatings = h.TotalRatings,
+            })
+            .ToListAsync();
+        
+        // Fetch images for each hotel
+        foreach (var hotel in hotels)
+        {
+            hotel.HotelImages = (await _imageRepository
+                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+                .Select(img => img.ImageUrl)
+                .ToListAsync())!;
+        }
+        
+        // True
+        response.Response = hotels;
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
 }
+

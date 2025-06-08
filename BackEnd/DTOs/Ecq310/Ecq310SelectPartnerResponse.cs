@@ -54,14 +54,6 @@ public class Ecq310SelectPartnerEntityAttractionDetail
     public Guid? DestinationId { get; set; }
 
     public string? DestinationName { get; set; }
-
-    public string? AddressLine { get; set; }
-
-    public string? Ward { get; set; }
-    
-    public string? District { get; set; }
-
-    public string? Province { get; set; }
 }
 
 public class Ecq310SelectPartnerEntityRestaurant
@@ -87,14 +79,6 @@ public class Ecq310SelectPartnerEntityRestaurant
     public Guid? DestinationId { get; set; }
 
     public string? DestinationName { get; set; }
-
-    public string? AddressLine { get; set; }
-
-    public string? Ward { get; set; }
-    
-    public string? District { get; set; }
-
-    public string? Province { get; set; }
 }
 
 public class Ecq310SelectPartnerEntityHotel

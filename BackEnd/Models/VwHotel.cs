@@ -34,4 +34,8 @@ public partial class VwHotel
     public string? District { get; set; }
 
     public string? Province { get; set; }
+
+    public decimal? AverageRating { get; set; }
+
+    public int? TotalRatings { get; set; }
 }

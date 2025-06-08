@@ -203,9 +203,9 @@ public class StringUtil
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
-    public static string ConvertToDateTimeAsDdMmYyyyHhMm(DateOnly date)
+    public static string ConvertToHhMm(DateOnly date)
     {
-        return date.ToString("dd/MM/yyyy HH:mm");
+        return date.ToString("HH:mm");
     }
     
     /// <summary>
@@ -213,9 +213,9 @@ public class StringUtil
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
-    public static string ConvertToDateTimeAsDdMmYyyyHhMm(DateOnly? date)
+    public static string ConvertToHhMm(DateOnly? date)
     {
-        return date.HasValue ? date.Value.ToString("dd/MM/yyyy HH:mm") : string.Empty;
+        return date.HasValue ? date.Value.ToString("HH:mm") : string.Empty;
     }
     
     /// <summary>
@@ -223,7 +223,7 @@ public class StringUtil
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
-    public static string ConvertToDateTimeAsDdMmYyyyHhMm(TimeOnly? date)
+    public static string ConvertToHhMm(TimeOnly? date)
     {
         return date.HasValue ? date.Value.ToString("HH:mm") : string.Empty;
     }

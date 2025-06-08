@@ -66,7 +66,7 @@ public class BlogService : IBlogService
             .Select(x => x.ImageUrl)
             .ToListAsync();
         
-        response.Response.BlogImages = blogImageUrls;
+        response.Response.BlogImages = blogImageUrls!;
         
         // True
         response.Success = true;
@@ -109,7 +109,7 @@ public class BlogService : IBlogService
                 .Select(x => x.ImageUrl)
                 .ToListAsync();
             
-            blog.BlogImages = blogImageUrls;
+            blog.BlogImages = blogImageUrls!;
         }
         
         // True

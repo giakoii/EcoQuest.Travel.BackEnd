@@ -35,6 +35,10 @@ public partial class RestaurantDetail
 
     public string? Address { get; set; }
 
+    public Guid RestaurantId { get; set; }
+
+    public string? RestaurantName { get; set; }
+
     public virtual Destination? Destination { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class VwRestaurant
+public partial class VwRestaurantWithRating
 {
     public Guid RestaurantId { get; set; }
-
-    public string? RestaurantName { get; set; }
 
     public Guid PartnerId { get; set; }
 
@@ -31,11 +29,21 @@ public partial class VwRestaurant
 
     public Guid? DestinationId { get; set; }
 
-    public string? DestinationName { get; set; }
-
     public string? PhoneNumber { get; set; }
 
     public string? Address { get; set; }
+
+    public Guid? RatingId { get; set; }
+
+    public Guid? UserId { get; set; }
+
+    public int? Rating { get; set; }
+
+    public string? Comment { get; set; }
+
+    public DateTime? RatingCreatedAt { get; set; }
+
+    public DateTime? RatingUpdatedAt { get; set; }
 
     public decimal? AverageRating { get; set; }
 

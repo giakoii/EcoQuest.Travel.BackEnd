@@ -30,6 +30,10 @@ public class Ecq210SelectHotelEntity
 
     public string? DestinationName { get; set; }
     
+    public decimal? AverageRating { get; set; }
+    
+    public int? TotalRatings { get; set; }
+    
     public List<string>? HotelImages { get; set; }
     
     public List<Ecq310SelectPartnerEntityHotelRoom> Rooms { get; set; }

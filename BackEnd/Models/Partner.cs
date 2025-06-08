@@ -29,13 +29,11 @@ public partial class Partner
 
     public virtual Account Account { get; set; } = null!;
 
-    public virtual AttractionDetail? AttractionDetail { get; set; }
-
-    public virtual ICollection<AttractionRating> AttractionRatings { get; set; } = new List<AttractionRating>();
+    public virtual ICollection<AttractionDetail> AttractionDetails { get; set; } = new List<AttractionDetail>();
 
     public virtual ICollection<Hotel> Hotels { get; set; } = new List<Hotel>();
 
     public virtual ICollection<PartnerPartnerType> PartnerPartnerTypes { get; set; } = new List<PartnerPartnerType>();
 
-    public virtual RestaurantDetail? RestaurantDetail { get; set; }
+    public virtual ICollection<RestaurantDetail> RestaurantDetails { get; set; } = new List<RestaurantDetail>();
 }

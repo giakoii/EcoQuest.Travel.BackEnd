@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class AttractionDetail
+public partial class VwAttractionWithRating
 {
+    public Guid AttractionId { get; set; }
+
     public Guid PartnerId { get; set; }
 
     public string? AttractionType { get; set; }
@@ -37,13 +39,23 @@ public partial class AttractionDetail
 
     public int? DurationMinutes { get; set; }
 
-    public Guid AttractionId { get; set; }
+    public Guid? RatingId { get; set; }
 
-    public string? AttractionName { get; set; }
+    public Guid? UserId { get; set; }
 
-    public virtual ICollection<AttractionRating> AttractionRatings { get; set; } = new List<AttractionRating>();
+    public int? Rating { get; set; }
 
-    public virtual Destination? Destination { get; set; }
+    public string? Comment { get; set; }
 
-    public virtual Partner Partner { get; set; } = null!;
+    public DateTime? RatingCreatedAt { get; set; }
+
+    public DateTime? RatingUpdatedAt { get; set; }
+
+    public string? RatingCreatedBy { get; set; }
+
+    public string? RatingUpdatedBy { get; set; }
+
+    public decimal? AverageRating { get; set; }
+
+    public int? TotalRatings { get; set; }
 }

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class RestaurantRating
+public partial class HotelRating
 {
     public Guid RatingId { get; set; }
-
-    public Guid PartnerId { get; set; }
 
     public Guid UserId { get; set; }
 
@@ -19,15 +17,15 @@ public partial class RestaurantRating
 
     public string CreatedBy { get; set; } = null!;
 
+    public bool IsActive { get; set; }
+
     public DateTime UpdatedAt { get; set; }
 
     public string UpdatedBy { get; set; } = null!;
 
-    public bool? IsActive { get; set; }
+    public Guid? HotelId { get; set; }
 
-    public Guid RestaurantId { get; set; }
-
-    public virtual RestaurantDetail Restaurant { get; set; } = null!;
+    public virtual Hotel? Hotel { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

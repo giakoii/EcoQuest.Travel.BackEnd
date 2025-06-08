@@ -7,8 +7,6 @@ public partial class AttractionRating
 {
     public Guid RatingId { get; set; }
 
-    public Guid PartnerId { get; set; }
-
     public Guid UserId { get; set; }
 
     public int? Rating { get; set; }
@@ -17,7 +15,15 @@ public partial class AttractionRating
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual AttractionDetail Partner { get; set; } = null!;
+    public Guid? AttractionId { get; set; }
 
-    public virtual Partner PartnerNavigation { get; set; } = null!;
+    public string CreatedBy { get; set; } = null!;
+
+    public bool IsActive { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public string UpdatedBy { get; set; } = null!;
+
+    public virtual AttractionDetail? Attraction { get; set; }
 }

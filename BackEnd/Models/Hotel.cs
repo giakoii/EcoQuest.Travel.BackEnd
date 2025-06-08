@@ -33,6 +33,8 @@ public partial class Hotel
 
     public virtual Destination? Destination { get; set; }
 
+    public virtual ICollection<HotelRating> HotelRatings { get; set; } = new List<HotelRating>();
+
     public virtual ICollection<HotelRoom> HotelRooms { get; set; } = new List<HotelRoom>();
 
     public virtual Partner? Owner { get; set; }
