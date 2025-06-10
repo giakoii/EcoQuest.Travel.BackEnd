@@ -5,10 +5,8 @@ using BackEnd.Services;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
@@ -24,36 +22,15 @@ public class Ecq010AuthenticationController : ControllerBase
     private readonly IOpenIddictScopeManager _scopeManager;
     private readonly IUserService _userService;
     private readonly ITempCodeService _tempCodeService;
-    private readonly IOpenIddictApplicationManager _applicationManager;
-    private readonly ILogger<Ecq010AuthenticationController> _logger;
-    private readonly IAuthenticationSchemeProvider _schemeProvider;
-    private readonly IOpenIddictAuthorizationManager _authorizationManager;
-    private readonly IOpenIddictTokenManager _tokenManager;
-    private readonly IDistributedCache _distributedCache;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    public Ecq010AuthenticationController(
-        IOpenIddictScopeManager scopeManager,
-        IUserService userService,
-        ITempCodeService tempCodeService,
-        IOpenIddictApplicationManager applicationManager,
-        ILogger<Ecq010AuthenticationController> logger,
-        IAuthenticationSchemeProvider schemeProvider,
-        IOpenIddictAuthorizationManager authorizationManager,
-        IOpenIddictTokenManager tokenManager,
-        IDistributedCache distributedCache)
+    public Ecq010AuthenticationController(IOpenIddictScopeManager scopeManager, IUserService userService, ITempCodeService tempCodeService)
     {
         _scopeManager = scopeManager;
         _userService = userService;
         _tempCodeService = tempCodeService;
-        _applicationManager = applicationManager;
-        _logger = logger;
-        _schemeProvider = schemeProvider;
-        _authorizationManager = authorizationManager;
-        _tokenManager = tokenManager;
-        _distributedCache = distributedCache;
     }
 
     /// <summary>

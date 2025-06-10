@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -67,6 +68,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<VwComment> VwComments { get; set; }
 
+    public virtual DbSet<VwDestination> VwDestinations { get; set; }
+
     public virtual DbSet<VwEcq310SelectPartner> VwEcq310SelectPartners { get; set; }
 
     public virtual DbSet<VwEmailTemplateAccountInformation> VwEmailTemplateAccountInformations { get; set; }
@@ -93,7 +96,7 @@ public partial class EcoQuestTravelContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            DotNetEnv.Env.Load(); 
+            Env.Load(); 
 
             var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
@@ -239,6 +242,8 @@ public partial class EcoQuestTravelContext : DbContext
         {
             entity.HasKey(e => e.BlogId).HasName("PK__Blogs__2975AA28AF9F4DBF");
 
+            entity.HasIndex(e => e.TripId, "UQ_Blogs_TripID").IsUnique();
+
             entity.Property(e => e.BlogId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("blog_id");
@@ -248,13 +253,13 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
                 .HasColumnName("created_by");
-            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
             entity.Property(e => e.Title)
                 .HasMaxLength(300)
                 .HasColumnName("title");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(100)
@@ -265,9 +270,9 @@ public partial class EcoQuestTravelContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Blogs__author_id__01142BA1");
 
-            entity.HasOne(d => d.Destination).WithMany(p => p.Blogs)
-                .HasForeignKey(d => d.DestinationId)
-                .HasConstraintName("FK__Blogs__destinati__02084FDA");
+            entity.HasOne(d => d.Trip).WithOne(p => p.Blog)
+                .HasForeignKey<Blog>(d => d.TripId)
+                .HasConstraintName("FK_Blogs_Trips");
         });
 
         modelBuilder.Entity<Comment>(entity =>
@@ -541,7 +546,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-
+        
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -975,9 +980,6 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasNoKey()
                 .ToView("Vw_Blog");
 
-            entity.Property(e => e.AddressLine)
-                .HasMaxLength(255)
-                .HasColumnName("address_line");
             entity.Property(e => e.AuthorAvatar)
                 .HasMaxLength(512)
                 .HasColumnName("author_avatar");
@@ -991,21 +993,22 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.BlogId).HasColumnName("blog_id");
             entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.DestinationId)
+                .HasMaxLength(4000)
+                .HasColumnName("destination_id");
             entity.Property(e => e.DestinationName)
-                .HasMaxLength(200)
+                .HasMaxLength(4000)
                 .HasColumnName("destination_name");
-            entity.Property(e => e.District)
-                .HasMaxLength(50)
-                .HasColumnName("district");
-            entity.Property(e => e.Province).HasColumnName("province");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Title)
                 .HasMaxLength(300)
                 .HasColumnName("title");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.TripName)
+                .HasMaxLength(200)
+                .HasColumnName("trip_name");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            entity.Property(e => e.Ward)
-                .HasMaxLength(50)
-                .HasColumnName("ward");
         });
 
         modelBuilder.Entity<VwComment>(entity =>
@@ -1027,6 +1030,37 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.ParentCommentId).HasColumnName("parent_comment_id");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+        });
+
+        modelBuilder.Entity<VwDestination>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Destination");
+
+            entity.Property(e => e.AddressLine)
+                .HasMaxLength(255)
+                .HasColumnName("address_line");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.District)
+                .HasMaxLength(50)
+                .HasColumnName("district");
+            entity.Property(e => e.Name)
+                .HasMaxLength(200)
+                .HasColumnName("name");
+            entity.Property(e => e.Province).HasColumnName("province");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+            entity.Property(e => e.Ward)
+                .HasMaxLength(50)
+                .HasColumnName("ward");
         });
 
         modelBuilder.Entity<VwEcq310SelectPartner>(entity =>

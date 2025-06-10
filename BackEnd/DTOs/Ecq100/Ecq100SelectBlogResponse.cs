@@ -27,17 +27,9 @@ public class Ecq100SelectBlogEntity
 
     public string? AuthorAvatar { get; set; }
 
-    public Guid? DestinationId { get; set; }
+    public List<Guid> DestinationId { get; set; }
 
-    public string? DestinationName { get; set; }
-
-    public string? AddressLine { get; set; }
-
-    public string? Ward { get; set; }
-
-    public string? District { get; set; }
-
-    public string? Province { get; set; }
+    public List<string> DestinationName { get; set; }
     
     public List<string>? BlogImages { get; set; }
 }

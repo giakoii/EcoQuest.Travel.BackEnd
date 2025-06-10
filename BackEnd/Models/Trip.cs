@@ -35,6 +35,8 @@ public partial class Trip
 
     public string StartingPointAddress { get; set; } = null!;
 
+    public virtual Blog? Blog { get; set; }
+
     public virtual ICollection<TripDestination> TripDestinations { get; set; } = new List<TripDestination>();
 
     public virtual ICollection<TripSchedule> TripSchedules { get; set; } = new List<TripSchedule>();

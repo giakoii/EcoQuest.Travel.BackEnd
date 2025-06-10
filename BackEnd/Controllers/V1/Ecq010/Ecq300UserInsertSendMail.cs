@@ -27,7 +27,7 @@ public static class Ecq300UserInsertSendMail
         // Replace the variables in the mail template
         var replacements = new Dictionary<string, string>
         {
-            { "${verification_link}", encodedKey }
+            { "${otp}", encodedKey }
         };
         
         // Replace the variables in the mail template

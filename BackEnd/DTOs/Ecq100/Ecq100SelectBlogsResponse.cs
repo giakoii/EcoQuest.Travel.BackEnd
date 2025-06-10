@@ -25,9 +25,9 @@ public class Ecq100SelectBlogsEntity
 
     public string AuthorLastName { get; set; } = null!;
     
-    public Guid? DestinationId { get; set; }
+    public List<Guid> DestinationId { get; set; }
 
-    public string? DestinationName { get; set; }
+    public List<string> DestinationName { get; set; }
     
     public List<string>? BlogImages { get; set; }
 }

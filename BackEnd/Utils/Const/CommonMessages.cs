@@ -23,6 +23,12 @@ public class CommonMessages
     public static readonly string NotAuthorizedToManageHotel = "You are not authorized to manage this hotel";
     
     public static readonly string NotAuthorizedToManageTrip = "You are not authorized to manage this trip";
+    
     public static readonly string AttractionNotFound = "Attraction not found";
+    
     public static readonly string RestaurantNotFound = "Restaurant not found";
+    
+    public static readonly string TripNotCompleted = "Trip is not completed yet, you cannot rate it";
+    
+    public static readonly string OtpNotMatch = "OTP does not match";
 }

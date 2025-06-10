@@ -11,7 +11,6 @@ using BackEnd.Utils;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SystemConfig = BackEnd.Models.SystemConfig;
 
 namespace BackEnd.Services;
 
@@ -21,7 +20,6 @@ public class UserService : IUserService
     private readonly IBaseRepository<Partner, Guid> _partnerRepository;
     private readonly IBaseRepository<Account, Guid> _accountRepository;
     private readonly IBaseRepository<Role, Guid> _roleRepository;
-    private readonly IBaseRepository<SystemConfig, string> _systemConfigRepository;
     private readonly IEmailTemplateRepository _emailTemplateRepository;
     private readonly CloudinaryLogic _cloudinary;
 
@@ -32,17 +30,16 @@ public class UserService : IUserService
     /// <param name="partnerRepository"></param>
     /// <param name="accountRepository"></param>
     /// <param name="roleRepository"></param>
-    /// <param name="systemConfigRepository"></param>
     /// <param name="cloudinary"></param>
     /// <param name="emailTemplateRepository"></param>
+    /// <param name="cache"></param>
     public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Account, Guid> accountRepository, 
-        IBaseRepository<Role, Guid> roleRepository, IBaseRepository<SystemConfig, string> systemConfigRepository, CloudinaryLogic cloudinary, 
+        IBaseRepository<Role, Guid> roleRepository, CloudinaryLogic cloudinary, 
         IEmailTemplateRepository emailTemplateRepository, IBaseRepository<Partner, Guid> partnerRepository)
     {
         _userRepository = userRepository;
         _accountRepository = accountRepository;
         _roleRepository = roleRepository;
-        _systemConfigRepository = systemConfigRepository;
         _cloudinary = cloudinary;
         _emailTemplateRepository = emailTemplateRepository;
         _partnerRepository = partnerRepository;
@@ -53,7 +50,7 @@ public class UserService : IUserService
         var response = new LoginResponse { Success = false };
         
         // Check user exists
-        var accountExist = _accountRepository.Find(x => x.Email == request.Email).FirstOrDefault();
+        var accountExist = await _accountRepository.Find(x => x.Email == request.Email).FirstOrDefaultAsync();
         if (accountExist == null)
         {
             response.Success = false;
@@ -62,7 +59,7 @@ public class UserService : IUserService
         }
 
         // Check if Ecq300 updating
-        if (accountExist.IsActive == false || accountExist.LockoutEnd != null && accountExist.Key != null)
+        if (!accountExist.IsActive || accountExist.LockoutEnd != null && accountExist.Key != null)
         {
             response.Success = false;
             response.SetMessage(MessageId.E00000, "Your account has been locked");
@@ -77,7 +74,7 @@ public class UserService : IUserService
             {
                 accountExist.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
             }
-            _accountRepository.Update(accountExist);
+            await _accountRepository.UpdateAsync(accountExist);
             await _accountRepository.SaveChangesAsync(accountExist.Email!);
 
             response.Success = false;
@@ -103,7 +100,7 @@ public class UserService : IUserService
 
         accountExist.AccessFailedCount = 0;
         accountExist.LockoutEnd = null;
-        _accountRepository.Update(accountExist);
+        await _accountRepository.UpdateAsync(accountExist);
         await _accountRepository.SaveChangesAsync(accountExist.Email!);
         
         var role = await _roleRepository.Find(x => x.Id == accountExist.RoleId).FirstOrDefaultAsync();
@@ -118,13 +115,13 @@ public class UserService : IUserService
         {
             var user = await _userRepository.Find(x => x.AuthId == accountExist.AccountId).FirstOrDefaultAsync();
             entityResponse.Name = $"{user!.FirstName} {user.LastName}";
-            entityResponse.RoleName = role!.Name!;
+            entityResponse.RoleName = role.Name!;
         }
         else
         {
             var partner = await _partnerRepository.Find(x => x.AccountId == accountExist.AccountId).FirstOrDefaultAsync();
             entityResponse.Name = $"{partner!.CompanyName} - {partner.ContactName}";
-            entityResponse.RoleName = role!.Name!;
+            entityResponse.RoleName = role.Name!;
         }
         
         // True
@@ -159,9 +156,8 @@ public class UserService : IUserService
             return response;
         }
         
-        // Create key
-        var key = $"{request.Email}";
-        key = CommonLogic.EncryptText(key, _systemConfigRepository);
+        // Create otp
+        var otp = CommonLogic.GenerateOtp();
         
         // Begin transaction
         await _userRepository.ExecuteInTransactionAsync(async () =>
@@ -173,10 +169,10 @@ public class UserService : IUserService
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12),
                 LockoutEnd = null,
                 EmailConfirmed = false,
-                Key = key,
                 ConcurrencyStamp = Guid.NewGuid().ToString(),
                 SecurityStamp = Guid.NewGuid().ToString(),
                 RoleId = role.Id,
+                Key = otp
             };
             await _accountRepository.AddAsync(newAccount);
             await _accountRepository.SaveChangesAsync(newAccount.Email);
@@ -196,7 +192,7 @@ public class UserService : IUserService
             
             // Send email verification
             var detailErrorList = new List<DetailError>();
-            await Ecq300UserInsertSendMail.SendMailVerifyInformation(_emailTemplateRepository, newAccount.Email, key, detailErrorList);
+            await Ecq300UserInsertSendMail.SendMailVerifyInformation(_emailTemplateRepository, newAccount.Email, otp, detailErrorList);
             
             // True
             response.Success = true;
@@ -275,19 +271,18 @@ public class UserService : IUserService
     {
         var response = new Ecq010InsertUserVerifyResponse() { Success = false };
         
-        // Decrypt
-        var keyDecrypt = CommonLogic.DecryptText(request.Key, _systemConfigRepository);
-        string[] values = keyDecrypt.Split(",");
-        string emailDecrypt = values[0];
-        
         // Check user exists
-        var userExist = await _accountRepository.Find(x => x.Email == emailDecrypt && 
-                                                        x.EmailConfirmed == false &&
-                                                        x.IsActive == true &&
-                                                        x.Key == request.Key).FirstOrDefaultAsync();
+        var userExist = await _accountRepository.Find(x => x.Email == request.Email && !x.EmailConfirmed &&
+                                                        x.IsActive && x.Key != null).FirstOrDefaultAsync();
         if (userExist == null)
         {
             response.SetMessage(MessageId.E11001);
+            return response;
+        }
+
+        if (userExist.Key != request.Key)
+        {
+            response.SetMessage(MessageId.E00000, CommonMessages.OtpNotMatch);
             return response;
         }
 
@@ -300,7 +295,7 @@ public class UserService : IUserService
             userExist.IsActive = true;
             userExist.EmailConfirmed = true;
 
-            _accountRepository.Update(userExist);
+            await _accountRepository.UpdateAsync(userExist);
             await _accountRepository.SaveChangesAsync(userExist.Email!);
             
             // True
@@ -414,12 +409,12 @@ public class UserService : IUserService
         var customerRole = await _roleRepository.Find(x => x.Name == ConstantEnum.UserRole.Customer.ToString())
             .FirstOrDefaultAsync();
         
-        var accountId = accountExists.AccountId;
+        var accountId = accountExists!.AccountId;
         if (accountExists == null)
         {
 
-            var newUser = await InsertUser(email, firstName!, lastName!, customerRole!.Id);
-            if (newUser.Success == false)
+            var newUser = await InsertUser(email, firstName, lastName, customerRole!.Id);
+            if (!newUser.Success)
             {
                 response.Success = false;
                 response.SetMessage(newUser.MessageId, newUser.Message);
@@ -447,18 +442,18 @@ public class UserService : IUserService
 
 public class LoginResponse : AbstractApiResponse<LoginEntity>
 {
-    public override LoginEntity Response { get; set; }
+    public override LoginEntity Response { get; set; } = null!;
 }
 
 public class LoginEntity
 {
     public Guid AccountId { get; set; }
+
+    public string Email { get; set; } = null!;
     
-    public string Email { get; set; }
+    public string Name { get; set; } = null!;
     
-    public string Name { get; set; }
+    public string RoleName { get; set; } = null!;
     
-    public string RoleName { get; set; }
-    
-    public string PhoneNumber { get; set; }
+    public string PhoneNumber { get; set; } = null!;
 }

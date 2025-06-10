@@ -162,4 +162,22 @@ public static class CommonLogic
             (array[i], array[j]) = (array[j], array[i]);
         }
     }
+    
+    /// <summary>
+    /// Generates a secure random 6-digit OTP (One-Time Password)
+    /// </summary>
+    /// <returns>A 6-digit numeric OTP code as string</returns>
+    public static string GenerateOtp()
+    {
+        using var rng = RandomNumberGenerator.Create();
+        var bytes = new byte[4];
+        rng.GetBytes(bytes);
+    
+        // Convert bytes to a positive integer and take modulo to get a 6-digit number
+        int value = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 1000000;
+    
+        // Format as a 6-digit string with leading zeros if needed
+        return value.ToString("D6");
+    }
+    
 }

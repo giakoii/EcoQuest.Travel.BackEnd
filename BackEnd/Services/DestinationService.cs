@@ -2,6 +2,7 @@ using BackEnd.DTOs.Ecq200;
 using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
+using BackEnd.Utils;
 using BackEnd.Utils.Const;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,6 +88,95 @@ public class DestinationService : IDestinationService
             response.SetMessage(MessageId.I00001);
             return true;
         });
+        return response;
+    }
+    
+     /// <summary>
+    /// Select a specific destination by ID
+    /// </summary>
+    /// <param name="destinationId">ID of the destination</param>
+    /// <returns>Destination details</returns>
+    public async Task<Ecq200SelectDestinationResponse> SelectDestination(Guid destinationId)
+    {
+        var response = new Ecq200SelectDestinationResponse { Success = false };
+        
+        // Get destination by ID
+        var destination = await _destinationRepository.GetView<VwDestination>(d => d.DestinationId == destinationId)
+            .Select(d => new Ecq200DestinationDetailEntity
+            {
+                DestinationId = d.DestinationId,
+                Name = d.Name,
+                Description = d.Description,
+                AddressLine = d.AddressLine,
+                Ward = d.Ward,
+                District = d.District,
+                Province = d.Province,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.UpdatedAt)
+            })
+            .FirstOrDefaultAsync();
+            
+        if (destination == null)
+        {
+            response.SetMessage(MessageId.I00000, "Destination not found");
+            return response;
+        }
+        
+        // Fetch destination images
+        destination.DestinationImages = (await _imageRepository
+            .GetView<VwImage>(img => img.EntityId == destination.DestinationId && img.EntityType == ConstantEnum.EntityImage.Destination.ToString())
+            .Select(img => img.ImageUrl)
+            .ToListAsync())!;
+        
+        // Set response
+        response.Response = destination;
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        
+        return response;
+    }
+    
+    /// <summary>
+    /// Select all destinations
+    /// </summary>
+    /// <returns>List of all destinations</returns>
+    public async Task<Ecq200SelectDestinationsResponse> SelectDestinations()
+    {
+        var response = new Ecq200SelectDestinationsResponse { Success = false };
+        
+        // Select destinations
+        var destinations = await _destinationRepository.GetView<VwDestination>()
+            .Select(d => new Ecq200DestinationEntity
+            {
+                DestinationId = d.DestinationId,
+                Name = d.Name,
+                Description = d.Description,
+                AddressLine = d.AddressLine,
+                Ward = d.Ward,
+                District = d.District,
+                Province = d.Province,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.UpdatedAt)
+            })
+            .ToListAsync();
+        
+        // For each destination, fetch images and related entity counts
+        foreach (var destination in destinations)
+        {
+            // Fetch destination images
+            destination.DestinationImages = (await _imageRepository
+                .GetView<VwImage>(img =>
+                    img.EntityId == destination.DestinationId &&
+                    img.EntityType == ConstantEnum.EntityImage.Destination.ToString())
+                .Select(img => img.ImageUrl)
+                .ToListAsync())!;
+        }
+
+        // Set response
+        response.Response = destinations;
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        
         return response;
     }
 }

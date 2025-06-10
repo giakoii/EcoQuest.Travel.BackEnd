@@ -9,8 +9,6 @@ public partial class Blog
 
     public Guid AuthorId { get; set; }
 
-    public Guid? DestinationId { get; set; }
-
     public string Title { get; set; } = null!;
 
     public string? Content { get; set; }
@@ -25,9 +23,11 @@ public partial class Blog
 
     public bool? IsActive { get; set; }
 
+    public Guid? TripId { get; set; }
+
     public virtual User Author { get; set; } = null!;
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
-    public virtual Destination? Destination { get; set; }
+    public virtual Trip? Trip { get; set; }
 }

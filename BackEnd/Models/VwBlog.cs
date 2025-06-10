@@ -23,15 +23,15 @@ public partial class VwBlog
 
     public string? AuthorAvatar { get; set; }
 
-    public Guid? DestinationId { get; set; }
+    public Guid? TripId { get; set; }
+
+    public string? TripName { get; set; }
+
+    public DateOnly? StartDate { get; set; }
+
+    public DateOnly? EndDate { get; set; }
+
+    public string? DestinationId { get; set; }
 
     public string? DestinationName { get; set; }
-
-    public string? AddressLine { get; set; }
-
-    public string? Ward { get; set; }
-
-    public string? District { get; set; }
-
-    public string? Province { get; set; }
 }
