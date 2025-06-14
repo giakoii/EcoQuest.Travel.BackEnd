@@ -35,7 +35,6 @@ public class Ecq210SelectHotelController : AbstractApiAsyncController<Ecq210Sele
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq210SelectHotelResponse> ProcessRequest([FromQuery] Ecq210SelectHotelRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq210SelectHotelResponse());
