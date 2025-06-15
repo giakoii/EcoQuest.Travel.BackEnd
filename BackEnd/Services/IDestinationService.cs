@@ -10,4 +10,6 @@ public interface IDestinationService
     Task<Ecq200SelectDestinationResponse> SelectDestination(Guid requestDestinationId);
     
     Task<Ecq200SelectDestinationsResponse> SelectDestinations();
+    
+    Task<Ecq200UpdateDestinationResponse> UpdateDestination(Ecq200UpdateDestinationRequest request);
 }

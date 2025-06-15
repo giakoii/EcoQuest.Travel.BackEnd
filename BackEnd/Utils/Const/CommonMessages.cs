@@ -31,4 +31,8 @@ public class CommonMessages
     public static readonly string TripNotCompleted = "Trip is not completed yet, you cannot rate it";
     
     public static readonly string OtpNotMatch = "OTP does not match";
+    
+    public static readonly string TripScheduleNotFound = "Trip schedule not found";
+    
+    public static readonly string DestinationNotFound = "Destination not found";
 }

@@ -10,5 +10,6 @@ public interface IHotelService
     Task<Ecq210SelectHotelResponse> SelectHotel(Ecq210SelectHotelRequest request);
     
     Task<Ecq210SelectHotelsResponse> SelectHotels();
+    
+    Task<Ecq210UpdateHotelResponse> UpdateHotel(Ecq210UpdateHotelRequest request, IdentityEntity identityEntity);
 }
-
