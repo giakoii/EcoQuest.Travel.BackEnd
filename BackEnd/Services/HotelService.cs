@@ -45,7 +45,7 @@ public class HotelService : IHotelService
         var response = new Ecq210InsertHotelResponse { Success = false };
 
         // Validate request
-        var partnerTypeValid = await _partnerService.SelectPartner(Guid.Parse(identityEntity.UserId));
+        var partnerTypeValid = await _partnerService.Ecq310SelectPartner(Guid.Parse(identityEntity.UserId));
         if (!partnerTypeValid.Response.PartnerType.Contains((byte)ConstantEnum.PartnerType.Hotel))
         {
             response.SetMessage(MessageId.I00000, CommonMessages.PartnerTypeInvalid);
@@ -100,7 +100,7 @@ public class HotelService : IHotelService
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public async Task<Ecq210SelectHotelResponse> SelectHotel(Ecq210SelectHotelRequest request)
+    public async Task<Ecq210SelectHotelResponse> Ecq100SelectHotel(Ecq210SelectHotelRequest request)
     {
         var response = new Ecq210SelectHotelResponse { Success = false };
 
@@ -161,7 +161,7 @@ public class HotelService : IHotelService
     /// Select a list of all hotels with their basic information and images
     /// </summary>
     /// <returns></returns>
-    public async Task<Ecq210SelectHotelsResponse> SelectHotels()
+    public async Task<Ecq210SelectHotelsResponse> Ecq100SelectHotels()
     {
         var response = new Ecq210SelectHotelsResponse { Success = false };
         
@@ -199,6 +199,114 @@ public class HotelService : IHotelService
         response.Response = hotels;
         response.Success = true;
         response.SetMessage(MessageId.I00001);
+        return response;
+    }
+
+    /// <summary>
+    /// Select hotels for a specific partner
+    /// </summary>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq210SelectHotelsResponse> Ecq210SelectHotels(IdentityEntity identityEntity)
+    {
+        var response = new Ecq210SelectHotelsResponse { Success = false };
+        
+        // Select hotels
+        var hotels = await _hotelRepository.GetView<VwHotel>(x => x.OwnerId == Guid.Parse(identityEntity.UserId))
+            .Select(h => new Ecq210HotelEntity
+            {
+                HotelId = h.HotelId,
+                Name = h.HotelName,
+                Description = h.HotelDescription,
+                AddressLine = h.AddressLine,
+                Ward = h.Ward,
+                District = h.District,
+                Province = h.Province,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.UpdatedAt),
+                DestinationId = h.DestinationId,
+                DestinationName = h.DestinationName,
+                AverageRating = h.AverageRating,
+                TotalRatings = h.TotalRatings,
+            })
+            .ToListAsync();
+        
+        // Fetch images for each hotel
+        foreach (var hotel in hotels)
+        {
+            hotel.HotelImages = (await _imageRepository
+                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+                .Select(img => img.ImageUrl)
+                .ToListAsync())!;
+        }
+        
+        // True
+        response.Response = hotels;
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
+    
+    /// <summary>
+    /// Select hotel by request with identity
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq210SelectHotelResponse> Ecq210SelectHotel(Ecq210SelectHotelRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq210SelectHotelResponse { Success = false };
+
+        // Select hotel by request
+        var hotelSelect = await _hotelRepository
+            .GetView<VwHotel>()
+            .Where(h => h.HotelId == request.HotelId && h.OwnerId == Guid.Parse(identityEntity.UserId))
+            .Select(h => new Ecq210SelectHotelEntity
+            {
+                HotelId = h.HotelId,
+                HotelName = h.HotelName,
+                HotelDescription = h.HotelDescription,
+                Address = h.Address,
+                PhoneNumber = h.PhoneNumber,
+                Email = h.Email,
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.UpdatedAt),
+                OwnerId = h.OwnerId,
+                DestinationId = h.DestinationId,
+                DestinationName = h.DestinationName,
+                AverageRating = h.AverageRating,
+                TotalRatings = h.TotalRatings,
+            })
+            .FirstOrDefaultAsync();
+
+        // Select hotel rooms
+        hotelSelect!.Rooms = await _hotelRepository
+            .GetView<VwHotelRoom>()
+            .Where(r => r.HotelId == hotelSelect.HotelId)
+            .Select(r => new Ecq310SelectPartnerEntityHotelRoom
+            {
+                RoomId = r.RoomId,
+                Description = r.Description,
+                HotelId = r.HotelId,
+                IsAvailable = r.IsAvailable,
+                MaxGuests = r.MaxGuests,
+                RoomType = r.RoomType,
+                PricePerNight = r.PricePerNight,
+            })
+            .ToListAsync();
+        
+        // Select hotel images
+        var hotelImageUrls = await _imageRepository
+            .GetView<VwImage>( x => x.EntityId == hotelSelect.HotelId && x.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+            .Select(x => x.ImageUrl)
+            .ToListAsync();
+        
+        hotelSelect.HotelImages = hotelImageUrls!;
+
+        // True
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        response.Response = hotelSelect;
         return response;
     }
 

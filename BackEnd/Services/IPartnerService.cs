@@ -9,7 +9,7 @@ public interface IPartnerService
     
     Task<Ecq310SelectPartnersResponse> SelectPartners(Ecq310SelectPartnersRequest request);
     
-    Task<Ecq310SelectPartnerResponse> SelectPartner(Guid partnerId);
+    Task<Ecq310SelectPartnerResponse> Ecq310SelectPartner(Guid partnerId);
     
     Task<Ecq310UpdatePartnerResponse> UpdatePartner(Ecq310UpdatePartnerRequest request, IdentityEntity identityEntity);
 }

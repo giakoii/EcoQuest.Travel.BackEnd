@@ -2,19 +2,17 @@ using BackEnd.DTOs.Ecq210;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
-using OpenIddict.Validation.AspNetCore;
 
-namespace BackEnd.Controllers.V1.Ecq210;
+namespace BackEnd.Controllers.V1.Ecq100;
 
 /// <summary>
-/// Ecq210InsertHotelController - Insert hotel
+/// Ecq210SelectHotelController - Select hotel
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq210InsertHotelController : AbstractApiAsyncController<Ecq210InsertHotelRequest, Ecq210InsertHotelResponse, string>
+public class Ecq100SelectHotelController : AbstractApiAsyncController<Ecq210SelectHotelRequest, Ecq210SelectHotelResponse, Ecq210SelectHotelEntity>
 {
     private readonly IHotelService _hotelService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -24,22 +22,21 @@ public class Ecq210InsertHotelController : AbstractApiAsyncController<Ecq210Inse
     /// </summary>
     /// <param name="hotelService"></param>
     /// <param name="identityApiClient"></param>
-    public Ecq210InsertHotelController(IHotelService hotelService, IIdentityApiClient identityApiClient)
+    public Ecq100SelectHotelController(IHotelService hotelService, IIdentityApiClient identityApiClient)
     {
         _hotelService = hotelService;
         _identityApiClient = identityApiClient;
     }
 
     /// <summary>
-    /// Incoming Post
+    /// Incoming Get
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpPost]
-    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<Ecq210InsertHotelResponse> ProcessRequest(Ecq210InsertHotelRequest request)
+    [HttpGet]
+    public override async Task<Ecq210SelectHotelResponse> ProcessRequest([FromQuery] Ecq210SelectHotelRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq210InsertHotelResponse());
+        return await ProcessRequest(request, _logger, new Ecq210SelectHotelResponse());
     }
 
     /// <summary>
@@ -47,9 +44,9 @@ public class Ecq210InsertHotelController : AbstractApiAsyncController<Ecq210Inse
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq210InsertHotelResponse> Exec(Ecq210InsertHotelRequest request)
+    protected override async Task<Ecq210SelectHotelResponse> Exec(Ecq210SelectHotelRequest request)
     {
-        return await _hotelService.InsertHotel(request, _identityEntity);
+        return await _hotelService.Ecq100SelectHotel(request);
     }
 
     /// <summary>
@@ -58,9 +55,9 @@ public class Ecq210InsertHotelController : AbstractApiAsyncController<Ecq210Inse
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq210InsertHotelResponse ErrorCheck(Ecq210InsertHotelRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq210SelectHotelResponse ErrorCheck(Ecq210SelectHotelRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq210InsertHotelResponse() { Success = false };
+        var response = new Ecq210SelectHotelResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

@@ -1,19 +1,17 @@
 using BackEnd.DTOs.Ecq230;
 using BackEnd.Services;
-using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Ecq230;
+namespace BackEnd.Controllers.V1.Ecq100;
 
 /// <summary>
 /// Ecq230SelectAttractionsController - Select attractions
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq230SelectAttractionsController : AbstractApiAsyncController<Ecq230SelectAttractionsRequest, Ecq230SelectAttractionsResponse, List<Ecq230AttractionEntity>>
+public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotToken<Ecq230SelectAttractionsRequest, Ecq230SelectAttractionsResponse, List<Ecq230AttractionEntity>>
 {
     private readonly IAttractionService _attractionService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -22,11 +20,9 @@ public class Ecq230SelectAttractionsController : AbstractApiAsyncController<Ecq2
     /// Constructor
     /// </summary>
     /// <param name="attractionService"></param>
-    /// <param name="identityApiClient"></param>
-    public Ecq230SelectAttractionsController(IAttractionService attractionService, IIdentityApiClient identityApiClient)
+    public Ecq100SelectAttractionsController(IAttractionService attractionService)
     {
         _attractionService = attractionService;
-        _identityApiClient = identityApiClient;
     }
 
     /// <summary>
@@ -35,7 +31,6 @@ public class Ecq230SelectAttractionsController : AbstractApiAsyncController<Ecq2
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq230SelectAttractionsResponse> ProcessRequest([FromQuery] Ecq230SelectAttractionsRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq230SelectAttractionsResponse());
@@ -48,7 +43,7 @@ public class Ecq230SelectAttractionsController : AbstractApiAsyncController<Ecq2
     /// <returns></returns>
     protected override async Task<Ecq230SelectAttractionsResponse> Exec(Ecq230SelectAttractionsRequest request)
     {
-        return await _attractionService.Ecq230SelectAttractions(_identityEntity);
+        return await _attractionService.Ecq100SelectAttractions();
     }
 
     /// <summary>

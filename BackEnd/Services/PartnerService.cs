@@ -183,7 +183,7 @@ public class PartnerService : IPartnerService
     /// </summary>
     /// <param name="partnerId"></param>
     /// <returns></returns>
-    public async Task<Ecq310SelectPartnerResponse> SelectPartner(Guid partnerId)
+    public async Task<Ecq310SelectPartnerResponse> Ecq310SelectPartner(Guid partnerId)
     {
         var response = new Ecq310SelectPartnerResponse { Success = false };
         // Select partners

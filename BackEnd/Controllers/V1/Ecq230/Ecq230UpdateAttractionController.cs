@@ -9,36 +9,36 @@ using NLog;
 namespace BackEnd.Controllers.V1.Ecq230;
 
 /// <summary>
-/// Ecq230SelectAttractionController - Select attraction
+/// Ecq230UpdateAttractionController - Update attraction
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq230SelectAttractionController : AbstractApiAsyncController<Ecq230SelectAttractionRequest, Ecq230SelectAttractionResponse, Ecq230AttractionDetailEntity>
+public class Ecq230UpdateAttractionController : AbstractApiAsyncController<Ecq230UpdateAttractionRequest, Ecq230UpdateAttractionResponse, string>
 {
     private readonly IAttractionService _attractionService;
-    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="attractionService"></param>
     /// <param name="identityApiClient"></param>
-    public Ecq230SelectAttractionController(IAttractionService attractionService, IIdentityApiClient identityApiClient)
+    public Ecq230UpdateAttractionController(IAttractionService attractionService, IIdentityApiClient identityApiClient)
     {
         _attractionService = attractionService;
         _identityApiClient = identityApiClient;
     }
 
     /// <summary>
-    /// Incoming Get
+    /// Incoming Put
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpGet]
-    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<Ecq230SelectAttractionResponse> ProcessRequest([FromQuery] Ecq230SelectAttractionRequest request)
+    [HttpPut]
+    [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public override async Task<Ecq230UpdateAttractionResponse> ProcessRequest([FromForm] Ecq230UpdateAttractionRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq230SelectAttractionResponse());
+        return await ProcessRequest(request, _logger, new Ecq230UpdateAttractionResponse());
     }
 
     /// <summary>
@@ -46,20 +46,20 @@ public class Ecq230SelectAttractionController : AbstractApiAsyncController<Ecq23
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq230SelectAttractionResponse> Exec(Ecq230SelectAttractionRequest request)
+    protected override async Task<Ecq230UpdateAttractionResponse> Exec(Ecq230UpdateAttractionRequest request)
     {
-        return await _attractionService.Ecq230SelectAttraction(request.AttractionId, _identityEntity);
+        return await _attractionService.Ecq230UpdateAttraction(request, _identityEntity);
     }
 
     /// <summary>
-    /// Error Check
+    /// Error check
     /// </summary>
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq230SelectAttractionResponse ErrorCheck(Ecq230SelectAttractionRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq230UpdateAttractionResponse ErrorCheck(Ecq230UpdateAttractionRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq230SelectAttractionResponse() { Success = false };
+        var response = new Ecq230UpdateAttractionResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

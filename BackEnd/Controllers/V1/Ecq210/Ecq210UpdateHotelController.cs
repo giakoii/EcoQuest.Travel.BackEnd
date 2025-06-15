@@ -36,7 +36,7 @@ public class Ecq210UpdateHotelController : AbstractApiAsyncController<Ecq210Upda
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq210UpdateHotelResponse> ProcessRequest(Ecq210UpdateHotelRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq210UpdateHotelResponse());

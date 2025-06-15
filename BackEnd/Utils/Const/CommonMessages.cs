@@ -35,4 +35,8 @@ public class CommonMessages
     public static readonly string TripScheduleNotFound = "Trip schedule not found";
     
     public static readonly string DestinationNotFound = "Destination not found";
+    
+    public static readonly string NotAuthorizedToManageRestaurant = "You are not authorized to manage this restaurant";
+    
+    public static readonly string NotAuthorizedToAttraction = "You are not authorized to manage this attraction";
 }

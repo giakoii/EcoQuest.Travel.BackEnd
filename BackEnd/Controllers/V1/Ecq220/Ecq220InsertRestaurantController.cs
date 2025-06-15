@@ -9,36 +9,36 @@ using NLog;
 namespace BackEnd.Controllers.V1.Ecq220;
 
 /// <summary>
-/// Ecq220SelectRestaurantController - Select restaurant
+/// Ecq220InsertRestaurantController - Insert restaurant
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq220SelectRestaurantController : AbstractApiAsyncController<Ecq220SelectRestaurantRequest, Ecq220SelectRestaurantResponse, Ecq220RestaurantDetailEntity>
+public class Ecq220InsertRestaurantController : AbstractApiAsyncController<Ecq220InsertRestaurantRequest, Ecq220InsertRestaurantResponse, string>
 {
     private readonly IRestaurantService _restaurantService;
-    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="restaurantService"></param>
     /// <param name="identityApiClient"></param>
-    public Ecq220SelectRestaurantController(IRestaurantService restaurantService, IIdentityApiClient identityApiClient)
+    public Ecq220InsertRestaurantController(IRestaurantService restaurantService, IIdentityApiClient identityApiClient)
     {
         _restaurantService = restaurantService;
         _identityApiClient = identityApiClient;
     }
 
     /// <summary>
-    /// Incoming Get
+    /// Incoming Post
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpGet]
+    [HttpPost]
     [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    public override async Task<Ecq220SelectRestaurantResponse> ProcessRequest([FromQuery] Ecq220SelectRestaurantRequest request)
+    public override async Task<Ecq220InsertRestaurantResponse> ProcessRequest([FromForm] Ecq220InsertRestaurantRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq220SelectRestaurantResponse());
+        return await ProcessRequest(request, _logger, new Ecq220InsertRestaurantResponse());
     }
 
     /// <summary>
@@ -46,20 +46,20 @@ public class Ecq220SelectRestaurantController : AbstractApiAsyncController<Ecq22
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq220SelectRestaurantResponse> Exec(Ecq220SelectRestaurantRequest request)
+    protected override async Task<Ecq220InsertRestaurantResponse> Exec(Ecq220InsertRestaurantRequest request)
     {
-        return await _restaurantService.Ecq220SelectRestaurant(request.RestaurantId, _identityEntity);
+        return await _restaurantService.InsertRestaurant(request, _identityEntity);
     }
 
     /// <summary>
-    /// Error Check
+    /// Error check
     /// </summary>
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq220SelectRestaurantResponse ErrorCheck(Ecq220SelectRestaurantRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq220InsertRestaurantResponse ErrorCheck(Ecq220InsertRestaurantRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq220SelectRestaurantResponse() { Success = false };
+        var response = new Ecq220InsertRestaurantResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

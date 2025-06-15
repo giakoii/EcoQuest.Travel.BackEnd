@@ -1,19 +1,17 @@
 using BackEnd.DTOs.Ecq220;
 using BackEnd.Services;
-using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
-namespace BackEnd.Controllers.V1.Ecq220;
+namespace BackEnd.Controllers.V1.Ecq100;
 
 /// <summary>
 /// Ecq220SelectRestaurantsController - Select restaurants
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq220SelectRestaurantsController : AbstractApiAsyncController<Ecq220SelectRestaurantsRequest, Ecq220SelectRestaurantsResponse, List<Ecq220RestaurantEntity>>
+public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotToken<Ecq220SelectRestaurantsRequest, Ecq220SelectRestaurantsResponse, List<Ecq220RestaurantEntity>>
 {
     private readonly IRestaurantService _restaurantService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -22,11 +20,9 @@ public class Ecq220SelectRestaurantsController : AbstractApiAsyncController<Ecq2
     /// Constructor
     /// </summary>
     /// <param name="restaurantService"></param>
-    /// <param name="identityApiClient"></param>
-    public Ecq220SelectRestaurantsController(IRestaurantService restaurantService, IIdentityApiClient identityApiClient)
+    public Ecq100SelectRestaurantsController(IRestaurantService restaurantService)
     {
         _restaurantService = restaurantService;
-        _identityApiClient = identityApiClient;
     }
 
     /// <summary>
@@ -35,7 +31,6 @@ public class Ecq220SelectRestaurantsController : AbstractApiAsyncController<Ecq2
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq220SelectRestaurantsResponse> ProcessRequest([FromQuery] Ecq220SelectRestaurantsRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq220SelectRestaurantsResponse());
@@ -48,7 +43,7 @@ public class Ecq220SelectRestaurantsController : AbstractApiAsyncController<Ecq2
     /// <returns></returns>
     protected override async Task<Ecq220SelectRestaurantsResponse> Exec(Ecq220SelectRestaurantsRequest request)
     {
-        return await _restaurantService.Ecq220SelectRestaurants(_identityEntity);
+        return await _restaurantService.Ecq100SelectRestaurants();
     }
 
     /// <summary>

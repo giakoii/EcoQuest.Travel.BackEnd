@@ -5,6 +5,7 @@ using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using OpenIddict.Validation.AspNetCore;
 
 namespace BackEnd.Controllers.V1.Ecq210;
 
@@ -35,6 +36,7 @@ public class Ecq210SelectHotelController : AbstractApiAsyncController<Ecq210Sele
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
+    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq210SelectHotelResponse> ProcessRequest([FromQuery] Ecq210SelectHotelRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq210SelectHotelResponse());
@@ -47,7 +49,7 @@ public class Ecq210SelectHotelController : AbstractApiAsyncController<Ecq210Sele
     /// <returns></returns>
     protected override async Task<Ecq210SelectHotelResponse> Exec(Ecq210SelectHotelRequest request)
     {
-        return await _hotelService.SelectHotel(request);
+        return await _hotelService.Ecq210SelectHotel(request, _identityEntity);
     }
 
     /// <summary>

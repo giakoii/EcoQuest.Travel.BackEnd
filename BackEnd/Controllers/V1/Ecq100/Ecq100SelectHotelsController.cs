@@ -1,20 +1,17 @@
 using BackEnd.DTOs.Ecq210;
 using BackEnd.Services;
-using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
-using OpenIddict.Validation.AspNetCore;
 
-namespace BackEnd.Controllers.V1.Ecq210;
+namespace BackEnd.Controllers.V1.Ecq100;
 
 /// <summary>
 /// Ecq210SelectHotelsController - Select hotels
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq210SelectHotelsController : AbstractApiAsyncController<Ecq210SelectHotelsRequest, Ecq210SelectHotelsResponse, List<Ecq210HotelEntity>>
+public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<Ecq210SelectHotelsRequest, Ecq210SelectHotelsResponse, List<Ecq210HotelEntity>>
 {
     private readonly IHotelService _hotelService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -23,11 +20,9 @@ public class Ecq210SelectHotelsController : AbstractApiAsyncController<Ecq210Sel
     /// Constructor
     /// </summary>
     /// <param name="hotelService"></param>
-    /// <param name="identityApiClient"></param>
-    public Ecq210SelectHotelsController(IHotelService hotelService, IIdentityApiClient identityApiClient)
+    public Ecq100SelectHotelsController(IHotelService hotelService)
     {
         _hotelService = hotelService;
-        _identityApiClient = identityApiClient;
     }
 
     /// <summary>
@@ -36,7 +31,6 @@ public class Ecq210SelectHotelsController : AbstractApiAsyncController<Ecq210Sel
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Authorize(Roles = ConstRole.Partner, AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq210SelectHotelsResponse> ProcessRequest([FromQuery] Ecq210SelectHotelsRequest request)
     {
         return await ProcessRequest(request, _logger, new Ecq210SelectHotelsResponse());
@@ -49,7 +43,7 @@ public class Ecq210SelectHotelsController : AbstractApiAsyncController<Ecq210Sel
     /// <returns></returns>
     protected override async Task<Ecq210SelectHotelsResponse> Exec(Ecq210SelectHotelsRequest request)
     {
-        return await _hotelService.Ecq210SelectHotels(_identityEntity);
+        return await _hotelService.Ecq100SelectHotels();
     }
 
     /// <summary>
