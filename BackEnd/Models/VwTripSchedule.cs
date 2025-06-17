@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BackEnd.Models;
 
-public partial class TripSchedule
+public partial class VwTripSchedule
 {
     public Guid ScheduleId { get; set; }
 
@@ -11,29 +11,19 @@ public partial class TripSchedule
 
     public DateOnly ScheduleDate { get; set; }
 
-    public string Title { get; set; } = null!;
+    public string ScheduleTitle { get; set; } = null!;
 
-    public string? Description { get; set; }
-
-    public string? ServiceType { get; set; }
-
-    public Guid? ServiceId { get; set; }
+    public string? ScheduleDescription { get; set; }
 
     public TimeOnly? StartTime { get; set; }
 
     public TimeOnly? EndTime { get; set; }
 
-    public string? Location { get; set; }
+    public string? Address { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;
 
     public DateTime UpdatedAt { get; set; }
-
-    public string UpdatedBy { get; set; } = null!;
-
-    public bool IsActive { get; set; }
-
-    public virtual Trip Trip { get; set; } = null!;
 }

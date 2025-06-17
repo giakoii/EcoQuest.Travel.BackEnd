@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNetEnv;
+﻿using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -91,6 +89,8 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<VwRestaurantRating> VwRestaurantRatings { get; set; }
 
     public virtual DbSet<VwTrip> VwTrips { get; set; }
+
+    public virtual DbSet<VwTripSchedule> VwTripSchedules { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -391,6 +391,12 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
+            entity.Property(e => e.MaxPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("max_price");
+            entity.Property(e => e.MinPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("min_price");
             entity.Property(e => e.Name)
                 .HasMaxLength(200)
                 .HasColumnName("name");
@@ -546,7 +552,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-        
+
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -814,10 +820,20 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
             entity.Property(e => e.DestinationId).HasColumnName("destination_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
             entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.OrderIndex).HasColumnName("order_index");
             entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
 
             entity.HasOne(d => d.Destination).WithMany(p => p.TripDestinations)
                 .HasForeignKey(d => d.DestinationId)
@@ -852,6 +868,10 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("location");
             entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.ServiceType)
+                .HasMaxLength(50)
+                .HasColumnName("service_type");
             entity.Property(e => e.StartTime).HasColumnName("start_time");
             entity.Property(e => e.Title)
                 .HasMaxLength(200)
@@ -1170,6 +1190,12 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.HotelName)
                 .HasMaxLength(200)
                 .HasColumnName("hotel_name");
+            entity.Property(e => e.MaxPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("max_price");
+            entity.Property(e => e.MinPrice)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("min_price");
             entity.Property(e => e.OwnerId).HasColumnName("owner_id");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
@@ -1387,6 +1413,31 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+        });
+
+        modelBuilder.Entity<VwTripSchedule>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_TripSchedule");
+
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .HasColumnName("address");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
+            entity.Property(e => e.ScheduleDescription).HasColumnName("schedule_description");
+            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
+            entity.Property(e => e.ScheduleTitle)
+                .HasMaxLength(200)
+                .HasColumnName("schedule_title");
+            entity.Property(e => e.StartTime).HasColumnName("start_time");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         });
 
         OnModelCreatingPartial(modelBuilder);

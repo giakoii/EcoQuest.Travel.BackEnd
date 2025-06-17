@@ -79,7 +79,7 @@ public class HotelService : IHotelService
                     {
                         EntityId = newHotel.HotelId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Hotel.ToString(),
+                        EntityType = ConstantEnum.EntityType.Hotel.ToString(),
                     };
                     await _imageRepository.AddAsync(hotelImage);
                 }
@@ -144,7 +144,7 @@ public class HotelService : IHotelService
         
         // Select hotel images
         var hotelImageUrls = await _imageRepository
-            .GetView<VwImage>( x => x.EntityId == hotelSelect.HotelId && x.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+            .GetView<VwImage>( x => x.EntityId == hotelSelect.HotelId && x.EntityType == ConstantEnum.EntityType.Hotel.ToString())
             .Select(x => x.ImageUrl)
             .ToListAsync();
         
@@ -179,6 +179,7 @@ public class HotelService : IHotelService
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.CreatedAt),
                 UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(h.UpdatedAt),
                 OwnerId = h.OwnerId,
+                //MinPrice = h.Min
                 DestinationId = h.DestinationId,
                 DestinationName = h.DestinationName,
                 AverageRating = h.AverageRating,
@@ -190,7 +191,7 @@ public class HotelService : IHotelService
         foreach (var hotel in hotels)
         {
             hotel.HotelImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityType.Hotel.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -235,7 +236,7 @@ public class HotelService : IHotelService
         foreach (var hotel in hotels)
         {
             hotel.HotelImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+                .GetView<VwImage>(img => img.EntityId == hotel.HotelId && img.EntityType == ConstantEnum.EntityType.Hotel.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -297,7 +298,7 @@ public class HotelService : IHotelService
         
         // Select hotel images
         var hotelImageUrls = await _imageRepository
-            .GetView<VwImage>( x => x.EntityId == hotelSelect.HotelId && x.EntityType == ConstantEnum.EntityImage.Hotel.ToString())
+            .GetView<VwImage>( x => x.EntityId == hotelSelect.HotelId && x.EntityType == ConstantEnum.EntityType.Hotel.ToString())
             .Select(x => x.ImageUrl)
             .ToListAsync();
         
@@ -357,7 +358,7 @@ public class HotelService : IHotelService
                 {
                     var imageToDelete = await _imageRepository.Find(img => 
                             img.EntityId == request.HotelId && 
-                            img.EntityType == ConstantEnum.EntityImage.Hotel.ToString() && 
+                            img.EntityType == ConstantEnum.EntityType.Hotel.ToString() && 
                             img.ImageUrl == imageUrl)
                         .FirstOrDefaultAsync();
 
@@ -379,7 +380,7 @@ public class HotelService : IHotelService
                     {
                         EntityId = hotel.HotelId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Hotel.ToString(),
+                        EntityType = ConstantEnum.EntityType.Hotel.ToString(),
                     };
                     await _imageRepository.AddAsync(hotelImage);
                 }

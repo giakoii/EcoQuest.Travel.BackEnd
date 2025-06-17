@@ -16,7 +16,7 @@ public static class ConstantEnum
         Attraction = 3,
     }
     
-    public enum EntityImage
+    public enum EntityType
     {
         Hotel = 1,
         Restaurant = 2,
@@ -47,6 +47,17 @@ public static class ConstantEnum
         Ongoing = 2,
         Completed = 3,
         Cancelled = 4,
+    }
+    
+    public enum IntentType
+    {
+        top_destinations,
+        top_restaurants,
+        top_attraction,
+        hotel_booking,
+        trip_cost,
+        ask_ai,
+        unknown
     }
 
 }

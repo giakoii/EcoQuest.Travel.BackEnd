@@ -21,11 +21,16 @@ public class IdentityApiClient : IIdentityApiClient
         // Get phone number
         var phoneNumber = identity.FindFirst(OpenIddictConstants.Claims.PhoneNumber)?.Value ?? string.Empty;
         
+        // Get address
+        var address = identity.FindFirst(OpenIddictConstants.Claims.Address)?.Value ?? string.Empty;
+        
         // Create IdentityEntity
         var identityEntity = new IdentityEntity
         {
             UserId = id,
             Email = email,
+            PhoneNumber = phoneNumber,
+            Address = address
         };
         return identityEntity;
     }

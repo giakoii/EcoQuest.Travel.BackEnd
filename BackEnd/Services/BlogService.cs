@@ -44,7 +44,7 @@ public class BlogService : IBlogService
         // Select blog images
         var blogImageUrls = await _imageRepository
             .GetView<VwImage>(x => x.EntityId == requestBlogId &&
-                                   x.EntityType == ConstantEnum.EntityImage.Blog.ToString())
+                                   x.EntityType == ConstantEnum.EntityType.Blog.ToString())
             .Select(x => x.ImageUrl)
             .ToListAsync();
         
@@ -120,7 +120,7 @@ public class BlogService : IBlogService
         var blogIds = blogResponses.Select(b => b.BlogId).ToList();
 
         var allImages = await _imageRepository
-            .GetView<VwImage>(x => blogIds.Contains(x.EntityId) && x.EntityType == ConstantEnum.EntityImage.Blog.ToString())
+            .GetView<VwImage>(x => blogIds.Contains(x.EntityId) && x.EntityType == ConstantEnum.EntityType.Blog.ToString())
             .ToListAsync();
 
         var imagesByBlogId = allImages
@@ -208,7 +208,7 @@ public class BlogService : IBlogService
                 {
                     EntityId = blog.BlogId,
                     ImageUrl = imageUrl,
-                    EntityType = ConstantEnum.EntityImage.Blog.ToString(),
+                    EntityType = ConstantEnum.EntityType.Blog.ToString(),
                 };
                 // Add image to repository
                 await _imageRepository.AddAsync(blogImage);

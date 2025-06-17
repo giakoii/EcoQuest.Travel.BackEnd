@@ -9,7 +9,6 @@ using BackEnd.Repositories;
 using BackEnd.SystemClient;
 using BackEnd.Utils;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Services;
@@ -32,7 +31,6 @@ public class UserService : IUserService
     /// <param name="roleRepository"></param>
     /// <param name="cloudinary"></param>
     /// <param name="emailTemplateRepository"></param>
-    /// <param name="cache"></param>
     public UserService(IBaseRepository<User, Guid> userRepository, IBaseRepository<Account, Guid> accountRepository, 
         IBaseRepository<Role, Guid> roleRepository, CloudinaryLogic cloudinary, 
         IEmailTemplateRepository emailTemplateRepository, IBaseRepository<Partner, Guid> partnerRepository)
@@ -45,7 +43,7 @@ public class UserService : IUserService
         _partnerRepository = partnerRepository;
     }
 
-    public async Task<LoginResponse> AuthLogin([FromBody] AuthRequest request)
+    public async Task<LoginResponse> AuthLogin(AuthRequest request)
     {
         var response = new LoginResponse { Success = false };
         
@@ -116,12 +114,14 @@ public class UserService : IUserService
             var user = await _userRepository.Find(x => x.AuthId == accountExist.AccountId).FirstOrDefaultAsync();
             entityResponse.Name = $"{user!.FirstName} {user.LastName}";
             entityResponse.RoleName = role.Name!;
+            entityResponse.Address = user.Address!;
         }
         else
         {
             var partner = await _partnerRepository.Find(x => x.AccountId == accountExist.AccountId).FirstOrDefaultAsync();
             entityResponse.Name = $"{partner!.CompanyName} - {partner.ContactName}";
             entityResponse.RoleName = role.Name!;
+            entityResponse.Address = partner.CompanyName!;
         }
         
         // True
@@ -456,4 +456,5 @@ public class LoginEntity
     public string RoleName { get; set; } = null!;
     
     public string PhoneNumber { get; set; } = null!;
+    public string Address { get; set; }
 }

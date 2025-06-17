@@ -156,6 +156,8 @@ public class Ecq010AuthenticationController : ControllerBase
             Destinations.AccessToken);
         identity.SetClaim(Claims.PhoneNumber, userPasswordLogin.Response.Email,
             Destinations.AccessToken);
+        identity.SetClaim(Claims.Address, userPasswordLogin.Response.Address,
+            Destinations.AccessToken);
         identity.SetClaim(Claims.Role, userPasswordLogin.Response.RoleName,
             Destinations.AccessToken);
         identity.SetClaim(Claims.Audience, "service_client",

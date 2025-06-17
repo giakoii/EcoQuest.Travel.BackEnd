@@ -14,6 +14,8 @@ public static class SystemConfig
     
     public const string EncryptIv = "ENCRYPT_IV";
     
+    public const string ApiKeyAi = "APIKEY_AI";
+    
     public const string OrderWebRedirectSuccess = "ORDER_WEB_REDIRECT_SUCCESS";
     
     public const string OrderWebRedirectFail = "ORDER_WEB_REDIRECT_FAIL";

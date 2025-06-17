@@ -11,8 +11,8 @@ namespace BackEnd.Controllers.V1.Ecq110;
 /// <summary>
 /// Ecq110InsertTripScheduleController - Insert a new trip schedule
 /// </summary>
-//[ApiController]
-//[Route("api/v1/[controller]")]
+[ApiController]
+[Route("api/v1/[controller]")]
 public class Ecq110InsertTripScheduleController : AbstractApiAsyncController<Ecq110InsertTripScheduleRequest, Ecq110InsertTripScheduleResponse, string>
 {
     private readonly ITripService _tripService;

@@ -22,6 +22,9 @@ public class Ecq110InsertTripRequest : AbstractApiRequest
     
     public string? Description { get; set; }
     
+    
+    public string? StartingPointAddress { get; set; }
+    
     [Required(ErrorMessage = "At least one destination is required.")]
     public List<TripDestinationInfo> Destinations { get; set; }
 }

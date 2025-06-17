@@ -95,7 +95,7 @@ public class HotelRoomService : IHotelRoomService
                     {
                         EntityId = newHotelRoom.RoomId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.HotelRoom.ToString(),
+                        EntityType = ConstantEnum.EntityType.HotelRoom.ToString(),
                     };
                     await _imageRepository.AddAsync(hotelImage);
                 }
@@ -149,7 +149,7 @@ public class HotelRoomService : IHotelRoomService
         foreach (var room in rooms)
         {
             room.HotelRoomImages = await _imageRepository
-                .GetView<VwImage>(x => x.EntityId == room.RoomId && x.EntityType == ConstantEnum.EntityImage.HotelRoom.ToString())
+                .GetView<VwImage>(x => x.EntityId == room.RoomId && x.EntityType == ConstantEnum.EntityType.HotelRoom.ToString())
                 .Select(x => x.ImageUrl)
                 .ToListAsync();
         }
@@ -212,7 +212,7 @@ public class HotelRoomService : IHotelRoomService
         
         // Fetch room images
         room.HotelRoomImages = await _imageRepository
-            .GetView<VwImage>(x => x.EntityId == room.RoomId && x.EntityType == ConstantEnum.EntityImage.HotelRoom.ToString())
+            .GetView<VwImage>(x => x.EntityId == room.RoomId && x.EntityType == ConstantEnum.EntityType.HotelRoom.ToString())
             .Select(x => x.ImageUrl)
             .ToListAsync();
         

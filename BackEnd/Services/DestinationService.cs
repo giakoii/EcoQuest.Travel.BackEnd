@@ -78,7 +78,7 @@ public class DestinationService : IDestinationService
                     {
                         EntityId = newDestination.DestinationId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Destination.ToString(),
+                        EntityType = ConstantEnum.EntityType.Destination.ToString(),
                     };
                     await _imageRepository.AddAsync(destinationImage);
                 }
@@ -129,7 +129,7 @@ public class DestinationService : IDestinationService
         destination.DestinationImages = (await _imageRepository
             .GetView<VwImage>(img =>
                 img.EntityId == destination.DestinationId &&
-                img.EntityType == ConstantEnum.EntityImage.Destination.ToString())
+                img.EntityType == ConstantEnum.EntityType.Destination.ToString())
             .Select(img => img.ImageUrl)
             .ToListAsync())!;
 
@@ -172,7 +172,7 @@ public class DestinationService : IDestinationService
             destination.DestinationImages = (await _imageRepository
                 .GetView<VwImage>(img =>
                     img.EntityId == destination.DestinationId &&
-                    img.EntityType == ConstantEnum.EntityImage.Destination.ToString())
+                    img.EntityType == ConstantEnum.EntityType.Destination.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -241,7 +241,7 @@ public class DestinationService : IDestinationService
                 {
                     var imageToDelete = await _imageRepository.Find(img =>
                             img.EntityId == request.DestinationId &&
-                            img.EntityType == ConstantEnum.EntityImage.Destination.ToString() &&
+                            img.EntityType == ConstantEnum.EntityType.Destination.ToString() &&
                             img.ImageUrl == imageUrl)
                         .FirstOrDefaultAsync();
 
@@ -263,7 +263,7 @@ public class DestinationService : IDestinationService
                     {
                         EntityId = destination.DestinationId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Destination.ToString(),
+                        EntityType = ConstantEnum.EntityType.Destination.ToString(),
                     };
                     await _imageRepository.AddAsync(destinationImage);
                 }

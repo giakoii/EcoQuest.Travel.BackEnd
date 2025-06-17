@@ -15,6 +15,10 @@ public class Ecq210HotelEntity
     
     public string? Description { get; set; }
     
+    public decimal MinPrice { get; set; }
+    
+    public decimal MaxPrice { get; set; }
+    
     public string? AddressLine { get; set; }
     
     public string? Ward { get; set; }

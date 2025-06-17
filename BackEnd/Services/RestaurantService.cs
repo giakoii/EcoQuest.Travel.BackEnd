@@ -75,7 +75,7 @@ public class RestaurantService : IRestaurantService
             
         // Fetch restaurant images
         restaurant.RestaurantImages = (await _imageRepository
-            .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityImage.Restaurant.ToString())
+            .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityType.Restaurant.ToString())
             .Select(img => img.ImageUrl)
             .ToListAsync())!;
         
@@ -123,7 +123,7 @@ public class RestaurantService : IRestaurantService
             
         // Fetch restaurant images
         restaurant.RestaurantImages = (await _imageRepository
-            .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityImage.Restaurant.ToString())
+            .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityType.Restaurant.ToString())
             .Select(img => img.ImageUrl)
             .ToListAsync())!;
         
@@ -167,7 +167,7 @@ public class RestaurantService : IRestaurantService
         foreach (var restaurant in restaurants)
         {
             restaurant.RestaurantImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityImage.Restaurant.ToString())
+                .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityType.Restaurant.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -208,7 +208,7 @@ public class RestaurantService : IRestaurantService
         foreach (var restaurant in restaurants)
         {
             restaurant.RestaurantImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityImage.Restaurant.ToString())
+                .GetView<VwImage>(img => img.EntityId == restaurant.RestaurantId && img.EntityType == ConstantEnum.EntityType.Restaurant.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -272,7 +272,7 @@ public class RestaurantService : IRestaurantService
                     {
                         EntityId = newRestaurant.RestaurantId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Restaurant.ToString(),
+                        EntityType = ConstantEnum.EntityType.Restaurant.ToString(),
                     };
                     await _imageRepository.AddAsync(restaurantImage);
                 }
@@ -339,7 +339,7 @@ public class RestaurantService : IRestaurantService
                 {
                     var imageToDelete = await _imageRepository.Find(img => 
                             img.EntityId == request.RestaurantId && 
-                            img.EntityType == ConstantEnum.EntityImage.Attraction.ToString() && 
+                            img.EntityType == ConstantEnum.EntityType.Attraction.ToString() && 
                             img.ImageUrl == imageUrl)
                         .FirstOrDefaultAsync();
 
@@ -361,7 +361,7 @@ public class RestaurantService : IRestaurantService
                     {
                         EntityId = restaurant.RestaurantId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Restaurant.ToString(),
+                        EntityType = ConstantEnum.EntityType.Restaurant.ToString(),
                     };
                     await _imageRepository.AddAsync(restaurantImage);
                 }

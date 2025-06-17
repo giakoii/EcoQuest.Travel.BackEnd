@@ -17,6 +17,10 @@ public partial class VwHotel
 
     public string? Email { get; set; }
 
+    public decimal MinPrice { get; set; }
+
+    public decimal MaxPrice { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

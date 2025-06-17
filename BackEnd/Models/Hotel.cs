@@ -19,6 +19,12 @@ public partial class Hotel
 
     public Guid? DestinationId { get; set; }
 
+    public Guid? OwnerId { get; set; }
+
+    public decimal MinPrice { get; set; }
+
+    public decimal MaxPrice { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; } = null!;
@@ -28,8 +34,6 @@ public partial class Hotel
     public string UpdatedBy { get; set; } = null!;
 
     public bool? IsActive { get; set; }
-
-    public Guid? OwnerId { get; set; }
 
     public virtual Destination? Destination { get; set; }
 

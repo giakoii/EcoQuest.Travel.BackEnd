@@ -73,7 +73,7 @@ public class AttractionService : IAttractionService
             
         // Fetch attraction images
         attraction.AttractionImages = (await _imageRepository
-            .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityImage.Attraction.ToString())
+            .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityType.Attraction.ToString())
             .Select(img => img.ImageUrl)
             .ToListAsync())!;
         
@@ -128,7 +128,7 @@ public class AttractionService : IAttractionService
             
         // Fetch attraction images
         attraction.AttractionImages = (await _imageRepository
-            .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityImage.Attraction.ToString())
+            .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityType.Attraction.ToString())
             .Select(img => img.ImageUrl)
             .ToListAsync())!;
         
@@ -168,7 +168,7 @@ public class AttractionService : IAttractionService
         foreach (var attraction in attractions)
         {
             attraction.AttractionImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityImage.Attraction.ToString())
+                .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityType.Attraction.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -210,7 +210,7 @@ public class AttractionService : IAttractionService
         foreach (var attraction in attractions)
         {
             attraction.AttractionImages = (await _imageRepository
-                .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityImage.Attraction.ToString())
+                .GetView<VwImage>(img => img.EntityId == attraction.AttractionId && img.EntityType == ConstantEnum.EntityType.Attraction.ToString())
                 .Select(img => img.ImageUrl)
                 .ToListAsync())!;
         }
@@ -275,7 +275,7 @@ public class AttractionService : IAttractionService
                     {
                         EntityId = newAttraction.AttractionId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Attraction.ToString(),
+                        EntityType = ConstantEnum.EntityType.Attraction.ToString(),
                     };
                     await _imageRepository.AddAsync(attractionImage);
                 }
@@ -343,7 +343,7 @@ public class AttractionService : IAttractionService
                 {
                     var imageToDelete = await _imageRepository.Find(img => 
                             img.EntityId == request.AttractionId && 
-                            img.EntityType == ConstantEnum.EntityImage.Attraction.ToString() && 
+                            img.EntityType == ConstantEnum.EntityType.Attraction.ToString() && 
                             img.ImageUrl == imageUrl)
                         .FirstOrDefaultAsync();
 
@@ -365,7 +365,7 @@ public class AttractionService : IAttractionService
                     {
                         EntityId = attraction.AttractionId,
                         ImageUrl = imageUrl,
-                        EntityType = ConstantEnum.EntityImage.Attraction.ToString(),
+                        EntityType = ConstantEnum.EntityType.Attraction.ToString(),
                     };
                     await _imageRepository.AddAsync(attractionImage);
                 }
