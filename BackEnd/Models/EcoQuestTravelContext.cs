@@ -1,4 +1,6 @@
-﻿using DotNetEnv;
+﻿using System;
+using System.Collections.Generic;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -552,7 +554,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-
+        
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -861,6 +863,9 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasColumnName("created_by");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.EstimatedCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("estimated_cost");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");

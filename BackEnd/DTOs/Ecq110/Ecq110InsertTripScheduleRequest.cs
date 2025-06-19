@@ -24,6 +24,8 @@ public class Ecq110InsertTripScheduleRequestDeatil
     
     public string? Description { get; set; }
     
+    public decimal? EstimatedCost { get; set; }
+    
     [Required(ErrorMessage = "StartTime is required")]
     public TimeOnly StartTime { get; set; }
     

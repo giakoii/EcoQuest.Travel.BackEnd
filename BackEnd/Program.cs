@@ -1,7 +1,4 @@
-using System.Net;
-using System.Reflection;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using BackEnd;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -19,6 +16,7 @@ using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using SystemConfig = BackEnd.Models.SystemConfig;
+using TripSchedule = BackEnd.Models.TripSchedule;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +49,7 @@ builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ITripService, TripService>();
+builder.Services.AddScoped<ITripScheduleService, TripScheduleService>();
 builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IAttractionService, AttractionService>();

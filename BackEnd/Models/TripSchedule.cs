@@ -35,5 +35,7 @@ public partial class TripSchedule
 
     public bool IsActive { get; set; }
 
+    public decimal? EstimatedCost { get; set; }
+
     public virtual Trip Trip { get; set; } = null!;
 }

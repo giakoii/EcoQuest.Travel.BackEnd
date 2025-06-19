@@ -17,7 +17,7 @@ namespace BackEnd.Controllers.V1.Ecq110;
 [Route("api/v1/[controller]")]
 public class Ecq110UpdateTripScheduleController : AbstractApiAsyncController<Ecq110UpdateTripScheduleRequest, Ecq110UpdateTripScheduleResponse, bool>
 {
-    private readonly ITripService _tripService;
+    private readonly ITripScheduleService _tripService;
     private readonly Logger _logger;
 
     /// <summary>
@@ -25,7 +25,7 @@ public class Ecq110UpdateTripScheduleController : AbstractApiAsyncController<Ecq
     /// </summary>
     /// <param name="tripService">Trip service</param>
     /// <param name="identityApiClient">Identity API client</param>
-    public Ecq110UpdateTripScheduleController(ITripService tripService, IIdentityApiClient identityApiClient)
+    public Ecq110UpdateTripScheduleController(ITripScheduleService tripService, IIdentityApiClient identityApiClient)
     {
         _tripService = tripService;
         _identityApiClient = identityApiClient;

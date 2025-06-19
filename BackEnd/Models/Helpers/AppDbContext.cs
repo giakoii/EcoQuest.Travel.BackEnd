@@ -42,7 +42,6 @@ public class AppDbContext : EcoQuestTravelContext
     /// <param name="needLogicalDelete"></param>
     private void SetCommonValue(string updateUser, bool needLogicalDelete = false)
     {
-
         // Register
         var newEntities = this.ChangeTracker.Entries()
             .Where(
@@ -51,7 +50,7 @@ public class AppDbContext : EcoQuestTravelContext
                 )
             .Select(e => e.Entity);
 
-        // Modify
+        // Update
         var modifiedEntities = this.ChangeTracker.Entries()
             .Where(
                 x => x.State == EntityState.Modified &&
