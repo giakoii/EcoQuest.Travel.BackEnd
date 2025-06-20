@@ -49,7 +49,7 @@ public class Ecq110SelectTripScheduleController : AbstractApiAsyncController<Ecq
     /// <returns>Response info</returns>
     protected override async Task<Ecq110SelectTripScheduleResponse> Exec(Ecq110SelectTripScheduleRequest request)
     {
-        return await _tripService.SelectTripSchedule(request.ScheduleId);
+        return await _tripService.SelectTripSchedule(request.TripId);
     }
 
     /// <summary>
@@ -73,3 +73,4 @@ public class Ecq110SelectTripScheduleController : AbstractApiAsyncController<Ecq
         return response;
     }
 }
+

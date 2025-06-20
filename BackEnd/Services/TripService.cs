@@ -113,8 +113,7 @@ public class TripService : ITripService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request,
-        IdentityEntity identityEntity)
+    public async Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertTripResponse { Success = false };
 

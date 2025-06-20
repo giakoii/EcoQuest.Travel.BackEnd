@@ -24,6 +24,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<Blog> Blogs { get; set; }
 
+    public virtual DbSet<Booking> Bookings { get; set; }
+
     public virtual DbSet<Comment> Comments { get; set; }
 
     public virtual DbSet<Destination> Destinations { get; set; }
@@ -43,6 +45,8 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<PartnerPartnerType> PartnerPartnerTypes { get; set; }
 
     public virtual DbSet<PartnerType> PartnerTypes { get; set; }
+
+    public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<RestaurantDetail> RestaurantDetails { get; set; }
 
@@ -66,6 +70,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<VwBlog> VwBlogs { get; set; }
 
+    public virtual DbSet<VwBooking> VwBookings { get; set; }
+
     public virtual DbSet<VwComment> VwComments { get; set; }
 
     public virtual DbSet<VwDestination> VwDestinations { get; set; }
@@ -85,6 +91,8 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<VwPartnerPartnerType> VwPartnerPartnerTypes { get; set; }
 
     public virtual DbSet<VwPartnerType> VwPartnerTypes { get; set; }
+
+    public virtual DbSet<VwPayment> VwPayments { get; set; }
 
     public virtual DbSet<VwRestaurant> VwRestaurants { get; set; }
 
@@ -275,6 +283,56 @@ public partial class EcoQuestTravelContext : DbContext
             entity.HasOne(d => d.Trip).WithOne(p => p.Blog)
                 .HasForeignKey<Blog>(d => d.TripId)
                 .HasConstraintName("FK_Blogs_Trips");
+        });
+
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.HasKey(e => e.BookingId).HasName("PK__Bookings__5DE3A5B11AAB583B");
+
+            entity.Property(e => e.BookingId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("booking_id");
+            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
+            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.NumberOfGuests).HasColumnName("number_of_guests");
+            entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.ServiceType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("service_type");
+            entity.Property(e => e.StartTime).HasColumnName("start_time");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("status");
+            entity.Property(e => e.TotalCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_cost");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Trip).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.TripId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Bookings__trip_i__3552E9B6");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Bookings__user_i__345EC57D");
         });
 
         modelBuilder.Entity<Comment>(entity =>
@@ -643,6 +701,49 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EAD7261000");
+
+            entity.Property(e => e.PaymentId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("payment_id");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.Method)
+                .HasMaxLength(50)
+                .HasColumnName("method");
+            entity.Property(e => e.PaidAt).HasColumnName("paid_at");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+            entity.Property(e => e.TransactionCode)
+                .HasMaxLength(100)
+                .HasColumnName("transaction_code");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Payments__bookin__3EDC53F0");
         });
 
         modelBuilder.Entity<RestaurantDetail>(entity =>
@@ -1036,6 +1137,44 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         });
 
+        modelBuilder.Entity<VwBooking>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_Booking");
+
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
+            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.NumberOfGuests).HasColumnName("number_of_guests");
+            entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.ServiceType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("service_type");
+            entity.Property(e => e.StartTime).HasColumnName("start_time");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("status");
+            entity.Property(e => e.TotalCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_cost");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+        });
+
         modelBuilder.Entity<VwComment>(entity =>
         {
             entity
@@ -1314,6 +1453,44 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasColumnName("type_name");
         });
 
+        modelBuilder.Entity<VwPayment>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_Payment");
+
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.Method)
+                .HasMaxLength(50)
+                .HasColumnName("method");
+            entity.Property(e => e.PaidAt).HasColumnName("paid_at");
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.ServiceType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("service_type");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+            entity.Property(e => e.TransactionCode)
+                .HasMaxLength(100)
+                .HasColumnName("transaction_code");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+        });
+
         modelBuilder.Entity<VwRestaurant>(entity =>
         {
             entity
@@ -1426,23 +1603,31 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasNoKey()
                 .ToView("Vw_TripSchedule");
 
-            entity.Property(e => e.Address)
-                .HasMaxLength(255)
-                .HasColumnName("address");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
                 .HasColumnName("created_by");
             entity.Property(e => e.EndTime).HasColumnName("end_time");
+            entity.Property(e => e.EstimatedCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("estimated_cost");
+            entity.Property(e => e.Location)
+                .HasMaxLength(255)
+                .HasColumnName("location");
             entity.Property(e => e.ScheduleDate).HasColumnName("schedule_date");
             entity.Property(e => e.ScheduleDescription).HasColumnName("schedule_description");
             entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
             entity.Property(e => e.ScheduleTitle)
                 .HasMaxLength(200)
                 .HasColumnName("schedule_title");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.ServiceType)
+                .HasMaxLength(50)
+                .HasColumnName("service_type");
             entity.Property(e => e.StartTime).HasColumnName("start_time");
             entity.Property(e => e.TripId).HasColumnName("trip_id");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

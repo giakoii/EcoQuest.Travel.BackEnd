@@ -9,6 +9,8 @@ public partial class VwTripSchedule
 
     public Guid TripId { get; set; }
 
+    public Guid? UserId { get; set; }
+
     public DateOnly ScheduleDate { get; set; }
 
     public string ScheduleTitle { get; set; } = null!;
@@ -19,7 +21,13 @@ public partial class VwTripSchedule
 
     public TimeOnly? EndTime { get; set; }
 
-    public string? Address { get; set; }
+    public string? Location { get; set; }
+
+    public Guid? ServiceId { get; set; }
+
+    public string? ServiceType { get; set; }
+
+    public decimal? EstimatedCost { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

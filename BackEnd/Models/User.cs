@@ -35,6 +35,8 @@ public partial class User
 
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
 
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<HotelRating> HotelRatings { get; set; } = new List<HotelRating>();

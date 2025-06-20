@@ -5,6 +5,4 @@ namespace BackEnd.DTOs.Ecq110;
 
 public class Ecq110SelectTripSchedulesRequest : AbstractApiRequest
 {
-    [Required(ErrorMessage = "TripId is required.")]
-    public Guid TripId { get; set; }
 }

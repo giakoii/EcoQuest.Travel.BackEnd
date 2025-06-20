@@ -18,4 +18,5 @@ public interface ITripScheduleService
     Task<Ecq110UpdateTripScheduleResponse> UpdateTripSchedule(Ecq110UpdateTripScheduleRequest request, IdentityEntity identityEntity);
     
     Task<Ecq110DeleteTripScheduleResponse> DeleteTripSchedule(Ecq110DeleteTripScheduleRequest request, IdentityEntity identityEntity);
+    
 }

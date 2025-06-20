@@ -129,11 +129,11 @@ public class Ecq010AuthenticationController : ControllerBase
     {
         // Else user use password login
         var userPasswordLogin = await _userService.AuthLogin(request);
-        if (userPasswordLogin.Success == false)
+        if (!userPasswordLogin.Success)
         {
             return Unauthorized(new OpenIddictResponse
             {
-                Error = Errors.InvalidGrant,
+                Error = Errors.InvalidRequest,
                 ErrorDescription = userPasswordLogin.Message,
             });
         }

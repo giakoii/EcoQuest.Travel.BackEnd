@@ -582,9 +582,12 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 Description = x.ScheduleDescription!,
                 StartTime = StringUtil.ConvertToHhMm(x.StartTime),
                 EndTime = StringUtil.ConvertToHhMm(x.EndTime),
-                Address = x.Address!,
+                Location = x.Location!,
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
-                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
+                ServiceId = x.ServiceId,
+                ServiceType = x.ServiceType!,
+                EstimatedCost = x.EstimatedCost,
             })
             .ToListAsync();
 
@@ -604,13 +607,7 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     {
         var response = new Ecq110SelectTripSchedulesResponse { Success = false };
 
-        // Find Trip by userId
-        var trip = await _tripRepository.GetView<VwTrip>(x => x.UserId == userId).ToListAsync();
-        foreach (var schedule in trip)
-        {
-        }
-
-        var schedules = await _tripScheduleRepository.GetView<VwTripSchedule>(x => x.TripId == userId)
+        var schedules = await _tripScheduleRepository.GetView<VwTripSchedule>(x => x.UserId == userId)
             .Select(x => new Ecq110TripScheduleEntity
             {
                 ScheduleId = x.ScheduleId,
@@ -620,12 +617,13 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 Description = x.ScheduleDescription!,
                 StartTime = StringUtil.ConvertToHhMm(x.StartTime),
                 EndTime = StringUtil.ConvertToHhMm(x.EndTime),
-                Address = x.Address!,
+                Location = x.Location!,
+                EstimatedCost = x.EstimatedCost,
+                ServiceId = x.ServiceId,
+                ServiceType = x.ServiceType!,
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
                 UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
             })
-            .OrderBy(x => x.ScheduleDate)
-            .ThenBy(x => x.StartTime)
             .ToListAsync();
 
         // Set response
@@ -709,7 +707,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="request">Delete request</param>
     /// <param name="identityEntity">User identity</param>
     /// <returns>Delete result</returns>
-    public async Task<Ecq110DeleteTripScheduleResponse> DeleteTripSchedule(Ecq110DeleteTripScheduleRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110DeleteTripScheduleResponse> DeleteTripSchedule(Ecq110DeleteTripScheduleRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110DeleteTripScheduleResponse { Success = false };
 
