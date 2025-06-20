@@ -1626,6 +1626,9 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasColumnName("service_type");
             entity.Property(e => e.StartTime).HasColumnName("start_time");
             entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.TripName)
+                .HasMaxLength(200)
+                .HasColumnName("trip_name");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
         });

@@ -590,9 +590,14 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 EstimatedCost = x.EstimatedCost,
             })
             .ToListAsync();
-
+        
+        schedule = schedule
+            .OrderBy(x => x.ScheduleDate)
+            .ThenBy(x => x.StartTime)
+            .ToList();
+        
         // True
-        response.Response = schedule;
+        response.Response = schedule!;
         response.Success = true;
         response.SetMessage(MessageId.I00001);
         return response;
@@ -607,27 +612,35 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     {
         var response = new Ecq110SelectTripSchedulesResponse { Success = false };
 
-        var schedules = await _tripScheduleRepository.GetView<VwTripSchedule>(x => x.UserId == userId)
-            .Select(x => new Ecq110TripScheduleEntity
+        var schedules = await _tripScheduleRepository.GetView<VwTripSchedule>(x => x.UserId == userId).ToListAsync();
+        
+        var grouped = schedules
+            .GroupBy(x => new { x.TripId, x.TripName })
+            .Select(group => new Ecq110TripSchedulesEntity
             {
-                ScheduleId = x.ScheduleId,
-                TripId = x.TripId,
-                ScheduleDate = StringUtil.ConvertToDateAsDdMmYyyy(x.ScheduleDate),
-                Title = x.ScheduleTitle,
-                Description = x.ScheduleDescription!,
-                StartTime = StringUtil.ConvertToHhMm(x.StartTime),
-                EndTime = StringUtil.ConvertToHhMm(x.EndTime),
-                Location = x.Location!,
-                EstimatedCost = x.EstimatedCost,
-                ServiceId = x.ServiceId,
-                ServiceType = x.ServiceType!,
-                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
-                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
-            })
-            .ToListAsync();
+                TripId = group.Key.TripId,
+                TripName = group.Key.TripName!,
+                TripScheduleDetails = group.Select(x => new Ecq110TripScheduleDetail
+                {
+                    ScheduleDate = StringUtil.ConvertToDateAsDdMmYyyy(x.ScheduleDate),
+                    Title = x.ScheduleTitle,
+                    Description = x.ScheduleDescription!,
+                    StartTime = StringUtil.ConvertToHhMm(x.StartTime),
+                    EndTime = StringUtil.ConvertToHhMm(x.EndTime),
+                    Location = x.Location!,
+                    EstimatedCost = x.EstimatedCost,
+                    ServiceId = x.ServiceId,
+                    ServiceType = x.ServiceType!,
+                    CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+                    UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
+                })
+                    .OrderBy(x => x.ScheduleDate)
+                    .ThenBy(x => x.StartTime)
+                    .ToList()
+            }).ToList();
 
         // Set response
-        response.Response = schedules;
+        response.Response = grouped;
         response.Success = true;
         response.SetMessage(MessageId.I00001);
         return response;

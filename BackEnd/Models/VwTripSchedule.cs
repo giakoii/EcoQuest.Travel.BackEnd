@@ -11,6 +11,8 @@ public partial class VwTripSchedule
 
     public Guid? UserId { get; set; }
 
+    public string? TripName { get; set; }
+
     public DateOnly ScheduleDate { get; set; }
 
     public string ScheduleTitle { get; set; } = null!;

@@ -14,7 +14,7 @@ namespace BackEnd.Controllers.V1.Ecq110;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq110SelectTripSchedulesController : AbstractApiAsyncController<Ecq110SelectTripSchedulesRequest, Ecq110SelectTripSchedulesResponse, List<Ecq110TripScheduleEntity>>
+public class Ecq110SelectTripSchedulesController : AbstractApiAsyncController<Ecq110SelectTripSchedulesRequest, Ecq110SelectTripSchedulesResponse, List<Ecq110TripSchedulesEntity>>
 {
     private readonly ITripScheduleService _tripService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
