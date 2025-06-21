@@ -269,14 +269,14 @@ public class PartnerService : IPartnerService
                 PartnerId = r.PartnerId,
                 CuisineType = r.CuisineType,
                 HasVegetarian = r.HasVegetarian,
-                OpenTime = StringUtil.ConvertToDateAsDdMmYyyy(r.OpenTime),
-                CloseTime = StringUtil.ConvertToDateAsDdMmYyyy(r.CloseTime),
+                OpenTime = StringUtil.ConvertToHhMm(r.OpenTime),
+                CloseTime = StringUtil.ConvertToHhMm(r.CloseTime),
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(r.CreatedAt),
                 UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(r.UpdatedAt),
                 MinPrice = r.MinPrice,
                 MaxPrice = r.MaxPrice,
                 DestinationId = r.DestinationId,
-                //DestinationName = r.DestinationName,
+                DestinationName = r.DestinationName,
             })
             .ToListAsync();
 
@@ -286,15 +286,15 @@ public class PartnerService : IPartnerService
             .Where(a => a.PartnerId == partnerSelect.PartnerId)
             .Select(a => new Ecq310SelectPartnerEntityAttractionDetail
             {
-                // PartnerId = a.PartnerId,
-                // AttractionType = a.AttractionType,
-                // TicketPrice = a.TicketPrice,
-                // OpenTime = StringUtil.ConvertToDateAsDdMmYyyy(a.OpenTime),
-                // CloseTime = StringUtil.ConvertToDateAsDdMmYyyy(a.CloseTime),
-                // CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.CreatedAt),
-                // UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.UpdatedAt),
-                // DestinationId = a.DestinationId,
-                // DestinationName = a.DestinationName,
+                PartnerId = a.PartnerId,
+                AttractionType = a.AttractionType,
+                TicketPrice = a.TicketPrice,
+                OpenTime = StringUtil.ConvertToHhMm(a.OpenTime),
+                CloseTime = StringUtil.ConvertToHhMm(a.CloseTime),
+                CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.CreatedAt),
+                UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(a.UpdatedAt),
+                DestinationId = a.DestinationId,
+                DestinationName = a.DestinationName,
             })
             .ToListAsync();
         
