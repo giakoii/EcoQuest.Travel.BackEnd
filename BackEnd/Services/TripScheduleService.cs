@@ -784,4 +784,69 @@ public class TripScheduleService : ITripScheduleService
         response.SetMessage(MessageId.I00001);
         return response;
     }
+
+    /// <summary>
+    /// Select services based on service type for Ecq110
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Ecq110SelectServiceResponse> SelectService(Ecq110SelectServiceRequest request)
+    {
+        var response = new Ecq110SelectServiceResponse { Success = false };
+        
+        var entityResponse = new List<Ecq110SelectServiceEntity>();
+        
+        // Validate request
+        if (request.ServiceType == ((int) ConstantEnum.ServiceType.Hotel))
+        {
+            // Get hotels
+            var hotels = await _hotelRepository.GetView<VwHotel>()
+                .Select(x => new Ecq110SelectServiceEntity
+                {
+                    ServiceId = x.HotelId,
+                    ServiceName = x.HotelName,
+                    Address = x.Address!,
+                    Cost = $"{x.MinPrice} - {x.MaxPrice}",
+                }).ToListAsync();
+            entityResponse = hotels;
+        }
+        else if (request.ServiceType == ((int) ConstantEnum.ServiceType.Restaurant))
+        {
+            // Get restaurants
+            var restaurants = await _restaurantDetailRepository.GetView<VwRestaurant>()
+                .Select(x => new Ecq110SelectServiceEntity
+                {
+                    ServiceId = x.RestaurantId,
+                    ServiceName = x.RestaurantName!,
+                    Address = x.Address!,
+                    Cost = $"{x.MinPrice} - {x.MaxPrice}",
+                }).ToListAsync();
+            entityResponse = restaurants;
+        }
+        else if (request.ServiceType == ((int) ConstantEnum.ServiceType.Attraction))
+        {
+            // Get attractions
+            var attractions = await _attractionDetailRepository.GetView<VwAttraction>()
+                .Select(x => new Ecq110SelectServiceEntity
+                {
+                    ServiceId = x.AttractionId,
+                    ServiceName = x.AttractionName!,
+                    Address = x.Address!,
+                    Cost = $"{x.TicketPrice}",
+                }).ToListAsync();
+            entityResponse = attractions;
+        }
+        else
+        {
+            response.SetMessage(MessageId.I00000, "Invalid service type");
+            return response;
+            
+        }
+        
+        // True
+        response.Success = true;
+        response.Response = entityResponse;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
 }

@@ -79,12 +79,12 @@ public class TripService : ITripService
     /// Select all trips
     /// </summary>
     /// <returns></returns>
-    public async Task<Ecq110SelectTripsResponse> SelectTrips()
+    public async Task<Ecq110SelectTripsResponse> SelectTrips(IdentityEntity identityEntity)
     {
         var response = new Ecq110SelectTripsResponse { Success = false };
 
         // Select all trips
-        response.Response = await _tripRepository.GetView<VwTrip>()
+        response.Response = await _tripRepository.GetView<VwTrip>(x => x.UserId == Guid.Parse(identityEntity.UserId))
             .Select(x => new Ecq110TripListEntity
             {
                 TripId = x.TripId,

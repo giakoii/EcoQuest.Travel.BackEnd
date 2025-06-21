@@ -8,7 +8,7 @@ public interface ITripService
 {
     Task<Ecq110SelectTripResponse> SelectTrip(Guid tripId);
     
-    Task<Ecq110SelectTripsResponse> SelectTrips();
+    Task<Ecq110SelectTripsResponse> SelectTrips(IdentityEntity identityEntity);
     
     Task<Ecq110InsertTripResponse> InsertTrip(Ecq110InsertTripRequest request, IdentityEntity identityEntity);
     

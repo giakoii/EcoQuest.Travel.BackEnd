@@ -16,6 +16,13 @@ public static class ConstantEnum
         Attraction = 3,
     }
     
+    public enum ServiceType
+    {
+        Hotel = 1,
+        Restaurant = 2,
+        Attraction = 3,
+    }
+    
     public enum EntityType
     {
         Hotel = 1,

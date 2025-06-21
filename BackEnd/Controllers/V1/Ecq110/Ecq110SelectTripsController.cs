@@ -1,5 +1,6 @@
 using BackEnd.DTOs.Ecq110;
 using BackEnd.Services;
+using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace BackEnd.Controllers.V1.Ecq110;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq110SelectTripsController : AbstractApiAsyncControllerNotToken<Ecq110SelectTripsRequest, Ecq110SelectTripsResponse, List<Ecq110TripListEntity>>
+public class Ecq110SelectTripsController : AbstractApiAsyncController<Ecq110SelectTripsRequest, Ecq110SelectTripsResponse, List<Ecq110TripListEntity>>
 {
     private readonly ITripService _tripService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -21,9 +22,10 @@ public class Ecq110SelectTripsController : AbstractApiAsyncControllerNotToken<Ec
     /// Constructor
     /// </summary>
     /// <param name="tripService"></param>
-    public Ecq110SelectTripsController(ITripService tripService)
+    public Ecq110SelectTripsController(ITripService tripService, IIdentityApiClient identityApiClient)
     {
         _tripService = tripService;
+        _identityApiClient = identityApiClient;
     }
 
     /// <summary>
@@ -45,7 +47,7 @@ public class Ecq110SelectTripsController : AbstractApiAsyncControllerNotToken<Ec
     /// <returns></returns>
     protected override async Task<Ecq110SelectTripsResponse> Exec(Ecq110SelectTripsRequest request)
     {
-        return await _tripService.SelectTrips();
+        return await _tripService.SelectTrips(_identityEntity);
     }
 
     /// <summary>
