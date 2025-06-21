@@ -189,8 +189,8 @@ public class Ecq010AuthenticationController : ControllerBase
         claimsPrincipal.SetResources(await _scopeManager.ListResourcesAsync(claimsPrincipal.GetScopes()).ToListAsync());
 
         // Set refresh token and access token
-        claimsPrincipal.SetAccessTokenLifetime(TimeSpan.FromMinutes(120));
-        claimsPrincipal.SetRefreshTokenLifetime(TimeSpan.FromMinutes(120));
+        claimsPrincipal.SetAccessTokenLifetime(TimeSpan.FromDays(1));
+        claimsPrincipal.SetRefreshTokenLifetime(TimeSpan.FromDays(2));
 
         return SignIn(claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }

@@ -9,5 +9,7 @@ public class Ecq110InsertPaymentResponse : AbstractApiResponse<Ecq110InsertPayme
 
 public class Ecq110InsertPaymentEntity
 { 
-    public string? CheckoutUrl { get; set; }
+    public string CheckoutUrl { get; set; }
+    
+    public string QrCode { get; set; }
 }

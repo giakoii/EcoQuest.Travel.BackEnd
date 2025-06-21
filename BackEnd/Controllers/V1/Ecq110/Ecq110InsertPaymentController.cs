@@ -13,34 +13,62 @@ namespace BackEnd.Controllers.V1.Ecq110;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq110InsertPaymentController : ControllerBase
+public class Ecq110InsertPaymentController : AbstractApiAsyncController<Ecq110InsertPaymentRequest, Ecq110InsertPaymentResponse, Ecq110InsertPaymentEntity>
 {
     private readonly IPaymentService _paymentService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly IIdentityApiClient _identityApiClient;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="paymentService"></param>
+    /// <param name="identityApiClient"></param>
     public Ecq110InsertPaymentController(IPaymentService paymentService, IIdentityApiClient identityApiClient)
     {
         _paymentService = paymentService;
         _identityApiClient = identityApiClient;
     }
 
+    /// <summary>
+    /// Incoming Post
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-   public async Task<IActionResult> ProcessRequest(Ecq110InsertPaymentRequest request)
-   {
-       var identityEntity = new IdentityEntity();
-       identityEntity = _identityApiClient.GetIdentity(User);
-       
-        try
+    public override async Task<Ecq110InsertPaymentResponse> ProcessRequest(Ecq110InsertPaymentRequest request)
+    {
+        return await ProcessRequest(request, _logger, new Ecq110InsertPaymentResponse());
+    }
+
+    /// <summary>
+    /// Main processing
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    protected override async Task<Ecq110InsertPaymentResponse> Exec(Ecq110InsertPaymentRequest request)
+    {
+        return await _paymentService.InsertPayment(request, _identityEntity);
+    }
+
+    /// <summary>
+    /// Error check
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="detailErrorList"></param>
+    /// <returns></returns>
+    protected internal override Ecq110InsertPaymentResponse ErrorCheck(Ecq110InsertPaymentRequest request, List<DetailError> detailErrorList)
+    {
+        var response = new Ecq110InsertPaymentResponse { Success = false };
+        if (detailErrorList.Count > 0)
         {
-            var response = await _paymentService.InsertPayment(request, identityEntity);
-            return Redirect(response.Response.CheckoutUrl);
+            // Error
+            response.SetMessage(MessageId.E10000);
+            response.DetailErrorList = detailErrorList;
+            return response;
         }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, "Error processing payment request");
-            return new BadRequestObjectResult(new { Message = "An error occurred while processing the payment." });
-        }
+        // True
+        response.Success = true;
+        return response;
     }
 }

@@ -24,14 +24,15 @@ public class PayOsPaymentLogic
         var response = new Ecq110InsertPaymentResponse { Success = false };
 
         // Tạo request cho PayOS
-        var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); // Always positive and within range
+        var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); 
+        
         // Limit description to 25 characters
         var description = $"Thanh toán {tripName}";
         if (description.Length > 25)
             description = description.Substring(0, 25);    
         
-        var returnUrl = $"https://yourdomain.com/payment/return?bookingId={bookingId}";
-        var cancelUrl = $"https://yourdomain.com/payment/cancel?bookingId={bookingId}";
+        var returnUrl = $"http://160.250.246.33:5269/api/v1/Ecq100SelectHotels";
+        var cancelUrl = $"http://160.250.246.33:5269/api/v1/Ecq100SelectHotels";
         
         var payOsCheckSumKey = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.PayOsCheckSumKey).FirstOrDefault()!.Value;
         var payOsApiKey = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.PayOsApiKey).FirstOrDefault()!.Value;
@@ -75,10 +76,17 @@ public class PayOsPaymentLogic
         var dataElement = root.GetProperty("data");
 
         var checkoutUrl = dataElement.GetProperty("checkoutUrl").GetString();
+        var qrCode = dataElement.GetProperty("qrCode").GetString();
+        if (string.IsNullOrEmpty(checkoutUrl) || string.IsNullOrEmpty(qrCode))
+        {
+            response.SetMessage(MessageId.E00000, "Failed to retrieve payment data");
+            return response;
+        }
 
         var entityResponse = new Ecq110InsertPaymentEntity
         {
-            CheckoutUrl = checkoutUrl
+            CheckoutUrl = checkoutUrl,
+            QrCode = qrCode,
         };
 
         response.Success = true;
