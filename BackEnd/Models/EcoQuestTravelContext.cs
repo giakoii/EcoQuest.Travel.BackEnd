@@ -652,7 +652,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-
+        
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -753,7 +753,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.Amount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("amount");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
@@ -773,6 +772,7 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.TransactionCode)
                 .HasMaxLength(100)
                 .HasColumnName("transaction_code");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("updated_at");
@@ -780,10 +780,10 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
 
-            entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.BookingId)
+            entity.HasOne(d => d.Trip).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.TripId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payments__bookin__3EDC53F0");
+                .HasConstraintName("FK_Payments_Trips");
         });
 
         modelBuilder.Entity<RestaurantDetail>(entity =>

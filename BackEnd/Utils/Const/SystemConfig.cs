@@ -15,6 +15,12 @@ public static class SystemConfig
     public const string EncryptIv = "ENCRYPT_IV";
     
     public const string ApiKeyAi = "APIKEY_AI";
+
+    public const string PayOsApiKey = "PAYOS_API_KEY";
+    
+    public const string PayOsCheckSumKey = "PAYOS_CHECK_SUM_KEY";
+    
+    public const string PayOsClientId = "PAYOS_CLIENTID";
     
     public const string OrderWebRedirectSuccess = "ORDER_WEB_REDIRECT_SUCCESS";
     
@@ -25,4 +31,6 @@ public static class SystemConfig
     public const string OrderMobileRedirectFail = "ORDER_MOBILE_REDIRECT_FAIL";
     
     public const string ServiceClient = "service_client";
+    
+    
 }

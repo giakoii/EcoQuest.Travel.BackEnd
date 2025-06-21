@@ -39,6 +39,8 @@ public partial class Trip
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
     public virtual ICollection<TripDestination> TripDestinations { get; set; } = new List<TripDestination>();
 
     public virtual ICollection<TripSchedule> TripSchedules { get; set; } = new List<TripSchedule>();

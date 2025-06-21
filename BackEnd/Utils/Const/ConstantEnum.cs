@@ -74,4 +74,18 @@ public static class ConstantEnum
         Cancelled = 3,
         Completed = 4,
     }
+    
+    public enum PaymentStatus
+    {
+        Pending = 1,
+        Completed = 2,
+        Failed = 3,
+        Refunded = 4,
+    }
+
+    public enum PaymentMethod
+    {
+        PayOs = 1,
+    }
+    
 }

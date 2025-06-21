@@ -39,8 +39,6 @@ public partial class Booking
 
     public virtual ICollection<HotelBooking> HotelBookings { get; set; } = new List<HotelBooking>();
 
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
     public virtual Trip Trip { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

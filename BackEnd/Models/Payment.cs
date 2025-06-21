@@ -7,7 +7,7 @@ public partial class Payment
 {
     public Guid PaymentId { get; set; }
 
-    public Guid BookingId { get; set; }
+    public Guid TripId { get; set; }
 
     public decimal Amount { get; set; }
 
@@ -29,5 +29,5 @@ public partial class Payment
 
     public bool IsActive { get; set; }
 
-    public virtual Booking Booking { get; set; } = null!;
+    public virtual Trip Trip { get; set; } = null!;
 }
