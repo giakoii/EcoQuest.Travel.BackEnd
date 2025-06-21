@@ -21,10 +21,6 @@ public partial class VwBooking
 
     public TimeOnly? EndTime { get; set; }
 
-    public DateOnly? CheckinDate { get; set; }
-
-    public DateOnly? CheckoutDate { get; set; }
-
     public decimal TotalCost { get; set; }
 
     public int NumberOfGuests { get; set; }

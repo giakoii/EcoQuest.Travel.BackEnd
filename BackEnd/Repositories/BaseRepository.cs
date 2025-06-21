@@ -92,6 +92,11 @@ public class BaseRepository<TEntity, TType>(AppDbContext context) : IBaseReposit
         await Context.AddAsync(entity);
     }
 
+    public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+    {
+       await Context.AddRangeAsync(entities);
+    }
+
     /// <summary>
     /// Update entity
     /// </summary>

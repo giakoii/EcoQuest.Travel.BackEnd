@@ -39,4 +39,9 @@ public class CommonMessages
     public static readonly string NotAuthorizedToManageRestaurant = "You are not authorized to manage this restaurant";
     
     public static readonly string NotAuthorizedToAttraction = "You are not authorized to manage this attraction";
+    
+    public static readonly string BookingAlreadyExists = "Booking already exists for this trip";
+    
+    public static readonly string BookingNotFound = "Booking not found";
+    public static readonly string NotAuthorizedToManageBooking = "You are not authorized to manage this booking";
 }

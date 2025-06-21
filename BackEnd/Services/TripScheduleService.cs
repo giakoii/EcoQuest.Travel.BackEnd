@@ -51,121 +51,127 @@ public class TripScheduleService : ITripScheduleService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110InsertTripScheduleRequest request, IdentityEntity identityEntity)
-{
-    var response = new Ecq110InsertTripScheduleResponse { Success = false };
-
-    // Validate trip existence and ownership
-    var trip = await ValidateTripAsync(request.TripId, identityEntity, response);
-    if (trip == null) return response;
-
-    // Validate that all dates within the trip's start and end dates are scheduled
-    if (!ValidateFullScheduleDates(request, trip, response)) return response;
-
-    // Get service type mapping
-    var serviceTypeDict = await GetServiceTypeMappingAsync(request, response);
-
-    // Check hotel service conditions (check-in/out, room availability)
-    if (serviceTypeDict != null)
+    public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110InsertTripScheduleRequest request,
+        IdentityEntity identityEntity)
     {
-        var hotelServiceIds = serviceTypeDict
-            .Where(kv => kv.Value == ConstantEnum.EntityType.Hotel.ToString())
-            .Select(kv => kv.Key);
+        var response = new Ecq110InsertTripScheduleResponse { Success = false };
 
-        foreach (var hotelId in hotelServiceIds)
+        // Validate trip existence and ownership
+        var trip = await ValidateTripAsync(request.TripId, identityEntity, response);
+        if (trip == null) return response;
+
+        // Validate that all dates within the trip's start and end dates are scheduled
+        if (!ValidateFullScheduleDates(request, trip, response)) return response;
+
+        // Get service type mapping
+        var serviceTypeDict = await GetServiceTypeMappingAsync(request, response);
+
+        // Check hotel service conditions (check-in/out, room availability)
+        if (serviceTypeDict != null)
         {
-            var hotelDates = request.TripScheduleDetails
-                .Where(s => s.ServiceId == hotelId)
-                .Select(s => s.ScheduleDate)
-                .Distinct()
-                .OrderBy(d => d)
-                .ToList();
+            var hotelServiceIds = serviceTypeDict
+                .Where(kv => kv.Value == ConstantEnum.EntityType.Hotel.ToString())
+                .Select(kv => kv.Key);
 
-            if (hotelDates.Count < 2)
+            foreach (var hotelId in hotelServiceIds)
             {
-                response.SetMessage(MessageId.I00000, "You must schedule both check-in and check-out dates for the hotel.");
-                return response;
-            }
+                var hotelDates = request.TripScheduleDetails
+                    .Where(s => s.ServiceId == hotelId)
+                    .Select(s => s.ScheduleDate)
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToList();
 
-            var estimatedCostGuest = trip.TotalEstimatedCost;
-            var hotelRoomAvailable = await _hotelRoomRepository
-                .Find(hr => hr.HotelId == hotelId && hr.IsActive == true && hr.IsAvailable == true)
-                .ToListAsync();
+                if (hotelDates.Count < 2)
+                {
+                    response.SetMessage(MessageId.I00000,
+                        "You must schedule both check-in and check-out dates for the hotel.");
+                    return response;
+                }
 
-            if (!hotelRoomAvailable.Any())
-            {
-                response.SetMessage(MessageId.I00000, "No available hotel rooms for the specified dates.");
-                return response;
-            }
+                var estimatedCostGuest = trip.TotalEstimatedCost;
+                var hotelRoomAvailable = await _hotelRoomRepository
+                    .Find(hr => hr.HotelId == hotelId && hr.IsActive == true && hr.IsAvailable == true)
+                    .ToListAsync();
 
-            int stayNights = hotelDates.Last().DayNumber - hotelDates.First().DayNumber;
-            if (!IsValidRoomCombination(hotelRoomAvailable, trip.NumberOfPeople ?? 0, estimatedCostGuest ?? decimal.MaxValue, stayNights, out _))
-            {
-                response.SetMessage(MessageId.I00000, "No combination of hotel rooms available for the specified dates and number of guests within the estimated cost.");
-                return response;
+                if (!hotelRoomAvailable.Any())
+                {
+                    response.SetMessage(MessageId.I00000, "No available hotel rooms for the specified dates.");
+                    return response;
+                }
+
+                int stayNights = hotelDates.Last().DayNumber - hotelDates.First().DayNumber;
+                if (!IsValidRoomCombination(hotelRoomAvailable, trip.NumberOfPeople ?? 0,
+                        estimatedCostGuest ?? decimal.MaxValue, stayNights, out _))
+                {
+                    response.SetMessage(MessageId.I00000,
+                        "No combination of hotel rooms available for the specified dates and number of guests within the estimated cost.");
+                    return response;
+                }
             }
         }
-    }
 
-    // Prepare to cache estimated cost per service per date
-    var serviceCostMap = new Dictionary<(Guid, DateOnly), decimal>();
+        // Prepare to cache estimated cost per service per date
+        var serviceCostMap = new Dictionary<(Guid, DateOnly), decimal>();
 
-    // Validate total trip cost against budget, and fill serviceCostMap
-    if (!await ValidateTotalCostAsync(request, trip, serviceTypeDict, response, serviceCostMap))
-    {
+        // Validate total trip cost against budget, and fill serviceCostMap
+        if (!await ValidateTotalCostAsync(request, trip, serviceTypeDict, response, serviceCostMap))
+        {
+            return response;
+        }
+
+        // Insert trip schedule into DB
+        await _tripScheduleRepository.ExecuteInTransactionAsync(async () =>
+        {
+            foreach (var detail in request.TripScheduleDetails)
+            {
+                if (detail.ScheduleDate < trip.StartDate || detail.ScheduleDate > trip.EndDate)
+                {
+                    response.SetMessage(MessageId.I00000,
+                        "Schedule date cannot be before trip start date or after trip end date.");
+                    return false;
+                }
+
+                var serviceId = detail.ServiceId;
+                string? serviceType = null;
+                decimal? estimatedCost = detail.EstimatedCost;
+
+                if (serviceId.HasValue)
+                {
+                    serviceTypeDict.TryGetValue(serviceId.Value, out serviceType);
+                    serviceCostMap.TryGetValue((serviceId.Value, detail.ScheduleDate), out var cost);
+                    estimatedCost = cost;
+                }
+
+                var latLong = await GetLatLongUsingNominatimAsync(detail.Address);
+
+                var tripSchedule = new TripSchedule
+                {
+                    TripId = request.TripId,
+                    ScheduleDate = detail.ScheduleDate,
+                    Title = detail.Title,
+                    Description = detail.Description,
+                    StartTime = detail.StartTime,
+                    EndTime = detail.EndTime,
+                    Location = latLong != null ? $"{latLong.Value.lat},{latLong.Value.lng}" : null,
+                    ServiceId = serviceId,
+                    ServiceType = serviceType,
+                    EstimatedCost = estimatedCost
+                };
+
+                await _tripScheduleRepository.AddAsync(tripSchedule);
+            }
+
+            await _tripScheduleRepository.SaveChangesAsync(identityEntity.Email);
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+
         return response;
     }
 
-    // Insert trip schedule into DB
-    await _tripScheduleRepository.ExecuteInTransactionAsync(async () =>
-    {
-        foreach (var detail in request.TripScheduleDetails)
-        {
-            if (detail.ScheduleDate < trip.StartDate || detail.ScheduleDate > trip.EndDate)
-            {
-                response.SetMessage(MessageId.I00000, "Schedule date cannot be before trip start date or after trip end date.");
-                return false;
-            }
-
-            var serviceId = detail.ServiceId;
-            string? serviceType = null;
-            decimal? estimatedCost = detail.EstimatedCost;
-
-            if (serviceId.HasValue)
-            {
-                serviceTypeDict.TryGetValue(serviceId.Value, out serviceType);
-                serviceCostMap.TryGetValue((serviceId.Value, detail.ScheduleDate), out var cost);
-                estimatedCost = cost;
-            }
-
-            var latLong = await GetLatLongUsingNominatimAsync(detail.Address);
-
-            var tripSchedule = new TripSchedule
-            {
-                TripId = request.TripId,
-                ScheduleDate = detail.ScheduleDate,
-                Title = detail.Title,
-                Description = detail.Description,
-                StartTime = detail.StartTime,
-                EndTime = detail.EndTime,
-                Location = latLong != null ? $"{latLong.Value.lat},{latLong.Value.lng}" : null,
-                ServiceId = serviceId,
-                ServiceType = serviceType,
-                EstimatedCost = estimatedCost
-            };
-
-            await _tripScheduleRepository.AddAsync(tripSchedule);
-        }
-
-        await _tripScheduleRepository.SaveChangesAsync(identityEntity.Email);
-        response.Success = true;
-        response.SetMessage(MessageId.I00001);
-        return true;
-    });
-
-    return response;
-}    
-        #region Sub Functions of InsertTripSchedule
+    #region Sub Functions of InsertTripSchedule
 
     /// <summary>
     /// Validate trip existence and ownership
@@ -174,7 +180,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="identityEntity"></param>
     /// <param name="response"></param>
     /// <returns></returns>
-    private async Task<Trip?> ValidateTripAsync(Guid tripId, IdentityEntity identityEntity, Ecq110InsertTripScheduleResponse response)
+    private async Task<Trip?> ValidateTripAsync(Guid tripId, IdentityEntity identityEntity,
+        Ecq110InsertTripScheduleResponse response)
     {
         var trip = await _tripRepository.Find(x => x.TripId == tripId && x.IsActive == true).FirstOrDefaultAsync();
         if (trip == null)
@@ -199,7 +206,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="trip"></param>
     /// <param name="response"></param>
     /// <returns></returns>
-    private bool ValidateFullScheduleDates(Ecq110InsertTripScheduleRequest request, Trip trip, Ecq110InsertTripScheduleResponse response)
+    private bool ValidateFullScheduleDates(Ecq110InsertTripScheduleRequest request, Trip trip,
+        Ecq110InsertTripScheduleResponse response)
     {
         if (trip.StartDate.HasValue && trip.EndDate.HasValue)
         {
@@ -213,7 +221,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 .ToList();
             if (missingDates.Any())
             {
-                response.SetMessage(MessageId.I00000, $"You need to schedule for the following days: {string.Join(", ", missingDates.Select(d => d.ToString("dd/MM/yyyy")))}");
+                response.SetMessage(MessageId.I00000,
+                    $"You need to schedule for the following days: {string.Join(", ", missingDates.Select(d => d.ToString("dd/MM/yyyy")))}");
                 return false;
             }
         }
@@ -227,7 +236,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="request"></param>
     /// <param name="response"></param>
     /// <returns></returns>
-    private async Task<Dictionary<Guid, string>?> GetServiceTypeMappingAsync(Ecq110InsertTripScheduleRequest request, Ecq110InsertTripScheduleResponse response)
+    private async Task<Dictionary<Guid, string>?> GetServiceTypeMappingAsync(Ecq110InsertTripScheduleRequest request,
+        Ecq110InsertTripScheduleResponse response)
     {
         var serviceTypeDict = new Dictionary<Guid, string>();
         var serviceIds = request.TripScheduleDetails.Where(s => s.ServiceId != null).Select(s => s.ServiceId!.Value)
@@ -270,108 +280,116 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="response"></param>
     /// <returns></returns>
     private async Task<bool> ValidateTotalCostAsync(
-    Ecq110InsertTripScheduleRequest request,
-    Trip trip,
-    Dictionary<Guid, string> serviceTypeDict,
-    Ecq110InsertTripScheduleResponse response,
-    Dictionary<(Guid, DateOnly), decimal> serviceCostMap)
-{
-    decimal totalCost = 0;
-
-    // Sum all custom estimated costs from user input
-    var customCosts = request.TripScheduleDetails
-        .Where(x => x.ServiceId == null && x.EstimatedCost.HasValue)
-        .Sum(x => x.EstimatedCost.Value);
-    totalCost += customCosts;
-
-    var groupedByService = request.TripScheduleDetails
-        .Where(x => x.ServiceId != null)
-        .GroupBy(x => x.ServiceId!.Value);
-
-    foreach (var group in groupedByService)
+        Ecq110InsertTripScheduleRequest request,
+        Trip trip,
+        Dictionary<Guid, string> serviceTypeDict,
+        Ecq110InsertTripScheduleResponse response,
+        Dictionary<(Guid, DateOnly), decimal> serviceCostMap)
     {
-        var serviceId = group.Key;
-        var type = serviceTypeDict[serviceId];
-        var days = group.Select(g => g.ScheduleDate).Distinct().ToList();
-        decimal cost = 0;
+        decimal totalCost = 0;
 
-        if (type == ConstantEnum.EntityType.Hotel.ToString())
+        // Sum all custom estimated costs from user input
+        var customCosts = request.TripScheduleDetails
+            .Where(x => x.ServiceId == null && x.EstimatedCost.HasValue)
+            .Sum(x => x.EstimatedCost.Value);
+        totalCost += customCosts;
+
+        // Group schedule details by service ID
+        var groupedByService = request.TripScheduleDetails
+            .Where(x => x.ServiceId != null)
+            .GroupBy(x => x.ServiceId!.Value);
+
+        foreach (var group in groupedByService)
         {
-            var rooms = await _hotelRoomRepository.Find(hr => hr.HotelId == serviceId && hr.IsAvailable == true && hr.IsActive == true)
-                .OrderBy(r => r.PricePerNight).ToListAsync();
+            var serviceId = group.Key;
+            var type = serviceTypeDict[serviceId];
+            var days = group.Select(g => g.ScheduleDate).Distinct().ToList();
+            decimal cost = 0;
 
-            int guestRemaining = trip.NumberOfPeople ?? 0;
-            var selectedRooms = new List<HotelRoom>();
-
-            foreach (var room in rooms)
+            // Type is Hotel
+            if (type == ConstantEnum.EntityType.Hotel.ToString())
             {
-                selectedRooms.Add(room);
-                guestRemaining -= room.MaxGuests;
-                if (guestRemaining <= 0) break;
-            }
+                // Validate room availability and calculate cost
+                var rooms = await _hotelRoomRepository.Find(hr =>
+                        hr.HotelId == serviceId && hr.IsAvailable == true && hr.IsActive == true)
+                    .OrderBy(r => r.PricePerNight).ToListAsync();
 
-            if (guestRemaining > 0)
-            {
-                response.SetMessage(MessageId.I00000, $"Not enough hotel rooms for {trip.NumberOfPeople} guests.");
-                return false;
-            }
+                int guestRemaining = trip.NumberOfPeople ?? 0;
+                var selectedRooms = new List<HotelRoom>();
 
-            var nights = days.Last().DayNumber - days.First().DayNumber;
-            if (nights < 1) nights = 1;
+                foreach (var room in rooms)
+                {
+                    selectedRooms.Add(room);
+                    guestRemaining -= room.MaxGuests;
+                    if (guestRemaining <= 0) break;
+                }
 
-            foreach (var room in selectedRooms)
-            {
-                cost += nights * room.PricePerNight;
-            }
+                if (guestRemaining > 0)
+                {
+                    response.SetMessage(MessageId.I00000, $"Not enough hotel rooms for {trip.NumberOfPeople} guests.");
+                    return false;
+                }
 
-            var dailyCost = cost / nights;
-            foreach (var day in days)
-            {
-                serviceCostMap[(serviceId, day)] = dailyCost;
-            }
-        }
-        else if (type == ConstantEnum.EntityType.Restaurant.ToString())
-        {
-            var restaurant = await _restaurantDetailRepository
-                .Find(r => r.RestaurantId == serviceId && r.IsActive == true).FirstOrDefaultAsync();
+                var nights = days.Last().DayNumber - days.First().DayNumber;
+                if (nights < 1) nights = 1;
 
-            if (restaurant != null && restaurant.MinPrice.HasValue)
-            {
-                cost = restaurant.MinPrice.Value * (trip.NumberOfPeople ?? 0);
+                foreach (var room in selectedRooms)
+                {
+                    cost += nights * room.PricePerNight;
+                }
+
+                var dailyCost = cost / nights;
                 foreach (var day in days)
                 {
-                    serviceCostMap[(serviceId, day)] = cost / days.Count;
+                    serviceCostMap[(serviceId, day)] = dailyCost;
                 }
             }
-        }
-        else if (type == ConstantEnum.EntityType.Attraction.ToString())
-        {
-            var attraction = await _attractionDetailRepository
-                .Find(a => a.AttractionId == serviceId && a.IsActive == true).FirstOrDefaultAsync();
-
-            if (attraction != null && attraction.TicketPrice.HasValue)
+            
+            // Type is Restaurant
+            else if (type == ConstantEnum.EntityType.Restaurant.ToString())
             {
-                cost = attraction.TicketPrice.Value * (trip.NumberOfPeople ?? 0);
-                foreach (var day in days)
+                var restaurant = await _restaurantDetailRepository
+                    .Find(r => r.RestaurantId == serviceId && r.IsActive == true).FirstOrDefaultAsync();
+
+                if (restaurant != null && restaurant.MinPrice.HasValue)
                 {
-                    serviceCostMap[(serviceId, day)] = cost / days.Count;
+                    cost = restaurant.MinPrice.Value * (trip.NumberOfPeople ?? 0);
+                    foreach (var day in days)
+                    {
+                        serviceCostMap[(serviceId, day)] = cost / days.Count;
+                    }
                 }
             }
+            
+            // Type is Attraction
+            else if (type == ConstantEnum.EntityType.Attraction.ToString())
+            {
+                var attraction = await _attractionDetailRepository
+                    .Find(a => a.AttractionId == serviceId && a.IsActive == true).FirstOrDefaultAsync();
+
+                if (attraction != null && attraction.TicketPrice.HasValue)
+                {
+                    cost = attraction.TicketPrice.Value * (trip.NumberOfPeople ?? 0);
+                    foreach (var day in days)
+                    {
+                        serviceCostMap[(serviceId, day)] = cost / days.Count;
+                    }
+                }
+            }
+
+            totalCost += cost;
         }
 
-        totalCost += cost;
+        if (trip.TotalEstimatedCost.HasValue && totalCost > trip.TotalEstimatedCost.Value)
+        {
+            response.SetMessage(MessageId.I00000, $"Your planned schedule cost ({totalCost:C}) exceeds your estimated budget ({trip.TotalEstimatedCost:C}).");
+            return false;
+        }
+
+        return true;
     }
 
-    if (trip.TotalEstimatedCost.HasValue && totalCost > trip.TotalEstimatedCost.Value)
-    {
-        response.SetMessage(MessageId.I00000, $"Your planned schedule cost ({totalCost:C}) exceeds your estimated budget ({trip.TotalEstimatedCost:C}).");
-        return false;
-    }
 
-    return true;
-}
-
-    
     /// <summary>
     /// Check if there is a valid combination of hotel rooms
     /// that can accommodate the required number of guests within the budget
@@ -382,7 +400,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="stayNights"></param>
     /// <param name="selectedRooms"></param>
     /// <returns></returns>
-    private bool IsValidRoomCombination(List<HotelRoom?> availableRooms, int requiredGuests, decimal maxBudget, int stayNights, out List<HotelRoom> selectedRooms)
+    private bool IsValidRoomCombination(List<HotelRoom?> availableRooms, int requiredGuests, decimal maxBudget,
+        int stayNights, out List<HotelRoom> selectedRooms)
     {
         selectedRooms = new List<HotelRoom>();
         var allCombinations = GetAllRoomCombinations(availableRooms);
@@ -406,7 +425,7 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     {
         var results = new List<List<HotelRoom>>();
         int count = rooms.Count;
-        for (int i = 1; i < (1 << count); i++) 
+        for (int i = 1; i < (1 << count); i++)
         {
             var combo = new List<HotelRoom>();
             for (int j = 0; j < count; j++)
@@ -414,11 +433,13 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 if ((i & (1 << j)) != 0)
                     combo.Add(rooms[j]);
             }
+
             results.Add(combo);
         }
+
         return results;
     }
-    
+
     /// <summary>
     /// Convert address to latitude and longitude using Nominatim
     /// </summary>
@@ -445,9 +466,11 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
 
         return null;
     }
+
     #endregion
 
-    public async Task<Ecq110InsertTripScheduleWithAiResponse> InsertTripScheduleUseAi(Ecq110InsertTripScheduleWithAiRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110InsertTripScheduleWithAiResponse> InsertTripScheduleUseAi(
+        Ecq110InsertTripScheduleWithAiRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertTripScheduleWithAiResponse { Success = false };
 
@@ -590,12 +613,12 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 EstimatedCost = x.EstimatedCost,
             })
             .ToListAsync();
-        
+
         schedule = schedule
             .OrderBy(x => x.ScheduleDate)
             .ThenBy(x => x.StartTime)
             .ToList();
-        
+
         // True
         response.Response = schedule!;
         response.Success = true;
@@ -613,7 +636,7 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
         var response = new Ecq110SelectTripSchedulesResponse { Success = false };
 
         var schedules = await _tripScheduleRepository.GetView<VwTripSchedule>(x => x.UserId == userId).ToListAsync();
-        
+
         var grouped = schedules
             .GroupBy(x => new { x.TripId, x.TripName })
             .Select(group => new Ecq110TripSchedulesEntity
@@ -621,19 +644,19 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
                 TripId = group.Key.TripId,
                 TripName = group.Key.TripName!,
                 TripScheduleDetails = group.Select(x => new Ecq110TripScheduleDetail
-                {
-                    ScheduleDate = StringUtil.ConvertToDateAsDdMmYyyy(x.ScheduleDate),
-                    Title = x.ScheduleTitle,
-                    Description = x.ScheduleDescription!,
-                    StartTime = StringUtil.ConvertToHhMm(x.StartTime),
-                    EndTime = StringUtil.ConvertToHhMm(x.EndTime),
-                    Location = x.Location!,
-                    EstimatedCost = x.EstimatedCost,
-                    ServiceId = x.ServiceId,
-                    ServiceType = x.ServiceType!,
-                    CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
-                    UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
-                })
+                    {
+                        ScheduleDate = StringUtil.ConvertToDateAsDdMmYyyy(x.ScheduleDate),
+                        Title = x.ScheduleTitle,
+                        Description = x.ScheduleDescription!,
+                        StartTime = StringUtil.ConvertToHhMm(x.StartTime),
+                        EndTime = StringUtil.ConvertToHhMm(x.EndTime),
+                        Location = x.Location!,
+                        EstimatedCost = x.EstimatedCost,
+                        ServiceId = x.ServiceId,
+                        ServiceType = x.ServiceType!,
+                        CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
+                        UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt)
+                    })
                     .OrderBy(x => x.ScheduleDate)
                     .ThenBy(x => x.StartTime)
                     .ToList()
@@ -652,7 +675,8 @@ public async Task<Ecq110InsertTripScheduleResponse> InsertTripSchedule(Ecq110Ins
     /// <param name="request">Update request</param>
     /// <param name="identityEntity">User identity</param>
     /// <returns>Update result</returns>
-    public async Task<Ecq110UpdateTripScheduleResponse> UpdateTripSchedule(Ecq110UpdateTripScheduleRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110UpdateTripScheduleResponse> UpdateTripSchedule(Ecq110UpdateTripScheduleRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110UpdateTripScheduleResponse { Success = false };
 

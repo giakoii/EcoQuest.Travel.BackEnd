@@ -66,4 +66,6 @@ public partial class HotelRoom
     public string? SpecialNote { get; set; }
 
     public virtual Hotel Hotel { get; set; } = null!;
+
+    public virtual ICollection<HotelBooking> HotelBookings { get; set; } = new List<HotelBooking>();
 }

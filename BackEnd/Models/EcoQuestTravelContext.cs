@@ -34,6 +34,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<Hotel> Hotels { get; set; }
 
+    public virtual DbSet<HotelBooking> HotelBookings { get; set; }
+
     public virtual DbSet<HotelRating> HotelRatings { get; set; }
 
     public virtual DbSet<HotelRoom> HotelRooms { get; set; }
@@ -83,6 +85,8 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<VwEmailTemplateVerifyUser> VwEmailTemplateVerifyUsers { get; set; }
 
     public virtual DbSet<VwHotel> VwHotels { get; set; }
+
+    public virtual DbSet<VwHotelBooking> VwHotelBookings { get; set; }
 
     public virtual DbSet<VwHotelRoom> VwHotelRooms { get; set; }
 
@@ -292,8 +296,6 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.BookingId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("booking_id");
-            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
-            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
@@ -478,6 +480,44 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasConstraintName("FK_Hotels_Owner");
         });
 
+        modelBuilder.Entity<HotelBooking>(entity =>
+        {
+            entity.HasKey(e => e.HotelBookingId).HasName("PK__HotelBoo__4D87FD92F97DE666");
+
+            entity.Property(e => e.HotelBookingId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("hotel_booking_id");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
+            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.NumberOfRooms).HasColumnName("number_of_rooms");
+            entity.Property(e => e.PricePerNight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("price_per_night");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.HotelBookings)
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__HotelBook__booki__44952D46");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.HotelBookings)
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__HotelBook__room___4589517F");
+        });
+
         modelBuilder.Entity<HotelRating>(entity =>
         {
             entity.HasKey(e => e.RatingId).HasName("PK__HotelRat__D35B278B5B2E1207");
@@ -612,7 +652,7 @@ public partial class EcoQuestTravelContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
         });
-        
+
         modelBuilder.Entity<Partner>(entity =>
         {
             entity.HasKey(e => e.PartnerId).HasName("PK__Partners__576F1B273FD02EC7");
@@ -1144,8 +1184,6 @@ public partial class EcoQuestTravelContext : DbContext
                 .ToView("Vw_Booking");
 
             entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
-            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
@@ -1350,6 +1388,32 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.Ward)
                 .HasMaxLength(50)
                 .HasColumnName("ward");
+        });
+
+        modelBuilder.Entity<VwHotelBooking>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("Vw_HotelBooking");
+
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CheckinDate).HasColumnName("checkin_date");
+            entity.Property(e => e.CheckoutDate).HasColumnName("checkout_date");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("created_by");
+            entity.Property(e => e.HotelBookingId).HasColumnName("hotel_booking_id");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.NumberOfRooms).HasColumnName("number_of_rooms");
+            entity.Property(e => e.PricePerNight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("price_per_night");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100)
+                .HasColumnName("updated_by");
         });
 
         modelBuilder.Entity<VwHotelRoom>(entity =>

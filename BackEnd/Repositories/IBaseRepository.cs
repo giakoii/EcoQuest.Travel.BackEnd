@@ -21,6 +21,8 @@ public interface IBaseRepository<T, TU> where T : class
 
     // Add entity (asynchronous)
     Task AddAsync(T entity);
+    
+    Task AddRangeAsync(IEnumerable<T> entities);
 
     // Update entity (synchronous)
     void Update(T entity);

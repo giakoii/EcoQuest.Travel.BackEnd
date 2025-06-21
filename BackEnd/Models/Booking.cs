@@ -21,10 +21,6 @@ public partial class Booking
 
     public TimeOnly? EndTime { get; set; }
 
-    public DateOnly? CheckinDate { get; set; }
-
-    public DateOnly? CheckoutDate { get; set; }
-
     public decimal TotalCost { get; set; }
 
     public int NumberOfGuests { get; set; }
@@ -40,6 +36,8 @@ public partial class Booking
     public string UpdatedBy { get; set; } = null!;
 
     public bool IsActive { get; set; }
+
+    public virtual ICollection<HotelBooking> HotelBookings { get; set; } = new List<HotelBooking>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
