@@ -22,6 +22,10 @@ public static class SystemConfig
     
     public const string PayOsClientId = "PAYOS_CLIENTID";
     
+    public const string MobileReturnUrl = "MOBILE_RETURN_URL";
+    
+    public const string MobileCancelUrl = "MOBILE_CANCEL_URL";
+    
     public const string OrderWebRedirectSuccess = "ORDER_WEB_REDIRECT_SUCCESS";
     
     public const string OrderWebRedirectFail = "ORDER_WEB_REDIRECT_FAIL";

@@ -31,18 +31,17 @@ public class PayOsPaymentLogic
         if (description.Length > 25)
             description = description.Substring(0, 25);    
         
-        var returnUrl = $"http://160.250.246.33:5269/api/v1/Ecq100SelectHotels";
-        var cancelUrl = $"http://160.250.246.33:5269/api/v1/Ecq100SelectHotels";
-        
         var payOsCheckSumKey = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.PayOsCheckSumKey).FirstOrDefault()!.Value;
         var payOsApiKey = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.PayOsApiKey).FirstOrDefault()!.Value;
         var payOsClientId = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.PayOsClientId).FirstOrDefault()!.Value;
+        var mobileReturnUrl = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.MobileReturnUrl).FirstOrDefault()!.Value;
+        var mobileCancelUrl = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.MobileCancelUrl).FirstOrDefault()!.Value;
 
         
-        var data = $"amount={2000}&cancelUrl={cancelUrl}" +
+        var data = $"amount={2000}&cancelUrl={mobileCancelUrl}" +
                    $"&description={description}" +
                    $"&orderCode={orderCode}" +
-                   $"&returnUrl={returnUrl}";
+                   $"&returnUrl={mobileReturnUrl}";
         string signature = ComputeHmacSha256(data, payOsCheckSumKey);
 
         var payRequest = new
@@ -50,8 +49,8 @@ public class PayOsPaymentLogic
             orderCode = orderCode,
             amount = 2000,
             description = description,
-            returnUrl = returnUrl,
-            cancelUrl = cancelUrl,
+            returnUrl = mobileReturnUrl,
+            cancelUrl = mobileCancelUrl,
             signature = signature,
         };
         
