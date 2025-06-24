@@ -197,7 +197,7 @@ builder.Services.AddOpenIddict()
                .AddDevelopmentSigningCertificate();  
         
         // Set the lifetime of the tokens
-        options.SetAccessTokenLifetime(TimeSpan.FromMinutes(60));
+        options.SetAccessTokenLifetime(TimeSpan.FromMinutes(480));
         options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(120));
         // Register ASP.NET Core host and configure options
         options.UseAspNetCore()
