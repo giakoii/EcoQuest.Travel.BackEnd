@@ -11,10 +11,12 @@ namespace BackEnd.Services;
 public class CommentService : ICommentService
 {
     private readonly IBaseRepository<Comment, Guid> _commentRepository;
+    private  readonly IBaseRepository<Blog, Guid> _blogRepository;
 
-    public CommentService(IBaseRepository<Comment, Guid> commentRepository)
+    public CommentService(IBaseRepository<Comment, Guid> commentRepository, IBaseRepository<Blog, Guid> blogRepository)
     {
         _commentRepository = commentRepository;
+        _blogRepository = blogRepository;
     }
 
     /// <summary>
@@ -25,6 +27,14 @@ public class CommentService : ICommentService
     public async Task<Ecq100SelectCommentsResponse> SelectComments(Guid blogId)
     {
         var response = new Ecq100SelectCommentsResponse { Success = false };
+        
+        // Validate blog existence
+        var blogExist = await _blogRepository.Find(x => x.BlogId == blogId && x.IsActive == true).FirstOrDefaultAsync();
+        if (blogExist == null)
+        {
+            response.SetMessage(MessageId.I00000, CommonMessages.BlogNotFound);
+            return response;
+        }
         
         // Select comments
         response.Response = await _commentRepository.GetView<VwComment>(x => x.BlogId == blogId)
