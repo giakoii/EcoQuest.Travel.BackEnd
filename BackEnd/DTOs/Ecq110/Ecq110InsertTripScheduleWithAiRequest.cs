@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using BackEnd.Controllers;
 
-namespace BackEnd.DTOs.Chatbot;
+namespace BackEnd.DTOs.Ecq110;
 
 public class Ecq110InsertTripScheduleWithAiRequest : AbstractApiRequest
 {
     [Required(ErrorMessage = "TripId is required")]
-    public required Guid TripId { get; set; }
+    public Guid TripId { get; set; }
 }

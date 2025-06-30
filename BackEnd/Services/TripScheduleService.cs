@@ -1,8 +1,9 @@
-using BackEnd.DTOs.Chatbot;
 using BackEnd.DTOs.Ecq110;
+using BackEnd.DTOs.Ecq200;
 using BackEnd.DTOs.Ecq210;
 using BackEnd.DTOs.Ecq220;
 using BackEnd.DTOs.Ecq230;
+using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
@@ -21,7 +22,9 @@ public class TripScheduleService : ITripScheduleService
     private readonly IBaseRepository<RestaurantDetail, Guid> _restaurantDetailRepository;
     private readonly IBaseRepository<Hotel, Guid> _hotelRepository;
     private readonly IBaseRepository<HotelRoom, Guid> _hotelRoomRepository;
-
+    private readonly IBaseRepository<TripDestination, Guid> _tripDestinationRepository;
+    private readonly AiLogic _aiLogic;
+    
     /// <summary>
     /// Constructor
     /// </summary>
@@ -31,11 +34,16 @@ public class TripScheduleService : ITripScheduleService
     /// <param name="restaurantDetailRepository"></param>
     /// <param name="hotelRepository"></param>
     /// <param name="hotelRoomRepository"></param>
+    /// <param name="aiLogic"></param>
+    /// <param name="tripDestinationRepository"></param>
     public TripScheduleService(IBaseRepository<Trip, Guid> tripRepository,
         IBaseRepository<TripSchedule, Guid> tripScheduleRepository,
         IBaseRepository<AttractionDetail, Guid> attractionDetailRepository,
         IBaseRepository<RestaurantDetail, Guid> restaurantDetailRepository,
-        IBaseRepository<Hotel, Guid> hotelRepository, IBaseRepository<HotelRoom, Guid> hotelRoomRepository)
+        IBaseRepository<Hotel, Guid> hotelRepository, 
+        IBaseRepository<HotelRoom, Guid> hotelRoomRepository, 
+        AiLogic aiLogic, 
+        IBaseRepository<TripDestination, Guid> tripDestinationRepository)
     {
         _tripRepository = tripRepository;
         _tripScheduleRepository = tripScheduleRepository;
@@ -43,8 +51,9 @@ public class TripScheduleService : ITripScheduleService
         _restaurantDetailRepository = restaurantDetailRepository;
         _hotelRepository = hotelRepository;
         _hotelRoomRepository = hotelRoomRepository;
+        _aiLogic = aiLogic;
+        _tripDestinationRepository = tripDestinationRepository;
     }
-
     /// <summary>
     /// Insert a trip schedule
     /// </summary>
@@ -469,118 +478,137 @@ public class TripScheduleService : ITripScheduleService
 
     #endregion
 
-    public async Task<Ecq110InsertTripScheduleWithAiResponse> InsertTripScheduleUseAi(
-        Ecq110InsertTripScheduleWithAiRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110InsertTripScheduleWithAiResponse> InsertTripScheduleUseAi(Ecq110InsertTripScheduleWithAiRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertTripScheduleWithAiResponse { Success = false };
 
-        // Check if trip exists
-        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true)
-            .FirstOrDefaultAsync();
-        if (trip == null)
+        try
         {
-            response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
-            return response;
-        }
-
-        // Verify ownership
-        if (trip.UserId != Guid.Parse(identityEntity.UserId))
-        {
-            response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
-            return response;
-        }
-
-        // Begin transaction
-        await _tripScheduleRepository.ExecuteInTransactionAsync(async () =>
-        {
-            var hotelList = new List<Ecq210HotelEntity>();
-            var restaurantList = new List<Ecq220RestaurantEntity>();
-            var attractionList = new List<Ecq230AttractionDetailEntity>();
-
-            var hotelSelects = _hotelRepository.GetView<VwHotel>().ToListAsync();
-            var restaurantSelects = _restaurantDetailRepository.GetView<VwRestaurant>().ToListAsync();
-            var attractionSelects = _attractionDetailRepository.GetView<VwAttraction>().ToListAsync();
-
-            Task.WhenAll(hotelSelects, restaurantSelects, attractionSelects).Wait();
-
-            foreach (var tripDestination in trip.TripDestinations)
+            // Check if trip exists
+            var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true, false, x => x.TripDestinations)
+                .FirstOrDefaultAsync();
+            if (trip == null)
             {
-                hotelSelects.Result.Find(x => x.DestinationId == tripDestination.DestinationId);
-                restaurantSelects.Result.Find(x => x.DestinationId == tripDestination.DestinationId);
-                attractionSelects.Result.Find(x => x.DestinationId == tripDestination.DestinationId);
-
-                hotelSelects.Result.ForEach(h =>
-                {
-                    if (h.DestinationId == tripDestination.DestinationId)
-                    {
-                        hotelList.Add(new Ecq210HotelEntity
-                        {
-                            HotelId = h.HotelId,
-                            Name = h.HotelName,
-                            Description = h.HotelDescription,
-                            AddressLine = h.AddressLine,
-                            Ward = h.Ward,
-                            District = h.District,
-                            Province = h.Province,
-                            DestinationId = h.DestinationId,
-                            DestinationName = h.DestinationName,
-                            AverageRating = h.AverageRating,
-                            TotalRatings = h.TotalRatings,
-                        });
-                    }
-                });
-
-                restaurantSelects.Result.ForEach(r =>
-                {
-                    if (r.DestinationId == tripDestination.DestinationId)
-                    {
-                        restaurantList.Add(new Ecq220RestaurantEntity
-                        {
-                            RestaurantId = r.RestaurantId,
-                            RestaurantName = r.RestaurantName!,
-                            AddressLine = r.Address,
-                            OpenTime = StringUtil.ConvertToHhMm(r.OpenTime),
-                            CloseTime = StringUtil.ConvertToHhMm(r.CloseTime),
-                            MinPrice = r.MinPrice,
-                            MaxPrice = r.MaxPrice,
-                            DestinationId = r.DestinationId,
-                            DestinationName = r.DestinationName,
-                            AverageRating = r.AverageRating,
-                            TotalRatings = r.TotalRatings
-                        });
-                    }
-                });
-
-                attractionSelects.Result.ForEach(a =>
-                {
-                    if (a.DestinationId == tripDestination.DestinationId)
-                    {
-                        attractionList.Add(new Ecq230AttractionDetailEntity
-                        {
-                            AttractionId = a.AttractionId,
-                            AttractionName = a.AttractionName,
-                            PartnerId = a.PartnerId,
-                            AttractionType = a.AttractionType,
-                            TicketPrice = a.TicketPrice,
-                            OpenTime = StringUtil.ConvertToHhMm(a.OpenTime),
-                            DestinationId = a.DestinationId,
-                            DestinationName = a.DestinationName,
-                            PhoneNumber = a.PhoneNumber,
-                            Address = a.Address,
-                            GuideAvailable = a.GuideAvailable,
-                            AgeLimit = a.AgeLimit,
-                            DurationMinutes = a.DurationMinutes,
-                            AverageRating = a.AverageRating,
-                            TotalRatings = a.TotalRatings
-                        });
-                    }
-                });
+                response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
+                return response;
             }
 
+            // Verify ownership
+            if (trip.UserId != Guid.Parse(identityEntity.UserId))
+            {
+                response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
+                return response;
+            }
+
+            // Get destination IDs for filtering
+            var destinationIds = trip.TripDestinations.Select(td => td.DestinationId).ToList();
+            
+            if (!destinationIds.Any())
+            {
+                response.SetMessage(MessageId.I00000, "No destinations found for this trip");
+                return response;
+            }
+
+            // Get data efficiently - filter at database level
+            var hotels = await _hotelRepository.GetView<VwHotel>()
+                .Where(x => destinationIds.Contains(x.DestinationId!.Value))
+                .ToListAsync();
+                
+            var restaurants = await _restaurantDetailRepository.GetView<VwRestaurant>()
+                .Where(x => destinationIds.Contains(x.DestinationId!.Value))
+                .ToListAsync();
+                
+            var attractions = await _attractionDetailRepository.GetView<VwAttraction>()
+                .Where(x => destinationIds.Contains(x.DestinationId!.Value))
+                .ToListAsync();
+
+            // Get destinations
+            var tripDestinations = await _tripDestinationRepository
+                .Find(x => x.TripId == trip.TripId, false, x => x.Destination)
+                .ToListAsync();
+
+            // Convert to AI entities
+            var hotelList = hotels.Select(h => new Ecq210HotelEntity
+            {
+                HotelId = h.HotelId,
+                Name = h.HotelName,
+                Description = h.HotelDescription,
+                AddressLine = h.AddressLine,
+                Ward = h.Ward,
+                District = h.District,
+                Province = h.Province,
+                DestinationId = h.DestinationId,
+                DestinationName = h.DestinationName,
+                AverageRating = h.AverageRating,
+                TotalRatings = h.TotalRatings,
+                MinPrice = h.MinPrice,
+                MaxPrice = h.MaxPrice,
+            }).ToList();
+
+            var restaurantList = restaurants.Select(r => new Ecq220RestaurantEntity
+            {
+                RestaurantId = r.RestaurantId,
+                RestaurantName = r.RestaurantName!,
+                AddressLine = r.Address,
+                OpenTime = StringUtil.ConvertToHhMm(r.OpenTime),
+                CloseTime = StringUtil.ConvertToHhMm(r.CloseTime),
+                MinPrice = r.MinPrice,
+                MaxPrice = r.MaxPrice,
+                DestinationId = r.DestinationId,
+                DestinationName = r.DestinationName,
+                AverageRating = r.AverageRating,
+                TotalRatings = r.TotalRatings
+            }).ToList();
+
+            var attractionList = attractions.Select(a => new Ecq230AttractionDetailEntity
+            {
+                AttractionId = a.AttractionId,
+                AttractionName = a.AttractionName,
+                AttractionType = a.AttractionType,
+                TicketPrice = a.TicketPrice,
+                DestinationId = a.DestinationId,
+                DestinationName = a.DestinationName,
+                AverageRating = a.AverageRating,
+                TotalRatings = a.TotalRatings,
+            }).ToList();
+
+            var destinationList = tripDestinations.Select(destination => new Ecq200DestinationDetailEntity
+            {
+                DestinationId = destination.DestinationId,
+                Name = destination.Destination.Name,
+                Description = destination.Destination.Description,
+                AddressLine = destination.Destination.AddressLine,
+                District = destination.Destination.District,
+                Province = destination.Destination.Province
+            }).ToList();
+
+            // Convert dates to strings for AI
+            var startDateStr = trip.StartDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+            var endDateStr = trip.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+            var numberOfPeopleStr = trip.NumberOfPeople?.ToString() ?? "1";
+            var totalEstimatedCostStr = trip.TotalEstimatedCost?.ToString("F0") ?? "0";
+
+            // Call AI to generate schedule
+            var generateSchedule = await _aiLogic.AskAiModel(
+                hotelList, 
+                attractionList, 
+                restaurantList, 
+                destinationList, 
+                startDateStr,
+                endDateStr, 
+                numberOfPeopleStr,
+                totalEstimatedCostStr);
+            
+            response.Response = generateSchedule;
             response.Success = true;
             response.SetMessage(MessageId.I00001);
-            return true;
-        });
+        }
+        catch (Exception ex)
+        {
+            response.SetMessage(MessageId.I00000, $"Error generating AI schedule: {ex.Message}");
+            response.Success = false;
+        }
+
         return response;
     }
 
@@ -850,3 +878,4 @@ public class TripScheduleService : ITripScheduleService
         return response;
     }
 }
+

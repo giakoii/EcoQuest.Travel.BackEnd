@@ -255,7 +255,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add the worker service
 builder.Services.AddHostedService<Worker>();
-builder.Services.AddHttpClient<OpenAiLogic>();
+builder.Services.AddHttpClient<AiLogic>();
 
 var app = builder.Build();
 
