@@ -75,6 +75,7 @@ builder.Services.AddScoped<IBaseRepository<Hotel, Guid>, BaseRepository<Hotel, G
 builder.Services.AddScoped<IBaseRepository<HotelRoom, Guid>, BaseRepository<HotelRoom, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Booking, Guid>, BaseRepository<Booking, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Payment, Guid>, BaseRepository<Payment, Guid>>();
+builder.Services.AddScoped<TripScheduleRepositoryWrapper>();
 
 // Add services to the container.
 builder.Services.AddControllers();

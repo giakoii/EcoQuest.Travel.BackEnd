@@ -8,10 +8,12 @@ namespace BackEnd.Logics;
 public class DashboardAnalyticsLogic
 {
     private readonly AppDbContext _context;
+    private readonly AiLogic _aiLogic;
 
-    public DashboardAnalyticsLogic(AppDbContext context)
+    public DashboardAnalyticsLogic(AppDbContext context, AiLogic aiLogic)
     {
         _context = context;
+        _aiLogic = aiLogic;
     }
 
     // Dự báo lượt khách theo vùng
@@ -95,8 +97,7 @@ public class DashboardAnalyticsLogic
     }
 
     // Phân tích tour hot và tour sụt giảm
-    public async Task<(List<TripPopularityDto> hotTrips, List<TripPopularityDto> decliningTrips)>
-        GetTripPopularityAnalysisAsync()
+    public async Task<(List<TripPopularityDto> hotTrips, List<TripPopularityDto> decliningTrips)> GetTripPopularityAnalysisAsync()
     {
         var threeMonthsAgo = DateTime.Now.AddMonths(-3);
 
@@ -200,81 +201,73 @@ public class DashboardAnalyticsLogic
                 TotalRevenue = g.Sum(b => b.TotalCost),
                 CancellationRate = g.Count(b => b.Status == "Cancelled") * 100.0 / g.Count()
             })
-            .Where(t => t.BookingCount < 5 || t.CancellationRate > 20) // Trips with low bookings or high cancellation
+            .Where(t => t.BookingCount < 5 || t.CancellationRate > 20)
             .ToListAsync();
 
         foreach (var trip in problemTrips)
         {
-            var optimization = new TripOptimizationDto
+            List<OptimizationSuggestion> aiSuggestions = new();
+            try
             {
-                TripId = trip.TripId,
-                TripName = trip.TripName ?? "Unknown Trip",
-                Suggestions = new List<OptimizationSuggestion>()
-            };
-
-            // Phân tích vấn đề và đưa ra gợi ý
-            if (trip.BookingCount < 5)
+                aiSuggestions = await _aiLogic.AskAiForTripOptimization(
+                    trip.TripName ?? "Unknown",
+                    trip.BookingCount,
+                    trip.CancellationRate,
+                    trip.EstimatedCost,
+                    trip.AverageActualCost,
+                    trip.TotalRevenue
+                );
+            }
+            catch
             {
-                optimization.CurrentIssue = "Low booking volume";
-                optimization.Priority = 4;
-
-                // Gợi ý marketing
-                optimization.Suggestions.Add(new OptimizationSuggestion
+                // Nếu AI lỗi, fallback về gợi ý mẫu
+                if (trip.BookingCount < 5)
                 {
-                    Type = "Marketing",
-                    Title = "Increase marketing efforts",
-                    Description = "Consider running targeted ads or social media campaigns for this destination",
-                    ExpectedImpact = 30,
-                    Difficulty = "Medium"
-                });
-
-                // Gợi ý giá
-                if (trip.EstimatedCost.HasValue && trip.AverageActualCost > trip.EstimatedCost * 1.2m)
-                {
-                    optimization.Suggestions.Add(new OptimizationSuggestion
+                    aiSuggestions.Add(new OptimizationSuggestion
                     {
-                        Type = "Price",
-                        Title = "Adjust pricing strategy",
-                        Description = "Consider offering early bird discounts or package deals",
-                        ExpectedImpact = 25,
-                        Difficulty = "Easy"
+                        Type = "Marketing",
+                        Title = "Tăng cường quảng bá",
+                        Description = "Chạy quảng cáo Facebook, hợp tác KOLs để tăng nhận diện.",
+                        ExpectedImpact = "30",
+                        Difficulty = "Trung bình"
+                    });
+                }
+                if (trip.CancellationRate > 20)
+                {
+                    aiSuggestions.Add(new OptimizationSuggestion
+                    {
+                        Type = "Dịch vụ",
+                        Title = "Nâng cao chất lượng dịch vụ",
+                        Description = "Khảo sát khách hàng, cải thiện trải nghiệm tour.",
+                        ExpectedImpact = "40",
+                        Difficulty = "Khó"
                     });
                 }
             }
 
-            if (trip.CancellationRate > 20)
+            // Chuyển đổi kiểu dữ liệu cho Suggestions
+            var mappedSuggestions = aiSuggestions.Select(s => new BackEnd.DTOs.Dashboard.OptimizationSuggestion
             {
-                optimization.CurrentIssue = "High cancellation rate";
-                optimization.Priority = 5;
+                Type = s.Type,
+                Title = s.Title,
+                Description = s.Description,
+                ExpectedImpact = decimal.TryParse(s.ExpectedImpact?.Replace("%", "").Trim(), out var v) ? v : 0,
+                Difficulty = s.Difficulty
+            }).ToList();
 
-                optimization.Suggestions.Add(new OptimizationSuggestion
-                {
-                    Type = "Service",
-                    Title = "Improve service quality",
-                    Description = "Review and enhance tour services based on customer feedback",
-                    ExpectedImpact = 40,
-                    Difficulty = "Hard"
-                });
-
-                optimization.Suggestions.Add(new OptimizationSuggestion
-                {
-                    Type = "Schedule",
-                    Title = "Optimize tour schedule",
-                    Description = "Adjust timing and duration based on customer preferences",
-                    ExpectedImpact = 20,
-                    Difficulty = "Medium"
-                });
-            }
-
-            // Tính toán potential revenue increase
-            optimization.PotentialRevenueIncrease =
-                optimization.Suggestions.Sum(s => s.ExpectedImpact) * trip.TotalRevenue / 100;
-
+            var optimization = new TripOptimizationDto
+            {
+                TripId = trip.TripId,
+                TripName = trip.TripName ?? "Unknown Trip",
+                Suggestions = mappedSuggestions,
+                CurrentIssue = (trip.BookingCount < 5 ? "Ít lượt đặt" : "") + (trip.CancellationRate > 20 ? ", Tỷ lệ hủy cao" : ""),
+                Priority = trip.CancellationRate > 20 ? 5 : 4,
+                PotentialRevenueIncrease = mappedSuggestions.Sum(s => s.ExpectedImpact) * trip.TotalRevenue / 100
+            };
             suggestions.Add(optimization);
         }
 
-        return suggestions.OrderByDescending(s => s.Priority).ThenByDescending(s => s.PotentialRevenueIncrease)
-            .ToList();
+        return suggestions.OrderByDescending(s => s.Priority).ThenByDescending(s => s.PotentialRevenueIncrease).ToList();
     }
 
     // Tổng hợp dashboard overview

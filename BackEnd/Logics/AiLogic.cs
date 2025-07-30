@@ -188,11 +188,11 @@ public class AiLogic
             // Convert AI response format to our response format
             var tripScheduleDetails = aiResponse.TripScheduleDetails.Select(detail => new Ecq110InsertTripScheduleResponseDetail
             {
-                ScheduleDate = DateOnly.ParseExact(detail.ScheduleDate, "yyyy-MM-dd"),
+                ScheduleDate = DateOnly.ParseExact(detail.ScheduleDate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                 Title = detail.Title,
-                Description = detail.Description ?? string.Empty,
-                StartTime = TimeOnly.ParseExact(detail.StartTime, "HH:mm"),
-                EndTime = string.IsNullOrEmpty(detail.EndTime) ? null : TimeOnly.ParseExact(detail.EndTime, "HH:mm"),
+                Description = detail.Description,
+                StartTime = TimeOnly.ParseExact(detail.StartTime, "HH:mm", System.Globalization.CultureInfo.InvariantCulture),
+                EndTime = string.IsNullOrEmpty(detail.EndTime) ? null : TimeOnly.ParseExact(detail.EndTime, "HH:mm", System.Globalization.CultureInfo.InvariantCulture),
                 Address = detail.Address,
                 EstimatedCost = detail.EstimatedCost,
                 ReasonEstimatedCost = detail.ReasonEstimatedCost,
@@ -206,6 +206,68 @@ public class AiLogic
         { 
             throw new InvalidOperationException("Failed to call AI model for trip schedule generation", ex);
         }
+    }
+
+    /// <summary>
+    /// Gửi thông tin tour có vấn đề cho AI và nhận về danh sách gợi ý tối ưu hóa (tiếng Việt)
+    /// </summary>
+    public async Task<List<OptimizationSuggestion>> AskAiForTripOptimization(string tripName, int bookingCount, double cancellationRate, decimal? estimatedCost, decimal averageActualCost, decimal totalRevenue)
+    {
+        var apiKey = _systemConfigRepository
+            .Find(x => x.Id == Utils.Const.SystemConfig.ApiKeyAi, false)
+            .FirstOrDefault()?.Value;
+        if (string.IsNullOrEmpty(apiKey))
+            throw new InvalidOperationException("AI API Key not configured in system settings");
+
+        var url = "https://api.groq.com/openai/v1/chat/completions";
+        var prompt = $"Bạn là chuyên gia du lịch. Phân tích tour sau và đưa ra gợi ý tối ưu hóa bằng tiếng Việt.\n" +
+                     $"Tên tour: {tripName}\n" +
+                     $"Số lượng booking: {bookingCount}\n" +
+                     $"Tỷ lệ hủy: {cancellationRate:F2}%\n" +
+                     $"Chi phí ước tính: {estimatedCost}\n" +
+                     $"Chi phí thực tế trung bình: {averageActualCost}\n" +
+                     $"Tổng doanh thu: {totalRevenue}\n" +
+                     $"Vấn đề: {(bookingCount < 5 ? "Ít lượt đặt" : "")}{(cancellationRate > 20 ? ", Tỷ lệ hủy cao" : "")}\n" +
+                     "Hãy đề xuất các giải pháp cụ thể (marketing, giá, dịch vụ, lịch trình...) để cải thiện tour này. Trả về JSON dạng: [ { \"Type\": \"Loại đề xuất\", \"Title\": \"Tiêu đề\", \"Description\": \"Mô tả chi tiết\", \"ExpectedImpact\": \"Tác động kỳ vọng (%)\", \"Difficulty\": \"Độ khó\" } ]";
+
+        var requestBody = new
+        {
+            model = "llama-3.3-70b-versatile",
+            messages = new[]
+            {
+                new { role = "system", content = "Bạn là chuyên gia lập kế hoạch du lịch chuyên nghiệp. Luôn trả về JSON hợp lệ theo đúng format được yêu cầu." },
+                new { role = "user", content = prompt }
+            },
+        };
+        var requestJson = JsonSerializer.Serialize(requestBody);
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("Authorization", $"Bearer {apiKey}");
+        request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"AI API call failed: {response.StatusCode} - {errorContent}");
+        }
+        var responseContent = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(responseContent);
+        var aiText = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+        var cleanText = aiText?.Trim();
+        if (cleanText?.Contains("```json") == true)
+        {
+            var start = cleanText.IndexOf("```json") + 7;
+            var end = cleanText.LastIndexOf("```");
+            cleanText = cleanText.Substring(start, end - start).Trim();
+        }
+        else
+        {
+            var start = cleanText.IndexOf('[');
+            var end = cleanText.LastIndexOf(']');
+            if (start >= 0 && end > start)
+                cleanText = cleanText.Substring(start, end - start + 1);
+        }
+        var suggestions = JsonSerializer.Deserialize<List<OptimizationSuggestion>>(cleanText ?? "[]");
+        return suggestions ?? new List<OptimizationSuggestion>();
     }
 }
 
@@ -227,4 +289,13 @@ public class TripScheduleDetail
     public string? ReasonEstimatedCost { get; set; }
     public string? ServiceId { get; set; }
     public string? ServiceType { get; set; }
+}
+
+public class OptimizationSuggestion
+{
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string ExpectedImpact { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
 }
