@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Models;
@@ -41,7 +40,7 @@ public partial class EcoQuestTravelContext : DbContext
     public virtual DbSet<HotelRoom> HotelRooms { get; set; }
 
     public virtual DbSet<Image> Images { get; set; }
-
+    
     public virtual DbSet<Partner> Partners { get; set; }
 
     public virtual DbSet<PartnerPartnerType> PartnerPartnerTypes { get; set; }
@@ -98,6 +97,8 @@ public partial class EcoQuestTravelContext : DbContext
 
     public virtual DbSet<VwPayment> VwPayments { get; set; }
 
+    public virtual DbSet<VwPaymentBookingTrip> VwPaymentBookingTrips { get; set; }
+
     public virtual DbSet<VwRestaurant> VwRestaurants { get; set; }
 
     public virtual DbSet<VwRestaurantRating> VwRestaurantRatings { get; set; }
@@ -110,7 +111,7 @@ public partial class EcoQuestTravelContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            Env.Load(); 
+            DotNetEnv.Env.Load(); 
 
             var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
@@ -1553,6 +1554,54 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(100)
                 .HasColumnName("updated_by");
+        });
+
+        modelBuilder.Entity<VwPaymentBookingTrip>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_PaymentBookingTrip");
+
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(100)
+                .HasColumnName("first_name");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(100)
+                .HasColumnName("last_name");
+            entity.Property(e => e.Method)
+                .HasMaxLength(50)
+                .HasColumnName("method");
+            entity.Property(e => e.NumberOfPeople).HasColumnName("number_of_people");
+            entity.Property(e => e.PaidAt).HasColumnName("paid_at");
+            entity.Property(e => e.PaymentCreatedAt).HasColumnName("payment_created_at");
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
+            entity.Property(e => e.StartingPointAddress)
+                .HasMaxLength(255)
+                .HasColumnName("starting_point_address");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+            entity.Property(e => e.TotalEstimatedCost)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_estimated_cost");
+            entity.Property(e => e.TransactionCode)
+                .HasMaxLength(100)
+                .HasColumnName("transaction_code");
+            entity.Property(e => e.TripDescription).HasColumnName("trip_description");
+            entity.Property(e => e.TripId).HasColumnName("trip_id");
+            entity.Property(e => e.TripName)
+                .HasMaxLength(200)
+                .HasColumnName("trip_name");
+            entity.Property(e => e.TripStatus).HasColumnName("trip_status");
+            entity.Property(e => e.UserEmail)
+                .HasMaxLength(256)
+                .HasColumnName("user_email");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
         });
 
         modelBuilder.Entity<VwRestaurant>(entity =>

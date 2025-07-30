@@ -49,6 +49,7 @@ builder.Services.AddScoped<IDestinationService, DestinationService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<DashboardAnalyticsLogic>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<ITripScheduleService, TripScheduleService>();
 builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
@@ -110,6 +111,7 @@ builder.Services.AddSwaggerGen(c =>
             "Ecq240" => "Ecq240 - Payment",
             "Ecq300" => "Ecq300 - Manage Profile",
             "Ecq310" => "Ecq310 - Admin Dashboard",
+            "Admin" => "Admin - Admin Dashboard",
             _ => screenCode
         };
 
@@ -277,4 +279,3 @@ app.UseSwaggerUI(c =>
 app.UseDeveloperExceptionPage();
 app.UseStatusCodePages(); 
 app.Run();
-
