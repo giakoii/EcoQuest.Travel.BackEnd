@@ -21,4 +21,6 @@ public interface IUserService
     Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, string email);
     
     Task<LoginResponse> GoogleLogin(string email, string firstName, string lastName, string pictureUrl);
+
+    Task<Ecq010UpdateUserPasswordResponse> UpdateUserPassword(Ecq010UpdateUserPasswordRequest request, IdentityEntity identityEntity);
 }

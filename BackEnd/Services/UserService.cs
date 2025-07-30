@@ -438,6 +438,48 @@ public class UserService : IUserService
         response.SetMessage(MessageId.I00001);
         return response;
     }
+
+    /// <summary>
+    /// Update user password
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq010UpdateUserPasswordResponse> UpdateUserPassword(Ecq010UpdateUserPasswordRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq010UpdateUserPasswordResponse { Success = false };
+
+        // Find account by UserId
+        var user = await _userRepository.Find(x => x.AuthId == Guid.Parse(identityEntity.UserId)).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            response.SetMessage(MessageId.E11001, "User not found");
+            return response;
+        }
+        var account = await _accountRepository.Find(x => x.AccountId == user.AuthId && x.IsActive).FirstOrDefaultAsync();
+        if (account == null)
+        {
+            response.SetMessage(MessageId.E11001, "Account not found");
+            return response;
+        }
+        
+        // Verify old password
+        if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, account.PasswordHash))
+        {
+            response.SetMessage(MessageId.E11002, "Old password is incorrect");
+            return response;
+        }
+        
+        // Update password
+        account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword, workFactor: 12);
+        await _accountRepository.UpdateAsync(account);
+        await _accountRepository.SaveChangesAsync(account.Email!);
+       
+        // True
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
 }
 
 public class LoginResponse : AbstractApiResponse<LoginEntity>
