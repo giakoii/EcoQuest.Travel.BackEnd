@@ -2,17 +2,19 @@ using BackEnd.DTOs.Ecq110;
 using BackEnd.Services;
 using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using OpenIddict.Validation.AspNetCore;
 
-namespace BackEnd.Controllers.V1.Ecq110;
+namespace BackEnd.Controllers.V1.Ecq300;
 
 /// <summary>
-/// Ecq110SelectPaymentBookingController - Select Payment Booking
+/// Ecq300SelectPaymentBookingsController - Select Payment Booking
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq110SelectPaymentBookingController : AbstractApiAsyncController<Ecq110SelectPaymentBookingRequest, Ecq110SelectPaymentBookingResponse, Ecq110SelectPaymentBookingEntity>
+public class Ecq300SelectPaymentBookingsController : AbstractApiAsyncController<Ecq300SelectPaymentBookingsRequest, Ecq300SelectPaymentBookingsResponse, List<Ecq300SelectPaymentBookingsEntity>>
 {
     private readonly IPaymentService _paymentService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -22,7 +24,7 @@ public class Ecq110SelectPaymentBookingController : AbstractApiAsyncController<E
     /// </summary>
     /// <param name="paymentService"></param>
     /// <param name="identityApiClient"></param>
-    public Ecq110SelectPaymentBookingController(IPaymentService paymentService, IIdentityApiClient identityApiClient)
+    public Ecq300SelectPaymentBookingsController(IPaymentService paymentService, IIdentityApiClient identityApiClient)
     {
         _identityApiClient = identityApiClient;
         _paymentService = paymentService;
@@ -33,10 +35,11 @@ public class Ecq110SelectPaymentBookingController : AbstractApiAsyncController<E
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-   [HttpGet]
-    public override async Task<Ecq110SelectPaymentBookingResponse> ProcessRequest([FromQuery] Ecq110SelectPaymentBookingRequest request)
+    [HttpGet]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    public override async Task<Ecq300SelectPaymentBookingsResponse> ProcessRequest([FromQuery] Ecq300SelectPaymentBookingsRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq110SelectPaymentBookingResponse());
+        return await ProcessRequest(request, _logger, new Ecq300SelectPaymentBookingsResponse());
     }
 
     /// <summary>
@@ -44,9 +47,9 @@ public class Ecq110SelectPaymentBookingController : AbstractApiAsyncController<E
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Task<Ecq110SelectPaymentBookingResponse> Exec(Ecq110SelectPaymentBookingRequest request)
+    protected override Task<Ecq300SelectPaymentBookingsResponse> Exec(Ecq300SelectPaymentBookingsRequest request)
     {
-        throw new NotImplementedException();
+        return _paymentService.SelectPaymentBooking(request, _identityEntity);
     }
 
     /// <summary>
@@ -55,9 +58,9 @@ public class Ecq110SelectPaymentBookingController : AbstractApiAsyncController<E
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq110SelectPaymentBookingResponse ErrorCheck(Ecq110SelectPaymentBookingRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq300SelectPaymentBookingsResponse ErrorCheck(Ecq300SelectPaymentBookingsRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq110SelectPaymentBookingResponse() { Success = false };
+        var response = new Ecq300SelectPaymentBookingsResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error
