@@ -39,6 +39,15 @@ public class PaymentService : IPaymentService
             response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
             return response;
         }
+        
+        
+        // Check for duplicate payment
+        var existingPayment = await _paymentRepository.Find(x => x.TripId == request.TripId && x.Status != nameof(ConstantEnum.BookingStatus.Cancelled)).FirstOrDefaultAsync();
+        if (existingPayment != null)
+        {
+            response.SetMessage(MessageId.I00000, "Payment already exists for this trip.");
+            return response;
+        }
 
         // Begin transaction
         await _bookingRepository.ExecuteInTransactionAsync(async () =>
@@ -49,8 +58,8 @@ public class PaymentService : IPaymentService
             {
                 TripId = request.TripId,
                 Amount = totalCost,
-                Status = ConstantEnum.BookingStatus.Pending.ToString(),
-                Method = ConstantEnum.PaymentMethod.PayOs.ToString(),
+                Status = nameof(ConstantEnum.BookingStatus.Pending),
+                Method = nameof(ConstantEnum.PaymentMethod.PayOs),
                 PaidAt = DateTime.Now,
                 TransactionCode = "200",
             };
