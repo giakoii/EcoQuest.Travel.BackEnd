@@ -10,4 +10,6 @@ public interface IPaymentService
     Task<Ecq300SelectPaymentBookingsResponse> SelectPaymentBooking(Ecq300SelectPaymentBookingsRequest request, IdentityEntity identityEntity);
     
     Task<Ecq300SelectPaymentBookingResponse> SelectPaymentBookingDetail(Ecq300SelectPaymentBookingRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq110PaymentCallbackResponse> PaymentCallback(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity);
 }

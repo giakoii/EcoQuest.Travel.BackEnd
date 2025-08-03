@@ -37,6 +37,8 @@ public class PayOsPaymentLogic
         var mobileReturnUrl = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.MobileReturnUrl).FirstOrDefault()!.Value;
         var mobileCancelUrl = _systemConfigRepository.Find(x => x.Id == Utils.Const.SystemConfig.MobileCancelUrl).FirstOrDefault()!.Value;
 
+        mobileReturnUrl = $"{mobileReturnUrl}{bookingId}";
+        mobileCancelUrl = $"{mobileCancelUrl}{bookingId}";
         
         var data = $"amount={2000}&cancelUrl={mobileCancelUrl}" +
                    $"&description={description}" +

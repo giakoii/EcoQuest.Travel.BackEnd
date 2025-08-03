@@ -65,7 +65,7 @@ public class PaymentService : IPaymentService
             };
             await _paymentRepository.AddAsync(payment);
             
-            var payBookingResult = await _payOsPaymentLogic.PayBooking(request.TripId, tripExist.TripName);
+            var payBookingResult = await _payOsPaymentLogic.PayBooking(request.TripId, tripExist.TripName!);
 
             await _paymentRepository.SaveChangesAsync(identityEntity.Email);
             
@@ -108,7 +108,7 @@ public class PaymentService : IPaymentService
     }
 
     /// <summary>
-    /// Select Payment Booking Detail by PaymentId
+    /// Select Payment Booking Detail by TripId
     /// </summary>
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
@@ -161,6 +161,81 @@ public class PaymentService : IPaymentService
         // Success
         response.Success = true;
         response.SetMessage(MessageId.I00001);
+        return response;
+    }
+
+    /// <summary>
+    /// Payment Callback from PayOs
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq110PaymentCallbackResponse> PaymentCallback(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq110PaymentCallbackResponse { Success = false };
+        
+        // Get payment record
+        var payment = await _paymentRepository
+            .Find(x => x.TripId == request.TripId && x.IsActive && x.Status == nameof(ConstantEnum.PaymentStatus.Pending)
+                , isTracking: true
+                , includes: x => x.Trip)
+            .FirstOrDefaultAsync();        
+        if (payment == null)
+        {
+            response.SetMessage(MessageId.I00000, "Payment not found or not available.");
+            return response;
+        }
+
+        if (payment.Trip.UserId != Guid.Parse(identityEntity.UserId))
+        {
+            response.SetMessage(MessageId.I00000, "You are not authorized to manage this payment.");
+            return response;
+        }
+        
+        // Begin transaction
+        await _paymentRepository.ExecuteInTransactionAsync(async () =>
+        {
+            // Payment failed
+            if(request.Code != "00")
+            {
+                var paymentResponse = await _payOsPaymentLogic.PayBooking(request.TripId, payment.Trip.TripName!);
+                if (!paymentResponse.Success)
+                {
+                    response.SetMessage(MessageId.E00000, "Payment failed.");
+                    return false;
+                }
+
+                response.Response = new Ecq110PaymentCallbackEntity
+                {
+                    CheckoutUrl = paymentResponse.Response.CheckoutUrl,
+                    QrCode = paymentResponse.Response.QrCode,
+                };
+                
+                // Set response
+                response.Success = false;
+                response.SetMessage(MessageId.I00000, "Payment returned successfully.");
+                return false;
+            }
+            
+            // If cancel is true, create new payment record
+            if (request.Cancel)
+            {
+                payment.Status = nameof(ConstantEnum.PaymentStatus.Cancelled);
+            }
+            else
+            {
+                payment.Status = nameof(ConstantEnum.PaymentStatus.Completed);
+            }
+            
+            // Save changes
+            await _paymentRepository.UpdateAsync(payment);
+            await _paymentRepository.SaveChangesAsync(identityEntity.Email);
+            
+            // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
         return response;
     }
 }
