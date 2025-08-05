@@ -1,9 +1,9 @@
-name: Deploy .NET app to VPS
+name: Deploy EcoQuest App to VPS
 
 on:
   push:
     branches:
-      - main
+      - deploy
 
 jobs:
   deploy:
@@ -13,61 +13,41 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Setup .NET SDK 9.0
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Clean publish folder
-        run: rm -rf ./publish
-
-      - name: Build and publish on runner
-        run: |
-          dotnet restore BackEnd/BackEnd.csproj
-          dotnet publish BackEnd/BackEnd.csproj -c Release -o ./publish
-
-      - name: Clean old publish folder on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            echo "🧹 Cleaning old publish folder"
-            rm -rf ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
-            mkdir -p ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
-
-      - name: Copy publish folder to VPS
+      - name: Copy source code & docker files to VPS
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "./publish"
+          source: "."
           target: "~/apps/EcoQuest/EcoQuest.Travel.BackEnd"
 
-      - name: SSH and deploy on VPS
+      - name: Copy .env to VPS
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "./.env"
+          target: "~/apps/EcoQuest/EcoQuest.Travel.BackEnd"
+
+      - name: SSH into VPS and deploy Docker container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd ~/apps/EcoQuest/EcoQuest.Travel.BackEnd/publish
-            cp ~/envs/ecoquest/.env .env && echo "✅ Copied .env successfully" || echo "❌ Failed to copy .env"
-            export $(grep CONNECTION_STRING .env | xargs)
+            cd ~/apps/EcoQuest/EcoQuest.Travel.BackEnd
+            echo "🧹 Cleaning old containers/images..."
+            docker compose down
+            docker system prune -f
 
-            echo "🚀 Restarting ecoquest-backend.service via systemctl"
-            sudo systemctl restart ecoquest-backend.service
-            
-            echo "📄 Checking ecoquest-backend.service status"
-            sudo systemctl status ecoquest-backend.service --no-pager
+            echo "🐳 Building & starting containers..."
+            docker compose up -d --build
 
-            sleep 40
-            echo "📄 Checking output.log"
-            ls -l output.log || echo "❌ output.log not found"
-            cat output.log || echo "⚠️ Cannot read output.log"
+            echo "🔍 Docker containers running:"
+            docker ps
 
-
-      - name: Notify app URL
-        run: echo "App is running at http://${{ secrets.VPS_HOST }}:5269"
+            echo "📦 Logs:"
+            docker compose logs --tail=50

@@ -1,6 +1,26 @@
-﻿services:
+﻿version: '3.8'
+
+services:
   backend:
-    image: backend
     build:
       context: .
       dockerfile: BackEnd/Dockerfile
+    ports:
+      - "5269:5269"
+    env_file:
+      - .env
+    environment:
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - CONNECTION_STRING=${CONNECTION_STRING}
+      - APIKEY_AI=${APIKEY_AI}
+      - ENCRYPT_IV=${ENCRYPT_IV}
+      - ENCRYPT_KEY=${ENCRYPT_KEY}
+      - MAIL_FROM=${MAIL_FROM}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_SMTP=${MAIL_SMTP}
+      - MAIL_TO_BCC=${MAIL_TO_BCC}
+      - CLOUD_NAME=${CLOUD_NAME}
+      - CLOUD_APIKEY=${CLOUD_APIKEY}
+      - CLOUD_APISECRET=${CLOUD_APISECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
