@@ -358,34 +358,57 @@ public class PartnerService : IPartnerService
                 }
             }
 
-            // Delete old partner types
-            var existingPartnerTypes = await _partnerPartnerTypeRepository.Find(x => x.PartnerId == partner.PartnerId).ToListAsync();
-            if (existingPartnerTypes.Any())
-            {
-                foreach (var existingPartnerType in existingPartnerTypes)
-                {
-                    await _partnerPartnerTypeRepository.UpdateAsync(existingPartnerType!);
-                }
-                await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email, true);
-            }
-
+            await _partnerRepository.SaveChangesAsync(identityEntity.Email);
+            
+            var existingPartnerTypes = await _partnerPartnerTypeRepository
+                .Find(x => x.PartnerId == request.PartnerId)
+                .ToListAsync();
+            
+            var newTypeIds = new List<Guid>();
+            
             foreach (var typeId in request.PartnerType!)
             {
                 // Convert byte to enum
-                var enumValue = (ConstantEnum.PartnerType) typeId;
+                var enumValue = (ConstantEnum.PartnerType)typeId;
+                
                 // Get enum name
                 var enumName = Enum.GetName(typeof(ConstantEnum.PartnerType), enumValue);
-
-                // Assign partner type to partner
+                
+                // Find partner type by name
                 var partnerTypeEntity = await _partnerTypeRepository.Find(x => x.TypeName == enumName).FirstOrDefaultAsync();
-                var partnerPartnerType = new PartnerPartnerType
+                if (partnerTypeEntity == null) continue;
+                newTypeIds.Add(partnerTypeEntity.TypeId);
+
+                // Check if partnerPartnerType already exists
+                var existing = existingPartnerTypes.FirstOrDefault(x => x.TypeId == partnerTypeEntity.TypeId);
+                if (existing != null)
                 {
-                    PartnerId = request.PartnerId,
-                    TypeId = partnerTypeEntity!.TypeId,
-                };
-                await _partnerPartnerTypeRepository.AddAsync(partnerPartnerType);
+                    if (existing.IsActive == false)
+                    {
+                        await _partnerPartnerTypeRepository.UpdateAsync(existing);
+                    }
+                    await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email);
+                }
+                else
+                {
+                    var partnerPartnerType = new PartnerPartnerType
+                    {
+                        PartnerId = request.PartnerId,
+                        TypeId = partnerTypeEntity.TypeId,
+                    };
+                    await _partnerPartnerTypeRepository.AddAsync(partnerPartnerType);
+                }
             }
-            await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email);
+
+            // Delete partner types that are not in the new list
+            foreach (var old in existingPartnerTypes)
+            {
+                if (!newTypeIds.Contains(old.TypeId) && old.IsActive == true)
+                {
+                    await _partnerPartnerTypeRepository.UpdateAsync(old);
+                }
+                await _partnerPartnerTypeRepository.SaveChangesAsync(identityEntity.Email, true);
+            }
             
             // True
             response.Success = true;
