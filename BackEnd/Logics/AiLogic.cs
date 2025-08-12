@@ -69,7 +69,7 @@ public class AiLogic
 
         // Build destination information
         var destinationInfo = destinations.Any() ? string.Join("\n", destinations.Select(d => 
-            $"- {d.Name}: {d.Description}, Địa chỉ: {d.AddressLine}, {d.District}, {d.Province}, RestaurantId: {d.DestinationId}")) : "Không có điểm đến khả dụng";
+            $"- {d.Name}: {d.Description}, Địa chỉ: {d.AddressLine}, {d.District}, {d.Province}")) : "Không có điểm đến khả dụng";
 
         var prompt = $@"Bạn là một chuyên gia lập kế hoạch du lịch chuyên nghiệp. Hãy tạo một lịch trình du lịch chi tiết dựa trên các thông tin sau:
 
@@ -129,6 +129,7 @@ public class AiLogic
         - Ước tính chi phí dựa trên giá được cung cấp và số người, phải đưa ra chi phí hợp lý nhất có thể
         - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
         - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác, Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType
+        - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId
         - Nếu có check-in khách sạn thì phải có check-out khách sạn";
 
         var requestBody = new
