@@ -129,7 +129,7 @@ public class AiLogic
         - Ước tính chi phí dựa trên giá được cung cấp và số người, phải đưa ra chi phí hợp lý nhất có thể
         - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
         - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác, Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType
-        - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId
+        - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId.
         - Nếu có check-in khách sạn thì phải có check-out khách sạn";
 
         var requestBody = new
