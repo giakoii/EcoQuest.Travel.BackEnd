@@ -21,7 +21,7 @@ public class Ecq300PaymentPremierAccountController : AbstractApiAsyncController<
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [HttpPatch]
+    [HttpPost]
     [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     public override async Task<Ecq300PaymentPremierAccountResponse> ProcessRequest(Ecq300PaymentPremierAccountRequest request)
     {
