@@ -267,4 +267,57 @@ public class PaymentService : IPaymentService
         });
         return response;
     }
+
+    public async Task<Ecq110PaymentCallbackResponse> PaymentPremierAccountCallBack(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq110PaymentCallbackResponse { Success = false };
+        
+        // Get payment record
+        var user = await _userRepository
+            .Find(x => x.UserId == request.TripId && x.IsActive == true, isTracking: true)
+            .FirstOrDefaultAsync();        
+        if (user == null)
+        {
+            response.SetMessage(MessageId.I00000, "User not found or not available.");
+            return response;
+        }
+        
+        // Begin transaction
+        await _paymentRepository.ExecuteInTransactionAsync(async () =>
+        {
+            // Payment failed
+            if(request.Code != "00")
+            {
+                var paymentResponse = await _payOsPaymentLogic.PaymentPremierAccount(request.TripId);
+                if (!paymentResponse.Success)
+                {
+                    response.SetMessage(MessageId.E00000, "Payment failed.");
+                    return false;
+                }
+
+                response.Response = new Ecq110PaymentCallbackEntity
+                {
+                    CheckoutUrl = paymentResponse.Response.CheckoutUrl,
+                    QrCode = paymentResponse.Response.QrCode,
+                };
+                
+                // Set response
+                response.Success = false;
+                response.SetMessage(MessageId.I00000, "Payment returned successfully.");
+                return false;
+            }
+            
+            user.UserType = (byte) ConstantEnum.UserType.Premier;
+            
+            // Save changes
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync(identityEntity.Email);
+            
+            // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+        return response;
+    }
 }

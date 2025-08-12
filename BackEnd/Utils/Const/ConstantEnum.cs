@@ -87,5 +87,9 @@ public static class ConstantEnum
     {
         PayOs = 1,
     }
-    
+
+    public enum UserType
+    {
+        Premier = 2
+    }
 }
