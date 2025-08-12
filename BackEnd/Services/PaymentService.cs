@@ -1,4 +1,5 @@
 using BackEnd.DTOs.Ecq110;
+using BackEnd.DTOs.User;
 using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
@@ -13,14 +14,16 @@ public class PaymentService : IPaymentService
     private readonly IBaseRepository<Payment, Guid> _paymentRepository;
     private readonly IBaseRepository<Booking, Guid> _bookingRepository;
     private readonly IBaseRepository<Trip, Guid> _tripRepository;
+    private readonly IBaseRepository<User, Guid> _userRepository;
     private readonly PayOsPaymentLogic _payOsPaymentLogic;
 
-    public PaymentService(IBaseRepository<Payment, Guid> paymentRepository, IBaseRepository<Booking, Guid> bookingRepository, PayOsPaymentLogic payOsPaymentLogic, IBaseRepository<Trip, Guid> tripRepository)
+    public PaymentService(IBaseRepository<Payment, Guid> paymentRepository, IBaseRepository<Booking, Guid> bookingRepository, PayOsPaymentLogic payOsPaymentLogic, IBaseRepository<Trip, Guid> tripRepository, IBaseRepository<User, Guid> userRepository)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
         _payOsPaymentLogic = payOsPaymentLogic;
         _tripRepository = tripRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<Ecq110InsertPaymentResponse> InsertPayment(Ecq110InsertPaymentRequest request, IdentityEntity identityEntity)
@@ -74,6 +77,32 @@ public class PaymentService : IPaymentService
             response.SetMessage(MessageId.I00001);
             return true;
         });
+        return response;
+    }
+
+    /// <summary>
+    /// Payment Premier Account
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="identityEntity"></param>
+    /// <returns></returns>
+    public async Task<Ecq300PaymentPremierAccountResponse> PaymentPremierAccount(Ecq300PaymentPremierAccountRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq300PaymentPremierAccountResponse { Success = false };
+        
+        var userId = Guid.Parse(identityEntity.UserId);
+
+        var payment = await _payOsPaymentLogic.PaymentPremierAccount(userId);
+        if (!payment.Success)
+        {
+            response.SetMessage(MessageId.E00000, "Failed to create payment request.");
+            return response;
+        }
+        
+        // True
+        response.Success = true;
+        response.Response = payment.Response;
+        response.SetMessage(MessageId.I00001);
         return response;
     }
 

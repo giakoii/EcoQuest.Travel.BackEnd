@@ -30,6 +30,8 @@ public partial class User
     public string UpdatedBy { get; set; } = null!;
 
     public bool? IsActive { get; set; }
+    
+    public byte UserType { get; set; }
 
     public virtual Account Auth { get; set; } = null!;
 

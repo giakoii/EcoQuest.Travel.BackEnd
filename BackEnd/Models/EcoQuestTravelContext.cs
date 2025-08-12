@@ -1061,6 +1061,9 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
+            entity.Property(e => e.UserType)
+                .HasDefaultValue(1)
+                .HasColumnName("user_type");
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
                 .HasColumnName("last_name");
