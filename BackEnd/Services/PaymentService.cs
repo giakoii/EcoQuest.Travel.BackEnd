@@ -91,6 +91,18 @@ public class PaymentService : IPaymentService
         var response = new Ecq300PaymentPremierAccountResponse { Success = false };
         
         var userId = Guid.Parse(identityEntity.UserId);
+        var user = await _userRepository.Find(x => x.UserId == userId && x.IsActive == true).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            response.SetMessage(MessageId.I00000, "User not found or not available.");
+            return response;
+        }
+        
+        if (user.UserType == (byte) ConstantEnum.UserType.Premier)
+        {
+            response.SetMessage(MessageId.I00000, "You are already a premier user.");
+            return response;
+        }
 
         var payment = await _payOsPaymentLogic.PaymentPremierAccount(userId);
         if (!payment.Success)

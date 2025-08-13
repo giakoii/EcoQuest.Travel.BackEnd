@@ -1,4 +1,3 @@
-using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -6,7 +5,6 @@ using BackEnd.DTOs.Ecq110;
 using BackEnd.DTOs.User;
 using BackEnd.Repositories;
 using BackEnd.Utils.Const;
-using Microsoft.AspNetCore.Mvc;
 using SystemConfig = BackEnd.Models.SystemConfig;
 
 namespace BackEnd.Logics;
@@ -104,7 +102,7 @@ public class PayOsPaymentLogic
         var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); 
         
         // Limit description to 25 characters
-        var description = $"Thanh toán nâng cấp tài khoản Premium";
+        var description = $"Nâng cấp tài khoản";
         if (description.Length > 25)
             description = description.Substring(0, 25);    
         
@@ -139,7 +137,7 @@ public class PayOsPaymentLogic
 
         var jsonContent = new StringContent(JsonSerializer.Serialize(payRequest), Encoding.UTF8, "application/json");
 
-        var payosResponse = await client.PostAsync("https://api-merchant.payos.vn/v2/payment-requests", jsonContent);
+        var payosResponse = await client.PostAsync($"https://api-merchant.payos.vn/v2/payment-requests", jsonContent);
 
         if (!payosResponse.IsSuccessStatusCode)
         {
@@ -172,7 +170,7 @@ public class PayOsPaymentLogic
         return response;
     }
     
-    public static string ComputeHmacSha256(string message, string secretKey)
+    private static string ComputeHmacSha256(string message, string secretKey)
     {
         if (string.IsNullOrWhiteSpace(message)) throw new ArgumentNullException(nameof(message));
         if (string.IsNullOrWhiteSpace(secretKey)) throw new ArgumentNullException(nameof(secretKey));
