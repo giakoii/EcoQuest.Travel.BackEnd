@@ -6,6 +6,7 @@ using BackEnd.DTOs.Ecq210;
 using BackEnd.DTOs.Ecq220;
 using BackEnd.DTOs.Ecq230;
 using BackEnd.DTOs.Ecq110;
+using BackEnd.DTOs.Ecq211;
 using BackEnd.Repositories;
 using BackEnd.Utils.Const;
 using DotNetEnv;
@@ -28,6 +29,7 @@ public class AiLogic
     /// Ask AI to generate detailed trip schedule based on available data
     /// </summary>
     /// <param name="hotels"></param>
+    /// <param name="hotelRooms"></param>
     /// <param name="attractions"></param>
     /// <param name="restaurants"></param>
     /// <param name="destinations"></param>
@@ -35,10 +37,10 @@ public class AiLogic
     /// <param name="endDate"></param>
     /// <param name="numberOfPeople"></param>
     /// <param name="totalEstimatedCost"></param>
-    /// <param name="additionalPreferences"></param>
+    /// <param name="hotelRoomInfo">Formatted hotel room information string</param>
     /// <returns></returns>
-    public async Task<List<Ecq110InsertTripScheduleResponseDetail>> AskAiModel(List<Ecq210HotelEntity> hotels, List<Ecq230AttractionDetailEntity> attractions, List<Ecq220RestaurantEntity> restaurants, List<Ecq200DestinationDetailEntity> destinations,
-        string startDate, string endDate, string numberOfPeople, string totalEstimatedCost)
+    public async Task<List<Ecq110InsertTripScheduleResponseDetail>> AskAiModel(List<Ecq210HotelEntity> hotels, List<Ecq211HotelRoomEntity> hotelRooms, List<Ecq230AttractionDetailEntity> attractions, List<Ecq220RestaurantEntity> restaurants, List<Ecq200DestinationDetailEntity> destinations,
+        string startDate, string endDate, string numberOfPeople, string totalEstimatedCost, string? hotelRoomInfo = null)
     {
         
         var apiKey = _systemConfigRepository
@@ -52,10 +54,11 @@ public class AiLogic
 
         var url = "https://api.groq.com/openai/v1/chat/completions";
         
-        // Build detailed hotel information
-        var hotelInfo = hotels.Any() ? string.Join("\n", hotels.Select(h => 
-            $"- {h.Name}: Giá từ {h.MinPrice:C} - {h.MaxPrice:C}, Địa chỉ: {h.AddressLine}, {h.District}, {h.Province}, " +
-            $"Đánh giá: {h.AverageRating}/5 ({h.TotalRatings} reviews), ID: {h.HotelId}")) : "Không có khách sạn khả dụng";
+        // Use the formatted hotel room info if provided, otherwise build from hotel rooms data
+        var finalHotelInfo = !string.IsNullOrEmpty(hotelRoomInfo) ? hotelRoomInfo : 
+            (hotelRooms.Any() ? "**Phòng khách sạn:**\n" + string.Join("\n", hotelRooms.Select(hr => 
+                $"- {hr.RoomType}: Giá {hr.PricePerNight:C}/đêm, Sức chứa tối đa: {hr.MaxGuests} người, " +
+                $"Mô tả: {hr.Description}, Tình trạng: {(hr.IsAvailable == true ? "Có sẵn" : "Không có sẵn")}, HotelId: {hr.HotelId}")) : "Không có phòng khách sạn khả dụng");
 
         // Build detailed attraction information  
         var attractionInfo = attractions.Any() ? string.Join("\n", attractions.Select(a => 
@@ -81,8 +84,8 @@ public class AiLogic
 
         **DỮ LIỆU CÓ SẴN:**
 
-        **KHÁCH SẠN:**
-        {hotelInfo}
+        **PHÒNG KHÁCH SẠN:**
+        {finalHotelInfo}
 
         **ĐIỂM THAM QUAN:**
         {attractionInfo}
@@ -116,21 +119,25 @@ public class AiLogic
               ""address"": ""Địa chỉ cụ thể"",
               ""estimatedCost"": 000000 (số tiền phải ước tính được số người là {numberOfPeople} và giá dịch vụ),
               ""reasonEstimatedCost"": ""Lý do tính ra được mức ước tính chi phí dựa vào các thông tin trên và cách tính để đưa ra con số này"",
-              ""serviceId"": ""guid-nếu-có"",
+              ""serviceId"": ""guid-nếu-có của hotelId, restaurantId, attractionId ?? null"",
               ""serviceType"": ""Hotel/Restaurant/Attraction  ?? null""
             }}
           ],
         }}
 
         **LỰU Ý QUAN TRỌNG:**
+        - Nếu là khách sạn phải tính số tiền toàn bộ ngày ở (VD: giá phòng * số đêm) để ra được estimatedCost. Nếu estimatedCost Khách sạn vượt quá Tổng ngân sách ước tính thì không trả về khách sạn
         - Chỉ sử dụng các địa điểm có trong dữ liệu được cung cấp
+        - Ngoài các dịch vụ như hotel, restaurant, attraction. Bạn có thể sử dụng thêm các địa điểm du lịch khác nếu cần thiết nhưng vẫn phải trả về đúng định dạng JSON như trên
         - Bao gồm serviceId khi sử dụng khách sạn, nhà hàng, hoặc điểm tham quan cụ thể
         - Thời gian phải hợp lý (VD: 09:00-12:00 tham quan, 12:00-13:30 ăn trưa)
         - Ước tính chi phí dựa trên giá được cung cấp và số người, phải đưa ra chi phí hợp lý nhất có thể
         - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
         - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác, Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType
         - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId.
-        - Nếu có check-in khách sạn thì phải có check-out khách sạn";
+        - Nếu có check-in khách sạn thì phải có check-out khách sạn
+        - reasonEstimatedCost phải ghi rõ công thức tính toán và nếu là khách sạn thì phải ghi rõ phòng đó ở được bao nhiêu ngừoi/phòng
+        - Format tiền ở reasonEstimatedCost giúp tôi theo định dạng XXX.XXX.XXX VND (VD: 1.234.567 VND)";
 
         var requestBody = new
         {
@@ -229,7 +236,7 @@ public class AiLogic
                      $"Chi phí thực tế trung bình: {averageActualCost}\n" +
                      $"Tổng doanh thu: {totalRevenue}\n" +
                      $"Vấn đề: {(bookingCount < 5 ? "Ít lượt đặt" : "")}{(cancellationRate > 20 ? ", Tỷ lệ hủy cao" : "")}\n" +
-                     "Hãy đề xuất các giải pháp cụ thể (marketing, giá, dịch vụ, lịch trình...) để cải thiện tour này. Trả về JSON dạng: [ { \"Type\": \"Loại đề xuất\", \"Title\": \"Tiêu đề\", \"Description\": \"Mô tả chi tiết\", \"ExpectedImpact\": \"Tác động kỳ vọng (%)\", \"Difficulty\": \"Độ khó\" } ]";
+                     "Hãy đề xuất các giải pháp cụ thể (marketing, giá, dịch vụ, lịch trình...) để cải thiện tour này. Trả về JSON dạng: [ { \"Type\": \"Lo��i đề xuất\", \"Title\": \"Tiêu đề\", \"Description\": \"Mô tả chi tiết\", \"ExpectedImpact\": \"Tác động kỳ v���ng (%)\", \"Difficulty\": \"Độ khó\" } ]";
 
         var requestBody = new
         {
@@ -270,6 +277,117 @@ public class AiLogic
         var suggestions = JsonSerializer.Deserialize<List<OptimizationSuggestion>>(cleanText ?? "[]");
         return suggestions ?? new List<OptimizationSuggestion>();
     }
+    
+    public async Task<ValidateCostHotelAiResponse> ValidateCostHotelAi(List<Ecq211HotelRoomEntity> hotelRooms,
+        string startDate, string endDate, string numberOfPeople, string totalEstimatedCost, string? hotelRoomInfo = null)
+    {
+        var apiKey = _systemConfigRepository
+            .Find(x => x.Id == Utils.Const.SystemConfig.ApiKeyAi, false)
+            .FirstOrDefault()?.Value;
+        
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new InvalidOperationException("AI API Key not configured in system settings");
+        }
+
+        var url = "https://api.groq.com/openai/v1/chat/completions";
+        
+        // Use the formatted hotel room info if provided, otherwise build from hotel rooms data
+        var finalHotelInfo = !string.IsNullOrEmpty(hotelRoomInfo) ? hotelRoomInfo : 
+            (hotelRooms.Any() ? "**Phòng khách sạn:**\n" + string.Join("\n", hotelRooms.Select(hr => 
+                $"- {hr.RoomType}: Giá {hr.PricePerNight:C}/đêm, Sức chứa tối đa: {hr.MaxGuests} người, " +
+                $"Mô tả: {hr.Description}, Tình trạng: {(hr.IsAvailable == true ? "Có sẵn" : "Không có sẵn")}, HotelId: {hr.HotelId}")) : "Không có phòng khách sạn khả dụng");
+        
+        var prompt = $@"Bạn là một chuyên gia lập kế hoạch du lịch chuyên nghiệp. Hãy tạo một lịch trình du lịch chi tiết dựa trên các thông tin sau:
+
+        **THÔNG TIN CHUYẾN ĐI:**
+        - Ngày bắt đầu: {startDate}
+        - Ngày kết thúc: {endDate}  
+        - Số người: {numberOfPeople}
+        - Tổng ngân sách ước tính: {totalEstimatedCost} VND
+
+        **DỮ LIỆU CÓ SẴN:**
+
+        **PHÒNG KHÁCH SẠN:**
+        {finalHotelInfo}
+
+        **YÊU CẦU TÍNH TOÁN CHI PHÍ KHÁCH SẠN:**
+        1. Chi tiết từng ngày từ {startDate} đến {endDate}
+        2. Bao gồm thời gian cụ thể cho từng hoạt động (StartTime, EndTime)
+        3. Ước tính chi phí hợp lý cho từng hoạt động
+        4. Ưu tiên phù hợp với ngân sách
+        7. Đảm bảo tổng chi phí không vượt quá ngân sách
+
+        **ĐỊNH DẠNG PHẢN HỒI (JSON):**
+        Trả về JSON với cấu trúc sau:
+        ```json
+        {{
+            totalEstimatedCost: 000000 (số tiền phải ước tính được số người là {numberOfPeople} và giá dịch vụ),
+            resonEstimatedCost: ""Lý do tính ra được mức ước tính chi phí dựa vào các thông tin trên và cách tính để đưa ra con số này"",
+        }}
+
+        **LỰU Ý QUAN TRỌNG:**
+        - Tính số tiền toàn bộ ngày ở (VD: giá phòng * số đêm) để ra được estimatedCost
+        - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
+        - reasonEstimatedCost phải ghi rõ công thức tính toán";
+
+        var requestBody = new
+        {
+            model = "llama-3.3-70b-versatile",
+            messages = new[]
+            {
+                new
+                {
+                    role = "system",
+                    content = "Bạn là chuyên gia lập kế hoạch du lịch chuyên nghiệp. Luôn trả về JSON hợp lệ theo đúng format được yêu cầu."
+                },
+                new { role = "user", content = prompt }
+            },
+        };
+
+        var requestJson = JsonSerializer.Serialize(requestBody);
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("Authorization", $"Bearer {apiKey}");
+        request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+
+            var jsonResponse = JsonDocument.Parse(result);
+            var content = jsonResponse
+                .RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content")
+                .GetString();
+
+            // Clean up the response to ensure it's valid JSON
+            var cleanContent = content?.Trim();
+            if (cleanContent?.StartsWith("```json") == true)
+            {
+                cleanContent = cleanContent.Substring(7);
+            }
+            if (cleanContent?.EndsWith("```") == true)
+            {
+                cleanContent = cleanContent.Substring(0, cleanContent.Length - 3);
+            }
+            cleanContent = cleanContent?.Trim();
+
+            // Parse the AI response to the correct structure
+            var aiResponse = JsonSerializer.Deserialize<ValidateCostHotelAiResponse>(cleanContent!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return aiResponse;
+        }
+        catch (Exception ex)
+        { 
+            throw new InvalidOperationException("Failed to call AI model for trip schedule generation", ex);
+        }
+    }
+
 }
 
 public class AiTripScheduleResponse
@@ -299,4 +417,10 @@ public class OptimizationSuggestion
     public string Description { get; set; } = string.Empty;
     public string ExpectedImpact { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
+}
+
+public class ValidateCostHotelAiResponse
+{
+    public decimal TotalEstimatedCost { get; set; }
+    public string ReasonEstimatedCost { get; set; } = string.Empty;
 }
