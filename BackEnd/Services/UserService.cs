@@ -352,25 +352,26 @@ public class UserService : IUserService
     /// <param name="request"></param>
     /// <param name="email"></param>
     /// <returns></returns>
-    public Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, string email)
+    public async Task<Ecq300SelectUserResponse> SelectUser(Ecq300SelectUserRequest request, string email)
     {
         var response = new Ecq300SelectUserResponse { Success = false };
         
         // Get account
-        var account = _accountRepository.Find(x => x.Email == email).FirstOrDefault();
+        var account = await _accountRepository.Find(x => x.Email == email).FirstOrDefaultAsync();
         if (account == null)
         {
             response.SetMessage(MessageId.E11001);
-            return Task.FromResult(response);
+            return response;
         }
         
         // Get user information
-        var user = _userRepository.Find(x => x.AuthId == account.AccountId).FirstOrDefault();
+        var user = await _userRepository.Find(x => x.AuthId == account.AccountId).FirstOrDefaultAsync();
         if (user == null)
         {
             response.SetMessage(MessageId.E11001);
-            return Task.FromResult(response);
+            return response;
         }
+        
         
         // Set response
         response.Response = new Ecq300SelectUserEntity
@@ -381,12 +382,14 @@ public class UserService : IUserService
             Email = account.Email!,
             Gender = user.Gender,
             AvartarUrl = user.AvatarUrl!,
+            UserType = ((ConstantEnum.UserType) user.UserType).ToString()
         };
+        
         
         // True
         response.Success = true;
         response.SetMessage(MessageId.I00001);
-        return Task.FromResult(response);
+        return response;
     }
 
     /// <summary>

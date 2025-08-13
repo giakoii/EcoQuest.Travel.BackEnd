@@ -410,9 +410,23 @@ public class TripScheduleService : ITripScheduleService
     public async Task<Ecq110InsertTripScheduleWithAiResponse> InsertTripScheduleUseAi(Ecq110InsertTripScheduleWithAiRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertTripScheduleWithAiResponse { Success = false };
-
+        var userId = Guid.Parse(identityEntity.UserId);
         try
         {
+            var user = await _repositoryWrapper.UserRepository.Find(x => x.UserId == userId && x.IsActive == true).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                response.SetMessage(MessageId.I00000, "User not found or inactive");
+                return response;
+            }
+            
+            // If the user account is not a premium account, return error
+            if (user.UserType != (byte) ConstantEnum.UserType.Premier)
+            {
+                response.SetMessage(MessageId.I00000, "You must have a premium account to use AI scheduling.");
+                return response;
+            }
+            
             // Check if trip exists
             var trip = await _repositoryWrapper.TripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true, false, x => x.TripDestinations)
                 .FirstOrDefaultAsync();

@@ -90,6 +90,7 @@ public static class ConstantEnum
 
     public enum UserType
     {
+        Basic = 1,
         Premier = 2
     }
 }
