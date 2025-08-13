@@ -1,6 +1,7 @@
 using BackEnd.DTOs.Ecq110;
 using BackEnd.DTOs.User;
 using BackEnd.Services;
+using BackEnd.SystemClient;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,17 @@ public class Ecq300PaymentPremierAccountController : AbstractApiAsyncController<
 {
     private readonly IPaymentService _paymentService;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="paymentService"></param>
+    /// <param name="identityApiClient"></param>
+    public Ecq300PaymentPremierAccountController(IPaymentService paymentService, IIdentityApiClient identityApiClient)
+    {
+        _paymentService = paymentService;
+        _identityApiClient = identityApiClient;
+    }
 
     /// <summary>
     /// Incoming Patch
