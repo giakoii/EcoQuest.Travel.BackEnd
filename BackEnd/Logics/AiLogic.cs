@@ -116,7 +116,7 @@ public class AiLogic
               ""description"": ""Mô tả chi tiết hoạt động"",
               ""startTime"": ""HH:mm"",
               ""endTime"": ""HH:mm"",
-              ""address"": ""Địa chỉ cụ thể"",
+              ""address"": ""Địa chỉ cụ thể không được để empty"",
               ""estimatedCost"": 000000 (số tiền phải ước tính được số người là {numberOfPeople} và giá dịch vụ),
               ""reasonEstimatedCost"": ""Lý do tính ra được mức ước tính chi phí dựa vào các thông tin trên và cách tính để đưa ra con số này"",
               ""serviceId"": ""guid-nếu-có của hotelId, restaurantId, attractionId ?? null"",
@@ -329,7 +329,9 @@ public class AiLogic
         **LỰU Ý QUAN TRỌNG:**
         - Tính số tiền toàn bộ ngày ở (VD: giá phòng * số đêm) để ra được estimatedCost
         - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
-        - reasonEstimatedCost phải ghi rõ công thức tính toán";
+        - reasonEstimatedCost phải ghi rõ công thức tính toán
+        - Đảm bảo tổng chi phí không vượt quá ngân sách
+        - Đảm bảo tổng chi phí không vượt quá ngân sách";
 
         var requestBody = new
         {

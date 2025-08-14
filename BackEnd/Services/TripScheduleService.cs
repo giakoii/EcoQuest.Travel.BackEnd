@@ -93,12 +93,12 @@ public class TripScheduleService : ITripScheduleService
         // Prepare to cache estimated cost per service per date
         var serviceCostMap = new Dictionary<(Guid, DateOnly), decimal>();
 
-        // Validate total trip cost against budget, and fill serviceCostMap
-        
-        if (!await ValidateTotalCostAsync(request, trip, serviceTypeDict!, response, serviceCostMap))
-        {
-            return response;
-        }
+        // // Validate total trip cost against budget, and fill serviceCostMap
+        //
+        // if (!await ValidateTotalCostAsync(request, trip, serviceTypeDict!, response, serviceCostMap))
+        // {
+        //     return response;
+        // }
 
         // Insert trip schedule into DB
         await _repositoryWrapper.TripScheduleRepository.ExecuteInTransactionAsync(async () =>
