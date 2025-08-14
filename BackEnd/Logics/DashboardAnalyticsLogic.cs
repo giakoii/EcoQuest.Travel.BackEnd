@@ -278,11 +278,11 @@ public class DashboardAnalyticsLogic
         var nextMonth = currentMonth.AddMonths(1);
 
         var currentMonthBookings = await _context.Bookings
-            .Where(b => b.CreatedAt >= currentMonth && b.CreatedAt < nextMonth)
+            .Where(b => b.CreatedAt >= currentMonth && b.CreatedAt < nextMonth && b.IsActive)
             .ToListAsync();
 
         var previousMonthBookings = await _context.Bookings
-            .Where(b => b.CreatedAt >= previousMonth && b.CreatedAt < currentMonth)
+            .Where(b => b.CreatedAt >= previousMonth && b.CreatedAt < currentMonth && b.IsActive)
             .ToListAsync();
 
         var activeTrips = await _context.Trips.CountAsync(t => t.IsActive == true);

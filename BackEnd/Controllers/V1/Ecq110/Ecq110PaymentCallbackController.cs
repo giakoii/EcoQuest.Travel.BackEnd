@@ -48,7 +48,7 @@ public class Ecq110PaymentCallbackController : AbstractApiAsyncController<Ecq110
     /// <returns></returns>
     protected override Task<Ecq110PaymentCallbackResponse> Exec(Ecq110PaymentCallbackRequest request)
     {
-        return _paymentService.PaymentCallback(request, _identityEntity);
+        return _paymentService.PaymentTripCallback(request, _identityEntity);
     }
 
     /// <summary>

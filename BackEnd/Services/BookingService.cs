@@ -13,15 +13,25 @@ public class BookingService : IBookingService
     private readonly IBaseRepository<Trip, Guid> _tripRepository;
     private readonly IBaseRepository<TripSchedule, Guid> _tripScheduleRepository;
     private readonly IBaseRepository<HotelRoom, Guid> _hotelRoomRepository;
+    private readonly IBaseRepository<Payment, Guid> _paymentRepository;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="bookingRepository"></param>
+    /// <param name="tripRepository"></param>
+    /// <param name="tripScheduleRepository"></param>
+    /// <param name="hotelRoomRepository"></param>
+    /// <param name="paymentRepository"></param>
     public BookingService(IBaseRepository<Booking, Guid> bookingRepository, IBaseRepository<Trip, Guid> tripRepository,
         IBaseRepository<TripSchedule, Guid> tripScheduleRepository,
-        IBaseRepository<HotelRoom, Guid> hotelRoomRepository)
+        IBaseRepository<HotelRoom, Guid> hotelRoomRepository, IBaseRepository<Payment, Guid> paymentRepository)
     {
         _bookingRepository = bookingRepository;
         _tripRepository = tripRepository;
         _tripScheduleRepository = tripScheduleRepository;
         _hotelRoomRepository = hotelRoomRepository;
+        _paymentRepository = paymentRepository;
     }
 
     /// <summary>
@@ -30,14 +40,12 @@ public class BookingService : IBookingService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110InsertBookingTripResponse> InsertBookingTrip(Ecq110InsertBookingTripRequest request,
-        IdentityEntity identityEntity)
+    public async Task<Ecq110InsertBookingTripResponse> InsertBookingTrip(Ecq110InsertBookingTripRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertBookingTripResponse { Success = false };
 
         // Validate trip and owner trip
-        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true)
-            .FirstOrDefaultAsync();
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
         if (trip == null)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
@@ -47,6 +55,16 @@ public class BookingService : IBookingService
         if (trip.UserId != Guid.Parse(identityEntity.UserId))
         {
             response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
+            return response;
+        }
+        
+        // Check if trip is payment
+        var payment = await _paymentRepository
+            .Find(x => x.TripId == request.TripId && x.IsActive && x.Status != nameof(ConstantEnum.PaymentStatus.Cancelled))
+            .FirstOrDefaultAsync();
+        if (payment != null)
+        {
+            response.SetMessage(MessageId.I00000, "Trip is already paid.");
             return response;
         }
 

@@ -28,6 +28,8 @@ public partial class Payment
     public string UpdatedBy { get; set; } = null!;
 
     public bool IsActive { get; set; }
+    
+    public string? PaymentUrl { get; set; }
 
     public virtual Trip Trip { get; set; } = null!;
 }
