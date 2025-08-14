@@ -42,7 +42,12 @@ public class PaymentService : IPaymentService
             response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
             return response;
         }
-        
+
+        if (!tripExist.Bookings.Any())
+        {
+            response.SetMessage(MessageId.I00000, "You have not booked any trip yet.");
+            return response;
+        }
         
         // Check for duplicate payment
         var existingPayment = await _paymentRepository.Find(x => x.TripId == request.TripId && x.Status != nameof(ConstantEnum.BookingStatus.Cancelled)).FirstOrDefaultAsync();
@@ -66,10 +71,11 @@ public class PaymentService : IPaymentService
                 PaidAt = DateTime.Now,
                 TransactionCode = "200",
             };
-            await _paymentRepository.AddAsync(payment);
             
             var payBookingResult = await _payOsPaymentLogic.PayBooking(request.TripId, tripExist.TripName!);
-
+            payment.PaymentUrl = payBookingResult.Response.CheckoutUrl;
+            
+            await _paymentRepository.AddAsync(payment);
             await _paymentRepository.SaveChangesAsync(identityEntity.Email);
             
             response.Success = true;
@@ -211,7 +217,7 @@ public class PaymentService : IPaymentService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110PaymentCallbackResponse> PaymentCallback(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110PaymentCallbackResponse> PaymentTripCallback(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity)
     {
         var response = new Ecq110PaymentCallbackResponse { Success = false };
         
@@ -252,6 +258,10 @@ public class PaymentService : IPaymentService
                     QrCode = paymentResponse.Response.QrCode,
                 };
                 
+                payment.PaymentUrl = paymentResponse.Response.CheckoutUrl;
+                await _paymentRepository.UpdateAsync(payment);
+                await _paymentRepository.SaveChangesAsync(identityEntity.Email);
+                
                 // Set response
                 response.Success = false;
                 response.SetMessage(MessageId.I00000, "Payment returned successfully.");
@@ -266,6 +276,7 @@ public class PaymentService : IPaymentService
             else
             {
                 payment.Status = nameof(ConstantEnum.PaymentStatus.Completed);
+                payment.PaymentUrl = null;
             }
             
             // Save changes
@@ -326,6 +337,54 @@ public class PaymentService : IPaymentService
             await _userRepository.SaveChangesAsync(identityEntity.Email);
             
             // True
+            response.Success = true;
+            response.SetMessage(MessageId.I00001);
+            return true;
+        });
+        return response;
+    }
+
+    public async Task<Ecq110RePaymentResponse> RePaymentTrip(Ecq110RePaymentRequest request, IdentityEntity identityEntity)
+    {
+        var response = new Ecq110RePaymentResponse { Success = false };
+        
+        // Validate trip and owner trip
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        if (trip == null)
+        {
+            response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
+            return response;
+        }
+        
+        if (trip.UserId != Guid.Parse(identityEntity.UserId))
+        {
+            response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
+            return response;
+        }
+        
+        // Check if trip is payment
+        var payment = await _paymentRepository
+            .Find(x => x.TripId == request.TripId && x.IsActive && x.Status == nameof(ConstantEnum.PaymentStatus.Pending))
+            .FirstOrDefaultAsync();
+        if (payment == null)
+        {
+            response.SetMessage(MessageId.I00000, "Trip is not in pending payment status.");
+            return response;
+        }
+        
+        // Begin transaction
+        await _paymentRepository.ExecuteInTransactionAsync(async () =>
+        {
+            // Update time payment record
+            await _paymentRepository.UpdateAsync(payment);
+            await _paymentRepository.SaveChangesAsync(identityEntity.Email);
+            
+            response.Response = new Ecq110RePaymentEntity
+            {
+                PaymentUrl = payment.PaymentUrl!
+            };
+            
+            // Set response
             response.Success = true;
             response.SetMessage(MessageId.I00001);
             return true;

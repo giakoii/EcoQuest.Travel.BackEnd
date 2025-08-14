@@ -763,6 +763,9 @@ public partial class EcoQuestTravelContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
+            entity.Property(e => e.PaymentUrl)
+                .HasMaxLength(500)
+                .HasColumnName("payment_url");
             entity.Property(e => e.Method)
                 .HasMaxLength(50)
                 .HasColumnName("method");
