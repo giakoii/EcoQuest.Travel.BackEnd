@@ -13,11 +13,10 @@ public class Ecq010InsertUserRequest : AbstractApiRequest
     [RegularExpression(@"^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).+$", ErrorMessage = "Password must contain at least one number and one special character")]
     public string Password { get; set; }
     
-    [Required(ErrorMessage = "First name is required")]
-    [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "First name cannot contain numbers or special characters")]
+    [RegularExpression(@"^\p{L}+$", ErrorMessage = "First name cannot contain numbers or special characters")]
     public string FirstName { get; set; }
 
-    [Required(ErrorMessage = "Last name is required")]
-    [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Last name cannot contain numbers or special characters")]
+    [RegularExpression(@"^[\p{L}\s]+$", ErrorMessage = "First name cannot contain numbers or special characters")]
     public string LastName { get; set; }
+    
 }
