@@ -135,7 +135,7 @@ public class AiLogic
         - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
         - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác, Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType
         - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId.
-        - Nếu có check-in khách sạn thì phải có check-out khách sạn
+        - Nếu có check-in khách sạn thì phải có check-out khách sạn và check-out khách sạn phải trả về serviceId là hotelId của khách sạn đó và serviceType là Hotel
         - reasonEstimatedCost phải ghi rõ công thức tính toán và nếu là khách sạn thì phải ghi rõ phòng đó ở được bao nhiêu ngừoi/phòng
         - Format tiền ở reasonEstimatedCost giúp tôi theo định dạng XXX.XXX.XXX VND (VD: 1.234.567 VND)";
 
