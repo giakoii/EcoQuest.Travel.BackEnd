@@ -1,4 +1,5 @@
 using BackEnd.DTOs.Ecq110;
+using BackEnd.DTOs.Ecq310;
 using BackEnd.DTOs.User;
 using BackEnd.SystemClient;
 
@@ -19,4 +20,8 @@ public interface IPaymentService
     Task<Ecq110PaymentCallbackResponse> PaymentPremierAccountCallBack(Ecq110PaymentCallbackRequest request, IdentityEntity identityEntity);
     
     Task<Ecq110RePaymentResponse> RePaymentTrip(Ecq110RePaymentRequest request, IdentityEntity identityEntity);
+    
+    Task<Ecq310SelectPaymentsResponse> SelectPaymentsAdminDashBoard(Ecq310SelectPaymentsRequest request);
+    
+    Task<Ecq310SelectPaymentResponse> SelectPaymentAdminDashBoard(Ecq310SelectPaymentRequest request);
 }

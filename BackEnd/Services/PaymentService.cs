@@ -1,9 +1,11 @@
 using BackEnd.DTOs.Ecq110;
+using BackEnd.DTOs.Ecq310;
 using BackEnd.DTOs.User;
 using BackEnd.Logics;
 using BackEnd.Models;
 using BackEnd.Repositories;
 using BackEnd.SystemClient;
+using BackEnd.Utils;
 using BackEnd.Utils.Const;
 using Microsoft.EntityFrameworkCore;
 
@@ -389,6 +391,102 @@ public class PaymentService : IPaymentService
             response.SetMessage(MessageId.I00001);
             return true;
         });
+        return response;
+    }
+
+    /// <summary>
+    /// Select Payment Admin DashBoard
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<Ecq310SelectPaymentsResponse> SelectPaymentsAdminDashBoard(Ecq310SelectPaymentsRequest request)
+    {
+        var response = new Ecq310SelectPaymentsResponse { Success = false };
+        
+        // Select Payment
+        var query = _paymentRepository.Find(x => x.IsActive, false, x => x.Trip)
+            .Select(x => new Ecq310SelectPaymentsEntity
+            {
+                PaymentId = x!.PaymentId,
+                Amount = x.Amount,
+                Method = x.Method,
+                PaidAt = x.PaidAt,
+                Status = x.Status,
+                TripId = x.TripId,
+                TripName = x.Trip.TripName!,
+                UserId = x.Trip.UserId,
+            });
+        
+        // Apply filters
+        if (request.DateFrom.HasValue)
+        {
+            query = query.Where(x => x.PaidAt >= request.DateFrom.Value);
+        }
+        if (request.DateTo.HasValue)
+        {
+            query = query.Where(x => x.PaidAt <= request.DateTo.Value);
+        }
+        
+        var paginatedResult = await PaginationHelper.PaginateAsync(query, request.PageNumber, request.PageSize);
+        response.Response = paginatedResult;
+        
+        // True
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
+        return response;
+    }
+
+    public async Task<Ecq310SelectPaymentResponse> SelectPaymentAdminDashBoard(Ecq310SelectPaymentRequest request)
+    {
+        var response = new Ecq310SelectPaymentResponse { Success = false };
+        
+        // Select Payment
+        var payment = await _paymentRepository.Find(x => x.PaymentId == request.PaymentId && x.IsActive
+                , false
+                , x => x.Trip
+                , x => x.Trip.User)
+            .Select(x => new Ecq310SelectPaymentEntity
+            {
+                PaymentId = x!.PaymentId,
+                Amount = x.Amount,
+                Method = x.Method,
+                PaidAt = x.PaidAt,
+                Status = x.Status,
+                Trip = new Ecq310SelectPaymentTrip
+                {
+                    TripId = x.Trip.TripId,
+                    UserId = x.Trip.UserId,
+                    TripName = x.Trip.TripName,
+                    StartDate = x.Trip.StartDate,
+                    EndDate = x.Trip.EndDate,
+                    NumberOfPeople = x.Trip.NumberOfPeople,
+                    Description = x.Trip.Description,
+                },
+                User = new Ecq310SelectPaymentUser
+                {
+                    UserId = x.Trip.User.UserId,
+                    FirstName = x.Trip.User.FirstName,
+                    LastName = x.Trip.User.LastName,
+                    DateOfBirth = x.Trip.User.DateOfBirth,
+                    Address = x.Trip.User.Address,
+                    AvatarUrl = x.Trip.User.AvatarUrl,
+                    Gender = x.Trip.User.Gender,
+                    UserType = ((ConstantEnum.UserType)x.Trip.User.UserType).ToString()
+                }
+            })
+            .FirstOrDefaultAsync();
+        
+        if (payment == null)
+        {
+            response.SetMessage(MessageId.I00000, "Payment not found or not available.");
+            return response;
+        }
+        
+        response.Response = payment;
+        
+        // True
+        response.Success = true;
+        response.SetMessage(MessageId.I00001);
         return response;
     }
 }
