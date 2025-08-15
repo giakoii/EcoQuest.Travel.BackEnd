@@ -46,59 +46,10 @@ public class TripScheduleService : ITripScheduleService
 
         // Get service type mapping
         var serviceTypeDict = await GetServiceTypeMappingAsync(request);
-
-        // Check hotel service conditions (check-in/out, room availability)
-        if (serviceTypeDict != null)
-        {
-            var hotelServiceIds = serviceTypeDict
-                .Where(kv => kv.Value == ConstantEnum.EntityType.Hotel.ToString())
-                .Select(kv => kv.Key);
-
-            foreach (var hotelId in hotelServiceIds)
-            {
-                var hotelDates = request.TripScheduleDetails
-                    .Where(s => s.ServiceId == hotelId)
-                    .Select(s => s.ScheduleDate)
-                    .Distinct()
-                    .OrderBy(d => d)
-                    .ToList();
-
-                if (hotelDates.Count < 2)
-                {
-                    response.SetMessage(MessageId.I00000, "You must schedule both check-in and check-out dates for the hotel.");
-                    return response;
-                }
-
-                var estimatedCostGuest = trip.TotalEstimatedCost;
-                var hotelRoomAvailable = await _repositoryWrapper.HotelRoomRepository
-                    .Find(hr => hr.HotelId == hotelId && hr.IsActive == true && hr.IsAvailable == true)
-                    .ToListAsync();
-
-                if (!hotelRoomAvailable.Any())
-                {
-                    response.SetMessage(MessageId.I00000, "No available hotel rooms for the specified dates.");
-                    return response;
-                }
-
-                int stayNights = hotelDates.Last().DayNumber - hotelDates.First().DayNumber;
-                if (!IsValidRoomCombination(hotelRoomAvailable, trip.NumberOfPeople ?? 0,
-                        estimatedCostGuest ?? decimal.MaxValue, stayNights))
-                {
-                    response.SetMessage(MessageId.I00000, "No combination of hotel rooms available for the specified dates and number of guests within the estimated cost.");
-                    return response;
-                }
-            }
-        }
-
+        
         // Prepare to cache estimated cost per service per date
         var serviceCostMap = new Dictionary<(Guid, DateOnly), decimal>();
-
-        // // Validate total trip cost against budget, and fill serviceCostMap
-        //
-        // if (!await ValidateTotalCostAsync(request, trip, serviceTypeDict!, response, serviceCostMap))
-        // {
-        //     return response;
-        // }
+        
 
         // Insert trip schedule into DB
         await _repositoryWrapper.TripScheduleRepository.ExecuteInTransactionAsync(async () =>
