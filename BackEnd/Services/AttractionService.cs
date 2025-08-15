@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq230;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -144,13 +145,13 @@ public class AttractionService : IAttractionService
     /// Select all attractions
     /// </summary>
     /// <returns></returns>
-    public async Task<Ecq230SelectAttractionsResponse> Ecq100SelectAttractions()
+    public async Task<Ecq100SelectAttractionsResponse> Ecq100SelectAttractions(Ecq100SelectAttractionsRequest request)
     {
-        var response = new Ecq230SelectAttractionsResponse { Success = false };
+        var response = new Ecq100SelectAttractionsResponse { Success = false };
         
         // Select attractions with rating information
         var attractions = await _attractionRepository.GetView<VwAttraction>()
-            .Select(a => new Ecq230AttractionEntity
+            .Select(a => new Ecq100SelectAttractionsEntity
             {
                 AttractionId = a.AttractionId,
                 EntryFee = a.TicketPrice,
@@ -163,6 +164,13 @@ public class AttractionService : IAttractionService
                 AttractionName = a.AttractionName!,
             })
             .ToListAsync();
+
+        if (request.DestinationIds != null)
+        {
+            attractions = attractions
+                .Where(h => h.DestinationId.HasValue && request.DestinationIds.Contains(h.DestinationId.Value))
+                .ToList();
+        }
         
         // Fetch images for each attraction
         foreach (var attraction in attractions)

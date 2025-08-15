@@ -1,4 +1,4 @@
-using BackEnd.DTOs.Ecq230;
+using BackEnd.DTOs.Ecq100;
 using BackEnd.Services;
 using BackEnd.Utils.Const;
 using Microsoft.AspNetCore.Mvc;
@@ -7,11 +7,11 @@ using NLog;
 namespace BackEnd.Controllers.V1.Ecq100;
 
 /// <summary>
-/// Ecq230SelectAttractionsController - Select attractions
+/// Ecq100SelectAttractionsController - Select attractions
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotToken<Ecq230SelectAttractionsRequest, Ecq230SelectAttractionsResponse, List<Ecq230AttractionEntity>>
+public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotToken<Ecq100SelectAttractionsRequest, Ecq100SelectAttractionsResponse, List<Ecq100SelectAttractionsEntity>>
 {
     private readonly IAttractionService _attractionService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -31,9 +31,9 @@ public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotTo
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq230SelectAttractionsResponse> ProcessRequest([FromQuery] Ecq230SelectAttractionsRequest request)
+    public override async Task<Ecq100SelectAttractionsResponse> ProcessRequest([FromQuery] Ecq100SelectAttractionsRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq230SelectAttractionsResponse());
+        return await ProcessRequest(request, _logger, new Ecq100SelectAttractionsResponse());
     }
 
     /// <summary>
@@ -41,9 +41,9 @@ public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotTo
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq230SelectAttractionsResponse> Exec(Ecq230SelectAttractionsRequest request)
+    protected override async Task<Ecq100SelectAttractionsResponse> Exec(Ecq100SelectAttractionsRequest request)
     {
-        return await _attractionService.Ecq100SelectAttractions();
+        return await _attractionService.Ecq100SelectAttractions(request);
     }
 
     /// <summary>
@@ -52,9 +52,9 @@ public class Ecq100SelectAttractionsController : AbstractApiAsyncControllerNotTo
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq230SelectAttractionsResponse ErrorCheck(Ecq230SelectAttractionsRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq100SelectAttractionsResponse ErrorCheck(Ecq100SelectAttractionsRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq230SelectAttractionsResponse() { Success = false };
+        var response = new Ecq100SelectAttractionsResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

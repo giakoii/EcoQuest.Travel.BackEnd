@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq220;
 using BackEnd.Services;
 using BackEnd.Utils.Const;
@@ -11,7 +12,7 @@ namespace BackEnd.Controllers.V1.Ecq100;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotToken<Ecq220SelectRestaurantsRequest, Ecq220SelectRestaurantsResponse, List<Ecq220RestaurantEntity>>
+public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotToken<Ecq100SelectRestaurantsRequest, Ecq100SelectRestaurantsResponse, List<Ecq100SelectRestaurantsEntity>>
 {
     private readonly IRestaurantService _restaurantService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -31,9 +32,9 @@ public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotTo
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq220SelectRestaurantsResponse> ProcessRequest([FromQuery] Ecq220SelectRestaurantsRequest request)
+    public override async Task<Ecq100SelectRestaurantsResponse> ProcessRequest([FromQuery] Ecq100SelectRestaurantsRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq220SelectRestaurantsResponse());
+        return await ProcessRequest(request, _logger, new Ecq100SelectRestaurantsResponse());
     }
 
     /// <summary>
@@ -41,9 +42,9 @@ public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotTo
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq220SelectRestaurantsResponse> Exec(Ecq220SelectRestaurantsRequest request)
+    protected override async Task<Ecq100SelectRestaurantsResponse> Exec(Ecq100SelectRestaurantsRequest request)
     {
-        return await _restaurantService.Ecq100SelectRestaurants();
+        return await _restaurantService.Ecq100SelectRestaurants(request);
     }
 
     /// <summary>
@@ -52,9 +53,9 @@ public class Ecq100SelectRestaurantsController : AbstractApiAsyncControllerNotTo
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq220SelectRestaurantsResponse ErrorCheck(Ecq220SelectRestaurantsRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq100SelectRestaurantsResponse ErrorCheck(Ecq100SelectRestaurantsRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq220SelectRestaurantsResponse() { Success = false };
+        var response = new Ecq100SelectRestaurantsResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

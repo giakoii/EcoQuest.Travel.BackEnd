@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq220;
 using BackEnd.SystemClient;
 
@@ -9,7 +10,7 @@ public interface IRestaurantService
     
     Task<Ecq220SelectRestaurantResponse> Ecq220SelectRestaurant(Guid restaurantId, IdentityEntity identityEntity);
     
-    Task<Ecq220SelectRestaurantsResponse> Ecq100SelectRestaurants();
+    Task<Ecq100SelectRestaurantsResponse> Ecq100SelectRestaurants(Ecq100SelectRestaurantsRequest request);
     
     Task<Ecq220SelectRestaurantsResponse> Ecq220SelectRestaurants(IdentityEntity identityEntity);
     

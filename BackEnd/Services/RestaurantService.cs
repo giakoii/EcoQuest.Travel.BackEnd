@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq220;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -139,13 +140,13 @@ public class RestaurantService : IRestaurantService
     /// Select all restaurants
     /// </summary>
     /// <returns></returns>
-    public async Task<Ecq220SelectRestaurantsResponse> Ecq100SelectRestaurants()
+    public async Task<Ecq100SelectRestaurantsResponse> Ecq100SelectRestaurants(Ecq100SelectRestaurantsRequest request)
     {
-        var response = new Ecq220SelectRestaurantsResponse { Success = false };
+        var response = new Ecq100SelectRestaurantsResponse { Success = false };
         
         // Select restaurants with rating information
         var restaurants = await _restaurantRepository.GetView<VwRestaurant>()
-            .Select(r => new Ecq220RestaurantEntity
+            .Select(r => new Ecq100SelectRestaurantsEntity
             {
                 RestaurantId = r.RestaurantId,
                 RestaurantName = r.RestaurantName!,
@@ -162,6 +163,13 @@ public class RestaurantService : IRestaurantService
                 TotalRatings = r.TotalRatings
             })
             .ToListAsync();
+
+        if (request.DestinationIds != null)
+        {
+            restaurants = restaurants
+                    .Where(h => h.DestinationId.HasValue && request.DestinationIds.Contains(h.DestinationId.Value))
+                    .ToList();
+        }
         
         // Fetch images for each restaurant
         foreach (var restaurant in restaurants)

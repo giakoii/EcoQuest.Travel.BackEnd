@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq230;
 using BackEnd.SystemClient;
 
@@ -9,7 +10,7 @@ public interface IAttractionService
     
     Task<Ecq230SelectAttractionResponse> Ecq230SelectAttraction(Guid attractionId, IdentityEntity identityEntity);
     
-    Task<Ecq230SelectAttractionsResponse> Ecq100SelectAttractions();
+    Task<Ecq100SelectAttractionsResponse> Ecq100SelectAttractions(Ecq100SelectAttractionsRequest request);
     
     Task<Ecq230SelectAttractionsResponse> Ecq230SelectAttractions(IdentityEntity identityEntity);
     
