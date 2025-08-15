@@ -263,7 +263,7 @@ builder.Services.AddHttpClient<AiLogic>();
 var app = builder.Build();
 
 app.Urls.Clear();
-app.Urls.Add("https://0.0.0.0:5269");
+app.Urls.Add("http://0.0.0.0:5269");
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
