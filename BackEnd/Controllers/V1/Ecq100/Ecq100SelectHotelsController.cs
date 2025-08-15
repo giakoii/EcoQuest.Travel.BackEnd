@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq210;
 using BackEnd.Services;
 using BackEnd.Utils.Const;
@@ -11,7 +12,7 @@ namespace BackEnd.Controllers.V1.Ecq100;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<Ecq210SelectHotelsRequest, Ecq210SelectHotelsResponse, List<Ecq210HotelEntity>>
+public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<Ecq100SelectHotelsRequest, Ecq100SelectHotelsResponse, List<Ecq100SelectHotelsEntity>>
 {
     private readonly IHotelService _hotelService;
     private Logger _logger = LogManager.GetCurrentClassLogger();
@@ -31,9 +32,9 @@ public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<E
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public override async Task<Ecq210SelectHotelsResponse> ProcessRequest([FromQuery] Ecq210SelectHotelsRequest request)
+    public override async Task<Ecq100SelectHotelsResponse> ProcessRequest([FromQuery] Ecq100SelectHotelsRequest request)
     {
-        return await ProcessRequest(request, _logger, new Ecq210SelectHotelsResponse());
+        return await ProcessRequest(request, _logger, new Ecq100SelectHotelsResponse());
     }
 
     /// <summary>
@@ -41,9 +42,9 @@ public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<E
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override async Task<Ecq210SelectHotelsResponse> Exec(Ecq210SelectHotelsRequest request)
+    protected override async Task<Ecq100SelectHotelsResponse> Exec(Ecq100SelectHotelsRequest request)
     {
-        return await _hotelService.Ecq100SelectHotels();
+        return await _hotelService.Ecq100SelectHotels(request);
     }
 
     /// <summary>
@@ -52,9 +53,9 @@ public class Ecq100SelectHotelsController : AbstractApiAsyncControllerNotToken<E
     /// <param name="request"></param>
     /// <param name="detailErrorList"></param>
     /// <returns></returns>
-    protected internal override Ecq210SelectHotelsResponse ErrorCheck(Ecq210SelectHotelsRequest request, List<DetailError> detailErrorList)
+    protected internal override Ecq100SelectHotelsResponse ErrorCheck(Ecq100SelectHotelsRequest request, List<DetailError> detailErrorList)
     {
-        var response = new Ecq210SelectHotelsResponse() { Success = false };
+        var response = new Ecq100SelectHotelsResponse() { Success = false };
         if (detailErrorList.Count > 0)
         {
             // Error

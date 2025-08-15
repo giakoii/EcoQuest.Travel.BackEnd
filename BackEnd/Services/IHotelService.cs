@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq210;
 using BackEnd.SystemClient;
 
@@ -9,7 +10,7 @@ public interface IHotelService
     
     Task<Ecq210SelectHotelResponse> Ecq100SelectHotel(Ecq210SelectHotelRequest request);
     
-    Task<Ecq210SelectHotelsResponse> Ecq100SelectHotels();
+    Task<Ecq100SelectHotelsResponse> Ecq100SelectHotels(Ecq100SelectHotelsRequest request);
     
     Task<Ecq210SelectHotelsResponse> Ecq210SelectHotels(IdentityEntity identityEntity);
 

@@ -1,3 +1,4 @@
+using BackEnd.DTOs.Ecq100;
 using BackEnd.DTOs.Ecq210;
 using BackEnd.Logics;
 using BackEnd.Models;
@@ -161,13 +162,13 @@ public class HotelService : IHotelService
     /// Select a list of all hotels with their basic information and images
     /// </summary>
     /// <returns></returns>
-    public async Task<Ecq210SelectHotelsResponse> Ecq100SelectHotels()
+    public async Task<Ecq100SelectHotelsResponse> Ecq100SelectHotels(Ecq100SelectHotelsRequest request)
     {
-        var response = new Ecq210SelectHotelsResponse { Success = false };
+        var response = new Ecq100SelectHotelsResponse { Success = false };
         
         // Select hotels
         var hotels = await _hotelRepository.GetView<VwHotel>()
-            .Select(h => new Ecq210HotelEntity
+            .Select(h => new Ecq100SelectHotelsEntity
             {
                 HotelId = h.HotelId,
                 Name = h.HotelName,
@@ -186,6 +187,13 @@ public class HotelService : IHotelService
                 TotalRatings = h.TotalRatings,
             })
             .ToListAsync();
+
+        if (request.DestinationIds != null)
+        {
+            hotels = hotels
+                .Where(h => h.DestinationId.HasValue && request.DestinationIds.Contains(h.DestinationId.Value))
+                .ToList();
+        }
         
         // Fetch images for each hotel
         foreach (var hotel in hotels)
