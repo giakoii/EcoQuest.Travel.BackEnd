@@ -97,89 +97,320 @@ public class DashboardAnalyticsLogic
     }
 
     // Phân tích tour hot và tour sụt giảm
-    public async Task<(List<TripPopularityDto> hotTrips, List<TripPopularityDto> decliningTrips)> GetTripPopularityAnalysisAsync()
+    // public async Task<(List<TripPopularityDto> hotTrips, List<TripPopularityDto> decliningTrips)> GetTripPopularityAnalysisAsync()
+    // {
+    //     var threeMonthsAgo = DateTime.Now.AddMonths(-3);
+    //
+    //     var tripData = await _context.Bookings
+    //         .Include(b => b.Trip)
+    //         .ThenInclude(t => t.TripDestinations)
+    //         .ThenInclude(td => td.Destination)
+    //         .Where(b => b.CreatedAt >= threeMonthsAgo)
+    //         .GroupBy(b => new { b.TripId, b.Trip.TripName })
+    //         .Select(g => new
+    //         {
+    //             g.Key.TripId,
+    //             g.Key.TripName,
+    //             Destination = g.FirstOrDefault()!.Trip.TripDestinations.FirstOrDefault()!.Destination.Name,
+    //             BookingCount = g.Count(),
+    //             Revenue = g.Sum(b => b.TotalCost),
+    //             MonthlyData = g.GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
+    //                 .Select(mg => new MonthlyTripData
+    //                 {
+    //                     Month = new DateTime(mg.Key.Year, mg.Key.Month, 1, 0, 0, 0, DateTimeKind.Utc),
+    //                     BookingCount = mg.Count(),
+    //                     Revenue = mg.Sum(b => b.TotalCost)
+    //                 }).ToList()
+    //         })
+    //         .ToListAsync();
+    //
+    //     // Lấy rating trung bình từ các bảng rating
+    //     var tripPopularityList = new List<TripPopularityDto>();
+    //
+    //     foreach (var trip in tripData)
+    //     {
+    //         var tripPopularity = new TripPopularityDto
+    //         {
+    //             TripId = trip.TripId,
+    //             TripName = trip.TripName ?? "Unknown Trip",
+    //             Destination = trip.Destination ?? "Unknown Destination",
+    //             BookingCount = trip.BookingCount,
+    //             Revenue = trip.Revenue,
+    //             TrendData = trip.MonthlyData.OrderBy(m => m.Month).ToList()
+    //         };
+    //
+    //         // Tính growth rate dựa trên 2 tháng gần nhất
+    //         var recentMonths = tripPopularity.TrendData.TakeLast(2).ToList();
+    //         if (recentMonths.Count == 2)
+    //         {
+    //             var previousMonthBookings = recentMonths[0].BookingCount;
+    //             var currentMonthBookings = recentMonths[1].BookingCount;
+    //
+    //             if (previousMonthBookings > 0)
+    //             {
+    //                 tripPopularity.GrowthRate =
+    //                     ((decimal)(currentMonthBookings - previousMonthBookings) / previousMonthBookings) * 100;
+    //             }
+    //         }
+    //
+    //         // Xác định trend status
+    //         if (tripPopularity.GrowthRate > 5)
+    //             tripPopularity.TrendStatus = "Hot";
+    //         else if (tripPopularity.GrowthRate < -5)
+    //             tripPopularity.TrendStatus = "Declining";
+    //         else
+    //             tripPopularity.TrendStatus = "Stable";
+    //
+    //         tripPopularityList.Add(tripPopularity);
+    //     }
+    //
+    //     var hotTrips = tripPopularityList
+    //         .Where(t => t.TrendStatus == "Hot" || t.BookingCount >= 10)
+    //         .OrderByDescending(t => t.GrowthRate)
+    //         .ThenByDescending(t => t.BookingCount)
+    //         .Take(10)
+    //         .ToList();
+    //
+    //     var decliningTrips = tripPopularityList
+    //         .Where(t => t.TrendStatus == "Declining")
+    //         .OrderBy(t => t.GrowthRate)
+    //         .Take(10)
+    //         .ToList();
+    //
+    //     return (hotTrips, decliningTrips);
+    // }
+    
+public async Task<(List<TripPopularityDto> hotTrips, List<TripPopularityDto> decliningTrips)> GetTripPopularityAnalysisAsync()
+{
+    // Tạo dữ liệu ảo thay vì query database
+    var mockTripData = new List<TripPopularityDto>
     {
-        var threeMonthsAgo = DateTime.Now.AddMonths(-3);
-
-        var tripData = await _context.Bookings
-            .Include(b => b.Trip)
-            .ThenInclude(t => t.TripDestinations)
-            .ThenInclude(td => td.Destination)
-            .Where(b => b.CreatedAt >= threeMonthsAgo)
-            .GroupBy(b => new { b.TripId, b.Trip.TripName })
-            .Select(g => new
-            {
-                g.Key.TripId,
-                g.Key.TripName,
-                Destination = g.FirstOrDefault()!.Trip.TripDestinations.FirstOrDefault()!.Destination.Name,
-                BookingCount = g.Count(),
-                Revenue = g.Sum(b => b.TotalCost),
-                MonthlyData = g.GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
-                    .Select(mg => new MonthlyTripData
-                    {
-                        Month = new DateTime(mg.Key.Year, mg.Key.Month, 1, 0, 0, 0, DateTimeKind.Utc),
-                        BookingCount = mg.Count(),
-                        Revenue = mg.Sum(b => b.TotalCost)
-                    }).ToList()
-            })
-            .ToListAsync();
-
-        // Lấy rating trung bình từ các bảng rating
-        var tripPopularityList = new List<TripPopularityDto>();
-
-        foreach (var trip in tripData)
+        // Hot Trips
+        new TripPopularityDto
         {
-            var tripPopularity = new TripPopularityDto
+            TripId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+            TripName = "Khám phá Sapa mùa thu",
+            Destination = "Sapa, Lào Cai",
+            BookingCount = 45,
+            Revenue = 675000000m,
+            AverageRating = 4.8m,
+            GrowthRate = 35.7m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
             {
-                TripId = trip.TripId,
-                TripName = trip.TripName ?? "Unknown Trip",
-                Destination = trip.Destination ?? "Unknown Destination",
-                BookingCount = trip.BookingCount,
-                Revenue = trip.Revenue,
-                TrendData = trip.MonthlyData.OrderBy(m => m.Month).ToList()
-            };
-
-            // Tính growth rate dựa trên 2 tháng gần nhất
-            var recentMonths = tripPopularity.TrendData.TakeLast(2).ToList();
-            if (recentMonths.Count == 2)
-            {
-                var previousMonthBookings = recentMonths[0].BookingCount;
-                var currentMonthBookings = recentMonths[1].BookingCount;
-
-                if (previousMonthBookings > 0)
-                {
-                    tripPopularity.GrowthRate =
-                        ((decimal)(currentMonthBookings - previousMonthBookings) / previousMonthBookings) * 100;
-                }
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 8, Revenue = 120000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 14, Revenue = 210000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 23, Revenue = 345000000m }
             }
-
-            // Xác định trend status
-            if (tripPopularity.GrowthRate > 20)
-                tripPopularity.TrendStatus = "Hot";
-            else if (tripPopularity.GrowthRate < -20)
-                tripPopularity.TrendStatus = "Declining";
-            else
-                tripPopularity.TrendStatus = "Stable";
-
-            tripPopularityList.Add(tripPopularity);
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("b2c3d4e5-f6a7-8901-bcde-f23456789012"),
+            TripName = "Thiên đường biển đảo Phú Quốc",
+            Destination = "Phú Quốc, Kiên Giang",
+            BookingCount = 38,
+            Revenue = 950000000m,
+            AverageRating = 4.7m,
+            GrowthRate = 26.7m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 10, Revenue = 250000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 15, Revenue = 375000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 13, Revenue = 325000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("c3d4e5f6-a7b8-9012-cdef-345678901234"),
+            TripName = "Miền Trung di sản văn hóa",
+            Destination = "Hội An - Huế - Phong Nha",
+            BookingCount = 32,
+            Revenue = 800000000m,
+            AverageRating = 4.6m,
+            GrowthRate = 23.1m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 9, Revenue = 225000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 13, Revenue = 325000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 10, Revenue = 250000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("d4e5f6a7-b8c9-0123-defa-456789012345"),
+            TripName = "Vịnh Hạ Long kỳ quan",
+            Destination = "Hạ Long, Quảng Ninh",
+            BookingCount = 41,
+            Revenue = 615000000m,
+            AverageRating = 4.5m,
+            GrowthRate = 17.6m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 12, Revenue = 180000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 17, Revenue = 255000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 12, Revenue = 180000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("e5f6a7b8-c9d0-1234-efab-567890123456"),
+            TripName = "Đà Lạt thành phố ngàn hoa",
+            Destination = "Đà Lạt, Lâm Đồng",
+            BookingCount = 29,
+            Revenue = 435000000m,
+            AverageRating = 4.4m,
+            GrowthRate = 16.0m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 8, Revenue = 120000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 10, Revenue = 150000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 11, Revenue = 165000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("f6a7b8c9-d0e1-2345-fabc-678901234567"),
+            TripName = "Miền Tây sông nước",
+            Destination = "Cần Thơ - An Giang",
+            BookingCount = 25,
+            Revenue = 375000000m,
+            AverageRating = 4.3m,
+            GrowthRate = 13.6m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 7, Revenue = 105000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 9, Revenue = 135000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 9, Revenue = 135000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("a7b8c9d0-e1f2-3456-abcd-789012345678"),
+            TripName = "Nha Trang biển xanh",
+            Destination = "Nha Trang, Khánh Hòa",
+            BookingCount = 36,
+            Revenue = 540000000m,
+            AverageRating = 4.2m,
+            GrowthRate = 12.5m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 11, Revenue = 165000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 13, Revenue = 195000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 12, Revenue = 180000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("b8c9d0e1-f2a3-4567-bcde-890123456789"),
+            TripName = "Mộc Châu mùa hoa",
+            Destination = "Mộc Châu, Sơn La",
+            BookingCount = 18,
+            Revenue = 270000000m,
+            AverageRating = 4.6m,
+            GrowthRate = 8.8m,
+            TrendStatus = "Hot",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 5, Revenue = 75000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 6, Revenue = 90000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 7, Revenue = 105000000m }
+            }
+        },
+        // Stable trips
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("c9d0e1f2-a3b4-5678-cdef-901234567890"),
+            TripName = "Phan Thiết resort",
+            Destination = "Phan Thiết, Bình Thuận",
+            BookingCount = 22,
+            Revenue = 330000000m,
+            AverageRating = 4.1m,
+            GrowthRate = 2.3m,
+            TrendStatus = "Stable",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 7, Revenue = 105000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 8, Revenue = 120000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 7, Revenue = 105000000m }
+            }
+        },
+        // Declining trips
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("abcdef12-3456-3210-abcd-fed987654321"),
+            TripName = "Tour thành phố Hà Nội",
+            Destination = "Hà Nội",
+            BookingCount = 15,
+            Revenue = 225000000m,
+            AverageRating = 3.8m,
+            GrowthRate = -18.2m,
+            TrendStatus = "Declining",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 8, Revenue = 120000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 5, Revenue = 75000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 2, Revenue = 30000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("abcdef12-3456-2109-abcd-edc876543210"),
+            TripName = "Vũng Tàu cuối tuần",
+            Destination = "Vũng Tàu, Bà Rịa - Vũng Tàu",
+            BookingCount = 12,
+            Revenue = 180000000m,
+            AverageRating = 3.6m,
+            GrowthRate = -25.0m,
+            TrendStatus = "Declining",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 6, Revenue = 90000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 4, Revenue = 60000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 2, Revenue = 30000000m }
+            }
+        },
+        new TripPopularityDto
+        {
+            TripId = Guid.Parse("abcdef12-3456-1098-abcd-dcb765432109"),
+            TripName = "Cao nguyên Di Linh",
+            Destination = "Di Linh, Lâm Đồng",
+            BookingCount = 8,
+            Revenue = 120000000m,
+            AverageRating = 3.9m,
+            GrowthRate = -33.3m,
+            TrendStatus = "Declining",
+            TrendData = new List<MonthlyTripData>
+            {
+                new MonthlyTripData { Month = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 4, Revenue = 60000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 3, Revenue = 45000000m },
+                new MonthlyTripData { Month = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc), BookingCount = 1, Revenue = 15000000m }
+            }
         }
+    };
 
-        var hotTrips = tripPopularityList
-            .Where(t => t.TrendStatus == "Hot" || t.BookingCount >= 10)
-            .OrderByDescending(t => t.GrowthRate)
-            .ThenByDescending(t => t.BookingCount)
-            .Take(10)
-            .ToList();
+    await Task.Delay(100);
 
-        var decliningTrips = tripPopularityList
-            .Where(t => t.TrendStatus == "Declining")
-            .OrderBy(t => t.GrowthRate)
-            .Take(10)
-            .ToList();
+    var hotTrips = mockTripData
+        .Where(t => t.TrendStatus == "Hot" || t.BookingCount >= 10)
+        .OrderByDescending(t => t.GrowthRate)
+        .ThenByDescending(t => t.BookingCount)
+        .Take(10)
+        .ToList();
 
-        return (hotTrips, decliningTrips);
-    }
+    var decliningTrips = mockTripData
+        .Where(t => t.TrendStatus == "Declining")
+        .OrderBy(t => t.GrowthRate)
+        .Take(10)
+        .ToList();
 
+    return (hotTrips, decliningTrips);
+}
     // Gợi ý điều chỉnh tour
     public async Task<List<TripOptimizationDto>> GetTripOptimizationSuggestionsAsync()
     {
