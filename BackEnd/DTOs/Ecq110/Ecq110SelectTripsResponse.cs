@@ -21,4 +21,13 @@ public class Ecq110TripListEntity
     public decimal? TotalEstimatedCost { get; set; }
     public byte Status { get; set; }
     public string CreatedAt { get; set; }
+    
+    public List<Ecq110SelectTripsDestination> Destinations { get; set; }
+}
+
+public class Ecq110SelectTripsDestination
+{
+    public Guid DestinationId { get; set; }
+    
+    public string DestinationName { get; set; } = null!;
 }

@@ -41,13 +41,16 @@ public class TripService : ITripService
         var response = new Ecq110SelectTripResponse { Success = false };
 
         // Select trip by ID
-        var trip = await _tripRepository.GetView<VwTrip>(x => x.TripId == tripId)
+        var trip = await _tripRepository.Find(x => x.TripId == tripId && x.IsActive == true
+                ,false
+                , x => x.User
+                , x => x.TripDestinations)
             .Select(x => new Ecq110TripEntity
             {
                 TripId = x.TripId,
                 UserId = x.UserId,
-                FirstName = x.FirstName,
-                LastName = x.LastName,
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
                 TripName = x.TripName!,
                 Description = x.Description,
                 StartDate = StringUtil.ConvertToDateAsDdMmYyyy(x.StartDate),
@@ -57,6 +60,11 @@ public class TripService : ITripService
                 Status = x.Status,
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
                 UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.UpdatedAt),
+                Destinations = x.TripDestinations.Select(d => new Ecq110SelectTripDestination
+                {
+                    DestinationId = d.DestinationId,
+                    DestinationName = d.Destination.Name ?? string.Empty
+                }).ToList()
             }).FirstOrDefaultAsync();
         if (trip == null)
         {
@@ -79,13 +87,17 @@ public class TripService : ITripService
         var response = new Ecq110SelectTripsResponse { Success = false };
 
         // Select all trips
-        response.Response = await _tripRepository.GetView<VwTrip>(x => x.UserId == Guid.Parse(identityEntity.UserId))
+        response.Response = await _tripRepository.Find(x => x.UserId == Guid.Parse(identityEntity.UserId)
+                                                            && x.IsActive == true
+                                                            ,false
+                                                            , x => x.User
+                                                            , x => x.TripDestinations)
             .Select(x => new Ecq110TripListEntity
             {
                 TripId = x.TripId,
                 UserId = x.UserId,
-                FirstName = x.FirstName,
-                LastName = x.LastName,
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
                 TripName = x.TripName!,
                 Description = x.Description,
                 StartDate = StringUtil.ConvertToDateAsDdMmYyyy(x.StartDate),
@@ -94,7 +106,13 @@ public class TripService : ITripService
                 TotalEstimatedCost = x.TotalEstimatedCost,
                 Status = x.Status,
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(x.CreatedAt),
-            }).ToListAsync();
+                Destinations = x.TripDestinations.Select(d => new Ecq110SelectTripsDestination
+                {
+                    DestinationId = d.DestinationId,
+                    DestinationName = d.Destination.Name ?? string.Empty
+                }).ToList()
+            })
+            .ToListAsync();
 
         // True
         response.Success = true;

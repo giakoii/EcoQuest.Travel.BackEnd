@@ -22,4 +22,13 @@ public class Ecq110TripEntity
     public byte Status { get; set; }
     public string CreatedAt { get; set; }
     public string UpdatedAt { get; set; }
+    
+    public List<Ecq110SelectTripDestination> Destinations { get; set; }
+}
+
+public class Ecq110SelectTripDestination
+{
+    public Guid DestinationId { get; set; }
+    
+    public string DestinationName { get; set; } = null!;
 }
