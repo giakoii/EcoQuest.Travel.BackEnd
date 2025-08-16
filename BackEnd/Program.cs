@@ -75,7 +75,22 @@ builder.Services.AddScoped<IBaseRepository<Hotel, Guid>, BaseRepository<Hotel, G
 builder.Services.AddScoped<IBaseRepository<HotelRoom, Guid>, BaseRepository<HotelRoom, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Booking, Guid>, BaseRepository<Booking, Guid>>();
 builder.Services.AddScoped<IBaseRepository<Payment, Guid>, BaseRepository<Payment, Guid>>();
-builder.Services.AddScoped<TripScheduleRepositoryWrapper>();
+builder.Services.AddScoped<IBaseRepository<AttractionDetail, Guid>, BaseRepository<AttractionDetail, Guid>>();
+builder.Services.AddScoped<IBaseRepository<RestaurantDetail, Guid>, BaseRepository<RestaurantDetail, Guid>>();
+
+// Register TripScheduleRepositoryWrapper with all required dependencies
+builder.Services.AddScoped<TripScheduleRepositoryWrapper>(provider => new TripScheduleRepositoryWrapper(
+    provider.GetRequiredService<IBaseRepository<Trip, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<TripSchedule, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<TripDestination, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<AttractionDetail, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<RestaurantDetail, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<Hotel, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<HotelRoom, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<User, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<Payment, Guid>>(),
+    provider.GetRequiredService<IBaseRepository<Booking, Guid>>()
+));
 
 // Add services to the container.
 builder.Services.AddControllers();

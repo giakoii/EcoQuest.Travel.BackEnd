@@ -16,7 +16,10 @@ namespace BackEnd.Services
         public IBaseRepository<Hotel, Guid> HotelRepository { get; }
         public IBaseRepository<HotelRoom, Guid> HotelRoomRepository { get; }
         
+        public IBaseRepository<Payment, Guid> PaymentRepository { get; set; }
+        
         public IBaseRepository<User, Guid> UserRepository { get; }
+        public IBaseRepository<Booking, Guid> BookingRepository { get; }
 
         public TripScheduleRepositoryWrapper(
             IBaseRepository<Trip, Guid> tripRepository,
@@ -25,7 +28,10 @@ namespace BackEnd.Services
             IBaseRepository<AttractionDetail, Guid> attractionDetailRepository,
             IBaseRepository<RestaurantDetail, Guid> restaurantDetailRepository,
             IBaseRepository<Hotel, Guid> hotelRepository,
-            IBaseRepository<HotelRoom, Guid> hotelRoomRepository, IBaseRepository<User, Guid> userRepository)
+            IBaseRepository<HotelRoom, Guid> hotelRoomRepository, 
+            IBaseRepository<User, Guid> userRepository,
+            IBaseRepository<Payment, Guid> tripPaymentRepository,
+            IBaseRepository<Booking, Guid> bookingRepository)
         {
             TripRepository = tripRepository;
             TripScheduleRepository = tripScheduleRepository;
@@ -35,6 +41,8 @@ namespace BackEnd.Services
             HotelRepository = hotelRepository;
             HotelRoomRepository = hotelRoomRepository;
             UserRepository = userRepository;
+            PaymentRepository = tripPaymentRepository;
+            BookingRepository = bookingRepository;
         }
     }
 }

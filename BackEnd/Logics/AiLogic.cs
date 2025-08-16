@@ -58,7 +58,7 @@ public class AiLogic
         var finalHotelInfo = !string.IsNullOrEmpty(hotelRoomInfo) ? hotelRoomInfo : 
             (hotelRooms.Any() ? "**Phòng khách sạn:**\n" + string.Join("\n", hotelRooms.Select(hr => 
                 $"- {hr.RoomType}: Giá {hr.PricePerNight:C}/đêm, Sức chứa tối đa: {hr.MaxGuests} người, " +
-                $"Mô tả: {hr.Description}, Tình trạng: {(hr.IsAvailable == true ? "Có sẵn" : "Không có sẵn")}, HotelId: {hr.HotelId}")) : "Không có phòng khách sạn khả dụng");
+                $"Mô tả: {hr.Description}, Tình trạng: {(hr.IsAvailable == true ? "Có sẵn" : "Không có sẵn")}, HotelRoomId: {hr.RoomId}")) : "Không có phòng khách sạn khả dụng");
 
         // Build detailed attraction information  
         var attractionInfo = attractions.Any() ? string.Join("\n", attractions.Select(a => 
@@ -125,19 +125,30 @@ public class AiLogic
           ],
         }}
 
-        **LỰU Ý QUAN TRỌNG:**
-        - Nếu là khách sạn phải tính số tiền toàn bộ ngày ở (VD: giá phòng * số đêm) để ra được estimatedCost. Nếu estimatedCost Khách sạn vượt quá Tổng ngân sách ước tính thì không trả về khách sạn
-        - Chỉ sử dụng các địa điểm có trong dữ liệu được cung cấp
-        - Ngoài các dịch vụ như hotel, restaurant, attraction. Bạn có thể sử dụng thêm các địa điểm du lịch khác nếu cần thiết nhưng vẫn phải trả về đúng định dạng JSON như trên
-        - Bao gồm serviceId khi sử dụng khách sạn, nhà hàng, hoặc điểm tham quan cụ thể
-        - Thời gian phải hợp lý (VD: 09:00-12:00 tham quan, 12:00-13:30 ăn trưa)
-        - Ước tính chi phí dựa trên giá được cung cấp và số người, phải đưa ra chi phí hợp lý nhất có thể
-        - Trả về CHÍNH XÁC định dạng JSON, không có text bổ sung
-        - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác, Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType
-        - Không sử dụng destionationId của các địa điểm không có trong danh sách đã cung cấp làm serviceId.
-        - Nếu có check-in khách sạn thì phải có check-out khách sạn và check-out khách sạn phải trả về serviceId là hotelId của khách sạn đó và serviceType là Hotel
-        - reasonEstimatedCost phải ghi rõ công thức tính toán và nếu là khách sạn thì phải ghi rõ phòng đó ở được bao nhiêu ngừoi/phòng
-        - Format tiền ở reasonEstimatedCost giúp tôi theo định dạng XXX.XXX.XXX VND (VD: 1.234.567 VND)";
+        **YÊU CẦU TẠO LỊCH TRÌNH:**
+        1. Tạo lịch trình chi tiết từng ngày từ {{startDate}} đến {{endDate}}
+        2. Bao gồm thời gian cụ thể cho từng hoạt động (StartTime, EndTime)
+        3. Ước tính chi phí hợp lý cho từng hoạt động
+        4. Ưu tiên các địa điểm có đánh giá cao và phù hợp với ngân sách
+        5. Sắp xếp hợp lý về mặt địa lý để tối ưu di chuyển
+        6. Cân bằng giữa nghỉ ngơi, tham quan, và ăn uống
+        7. Đảm bảo tổng chi phí không vượt quá ngân sách
+
+        **LƯU Ý QUAN TRỌNG (VỀ HOTEL):**
+        - Nếu là khách sạn phải tính số tiền toàn bộ ngày ở (VD: giá phòng * số đêm) để ra được estimatedCost.  
+        - Nếu estimatedCost Khách sạn vượt quá Tổng ngân sách ước tính thì không trả về khách sạn.  
+        - Nếu nhiều phòng giống nhau được book thì **PHẢI tạo nhiều object JSON riêng biệt trong mảng `tripScheduleDetails`, mỗi object có cùng `serviceId` (HotelRoomId) và `serviceType = ""Hotel""`.**  
+          Ví dụ: Nếu book 3 phòng River View Twin có HotelRoomId = `376c93f3-831a-4794-8cac-85311e42f2cb` thì phải trả về **3 object JSON khác nhau**, mỗi object có `serviceId = ""376c93f3-831a-4794-8cac-85311e42f2cb""`.  
+        - Mỗi phòng phải có `reasonEstimatedCost` riêng biệt, trong đó ghi rõ: giá phòng, số đêm, số người tối đa/phòng, và công thức tính ra chi phí cho phòng đó.  
+        - Nếu book nhiều phòng khác nhau (VD: 2 phòng A, 1 phòng B) thì phải trả về 2 object cho phòng A và 1 object cho phòng B.  
+
+        **LƯU Ý KHÁC:**
+        - Chỉ sử dụng các địa điểm có trong dữ liệu được cung cấp.  
+        - Ngoài các dịch vụ như hotel, restaurant, attraction. Bạn có thể sử dụng thêm các địa điểm du lịch khác nếu cần thiết nhưng vẫn phải trả về đúng định dạng JSON như trên.  
+        - serviceId và serviceType có mối liên hệ với nhau chứ không phải sử dụng id của dịch vụ khác.  
+        - Nếu destination không có địa điểm thích hợp như mong muốn thì không cần trả về serviceId và serviceType.  
+        - reasonEstimatedCost phải ghi rõ công thức tính toán và nếu là khách sạn thì phải ghi rõ phòng đó ở được bao nhiêu người/phòng.  
+        - Format tiền ở reasonEstimatedCost giúp tôi theo định dạng XXX.XXX.XXX VND (VD: 1.234.567 VND).  ";
 
         var requestBody = new
         {
@@ -183,6 +194,17 @@ public class AiLogic
                 cleanContent = cleanContent.Substring(0, cleanContent.Length - 3);
             }
             cleanContent = cleanContent?.Trim();
+            var startIndex = cleanContent.IndexOf('{');
+            var endIndex = cleanContent.LastIndexOf('}');
+            
+            if (startIndex >= 0 && endIndex > startIndex)
+            {
+                cleanContent = cleanContent.Substring(startIndex, endIndex - startIndex + 1);
+            }
+            else
+            {
+                throw new InvalidOperationException("AI response does not contain valid JSON object");
+            }
 
             // Parse the AI response to the correct structure
             var aiResponse = JsonSerializer.Deserialize<AiTripScheduleResponse>(cleanContent!,
