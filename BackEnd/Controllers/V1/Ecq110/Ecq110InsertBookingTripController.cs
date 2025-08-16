@@ -11,8 +11,6 @@ namespace BackEnd.Controllers.V1.Ecq110;
 /// <summary>
 /// Ecq110InsertBookingTripController - Insert a new booking trip
 /// </summary>
-[ApiController]
-[Route("api/v1/[controller]")]
 public class Ecq110InsertBookingTripController : AbstractApiAsyncController<Ecq110InsertBookingTripRequest, Ecq110InsertBookingTripResponse, string>
 {
     private readonly IBookingService _bookingService;
