@@ -758,7 +758,15 @@ public class TripScheduleService : ITripScheduleService
                     ServiceName = x.HotelName,
                     Address = x.Address!,
                     Cost = $"{x.MinPrice} - {x.MaxPrice}",
+                    DestinationId = x.DestinationId!.Value
                 }).ToListAsync();
+            if (request.DestinationIds != null)
+            {
+                hotels = hotels
+                    .Where(h => request.DestinationIds.Contains(h.DestinationId!))
+                    .ToList();
+            }
+            
             entityResponse = hotels;
         }
         else if (request.ServiceType == ((int)ConstantEnum.ServiceType.Restaurant))
@@ -771,7 +779,15 @@ public class TripScheduleService : ITripScheduleService
                     ServiceName = x.RestaurantName!,
                     Address = x.Address!,
                     Cost = $"{x.MinPrice} - {x.MaxPrice}",
+                    DestinationId = x.DestinationId!.Value
                 }).ToListAsync();
+            
+            if (request.DestinationIds != null)
+            {
+                restaurants = restaurants
+                    .Where(r => request.DestinationIds.Contains(r.DestinationId!))
+                    .ToList();
+            }
             entityResponse = restaurants;
         }
         else if (request.ServiceType == ((int)ConstantEnum.ServiceType.Attraction))
@@ -784,7 +800,14 @@ public class TripScheduleService : ITripScheduleService
                     ServiceName = x.AttractionName!,
                     Address = x.Address!,
                     Cost = $"{x.TicketPrice}",
+                    DestinationId = x.DestinationId!.Value
                 }).ToListAsync();
+            if (request.DestinationIds != null)
+            {
+                attractions = attractions
+                    .Where(a => request.DestinationIds.Contains(a.DestinationId!))
+                    .ToList();
+            }
             entityResponse = attractions;
         }
         else

@@ -16,4 +16,6 @@ public class Ecq110SelectServiceEntity
     public string Cost { get; set; }
     
     public string Address { get; set; }
+    
+    public Guid DestinationId { get; set; }
 }
