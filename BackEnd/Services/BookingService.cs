@@ -12,7 +12,6 @@ public class BookingService : IBookingService
     private readonly IBaseRepository<Booking, Guid> _bookingRepository;
     private readonly IBaseRepository<Trip, Guid> _tripRepository;
     private readonly IBaseRepository<TripSchedule, Guid> _tripScheduleRepository;
-    private readonly IBaseRepository<HotelRoom, Guid> _hotelRoomRepository;
     private readonly IBaseRepository<Payment, Guid> _paymentRepository;
 
     /// <summary>
@@ -21,16 +20,13 @@ public class BookingService : IBookingService
     /// <param name="bookingRepository"></param>
     /// <param name="tripRepository"></param>
     /// <param name="tripScheduleRepository"></param>
-    /// <param name="hotelRoomRepository"></param>
     /// <param name="paymentRepository"></param>
     public BookingService(IBaseRepository<Booking, Guid> bookingRepository, IBaseRepository<Trip, Guid> tripRepository,
-        IBaseRepository<TripSchedule, Guid> tripScheduleRepository,
-        IBaseRepository<HotelRoom, Guid> hotelRoomRepository, IBaseRepository<Payment, Guid> paymentRepository)
+        IBaseRepository<TripSchedule, Guid> tripScheduleRepository, IBaseRepository<Payment, Guid> paymentRepository)
     {
         _bookingRepository = bookingRepository;
         _tripRepository = tripRepository;
         _tripScheduleRepository = tripScheduleRepository;
-        _hotelRoomRepository = hotelRoomRepository;
         _paymentRepository = paymentRepository;
     }
 
@@ -40,12 +36,14 @@ public class BookingService : IBookingService
     /// <param name="request"></param>
     /// <param name="identityEntity"></param>
     /// <returns></returns>
-    public async Task<Ecq110InsertBookingTripResponse> InsertBookingTrip(Ecq110InsertBookingTripRequest request, IdentityEntity identityEntity)
+    public async Task<Ecq110InsertBookingTripResponse> InsertBookingTrip(Ecq110InsertBookingTripRequest request,
+        IdentityEntity identityEntity)
     {
         var response = new Ecq110InsertBookingTripResponse { Success = false };
 
         // Validate trip and owner trip
-        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        var trip = await _tripRepository.Find(x => x.TripId == request.TripId && x.IsActive == true)
+            .FirstOrDefaultAsync();
         if (trip == null)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.TripNotFound);
@@ -57,10 +55,11 @@ public class BookingService : IBookingService
             response.SetMessage(MessageId.I00000, CommonMessages.NotAuthorizedToManageTrip);
             return response;
         }
-        
+
         // Check if trip is payment
         var payment = await _paymentRepository
-            .Find(x => x.TripId == request.TripId && x.IsActive && x.Status != nameof(ConstantEnum.PaymentStatus.Cancelled))
+            .Find(x => x.TripId == request.TripId && x.IsActive &&
+                       x.Status != nameof(ConstantEnum.PaymentStatus.Cancelled))
             .FirstOrDefaultAsync();
         if (payment != null)
         {
@@ -69,7 +68,8 @@ public class BookingService : IBookingService
         }
 
         // Check if booking already exists for the trip
-        var bookingExist = await _bookingRepository.Find(x => x.TripId == request.TripId && x.IsActive == true).FirstOrDefaultAsync();
+        var bookingExist = await _bookingRepository.Find(x => x.TripId == request.TripId && x.IsActive)
+            .FirstOrDefaultAsync();
         if (bookingExist != null)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.BookingAlreadyExists);
@@ -79,7 +79,7 @@ public class BookingService : IBookingService
         // Validate trip schedule
         var tripSchedules = await _tripScheduleRepository
             .Find(x => x.TripId == trip.TripId && x.IsActive && x.ServiceId != null).ToListAsync();
-        if (!tripSchedules.Any())
+        if (tripSchedules.Count == 0)
         {
             response.SetMessage(MessageId.I00000, CommonMessages.TripScheduleNotFound);
             return response;
@@ -88,117 +88,96 @@ public class BookingService : IBookingService
         // Begin transaction
         await _bookingRepository.ExecuteInTransactionAsync(async () =>
         {
-            var bookings = new List<Booking>();
-
-            var hotelGroups = tripSchedules
-                .Where(x => x.ServiceType == ConstantEnum.EntityType.Hotel.ToString())
-                .GroupBy(x => x.ServiceId);
-
-            foreach (var group in hotelGroups)
+            // Check if there are any hotel schedules
+            var hotelSchedules = tripSchedules
+                .Where(x => x.ServiceType == nameof(ConstantEnum.EntityType.Hotel))
+                .ToList();
+        
+            if (hotelSchedules.Count > 0)
             {
-                var hotelId = group.Key!.Value;
-                
-                var schedulesForHotel = group.ToList();
-                var checkinDate = schedulesForHotel.Min(x => x.ScheduleDate);
-                var checkoutDate = schedulesForHotel.Max(x => x.ScheduleDate).AddDays(1);
-
-                // Insert new booking
-                var booking = new Booking
+                // Group hotel schedules by ServiceId (each group is a hotel)
+                var hotelGroups = hotelSchedules.GroupBy(x => x.ServiceId);
+        
+                foreach (var group in hotelGroups)
                 {
-                    BookingId = Guid.NewGuid(),
-                    TripId = trip.TripId,
-                    UserId = trip.UserId,
-                    ServiceId = hotelId,
-                    ServiceType = ConstantEnum.EntityType.Hotel.ToString(),
-                    ScheduleDate = checkinDate,
-                    TotalCost = 0,
-                    NumberOfGuests = trip.NumberOfPeople ?? 0,
-                    Status = ConstantEnum.BookingStatus.Pending.ToString(),
-                };
-
-                var hotelBookings = new List<HotelBooking>();
-                decimal totalCost = 0;
-
-                if (request.BookingHotelRooms != null)
-                {
-                    foreach (var hotelRoom in request.BookingHotelRooms)
+                    var hotelId = group.Key!.Value;
+                    var schedulesForHotel = group.ToList();
+                    var checkinDate = schedulesForHotel.Min(x => x.ScheduleDate);
+        
+                    // If only one schedule, set checkout to trip end date + 1, else use max schedule date + 1
+                    var checkoutDate = schedulesForHotel.Count == 1
+                        ? trip.EndDate!.Value.AddDays(1)
+                        : schedulesForHotel.Max(x => x.ScheduleDate).AddDays(1);
+        
+                    var booking = new Booking
                     {
-                        // Validate hotel room
-                        var room = await _hotelRoomRepository.Find(x =>
-                            x.HotelId == hotelId &&
-                            x.RoomId == hotelRoom.HotelRoomId &&
-                            x.IsActive == true && x.NumberOfRoomsAvailable > 0).FirstOrDefaultAsync();
-
-                        if (room == null)
-                        {
-                            response.SetMessage(MessageId.I00000, CommonMessages.HotelRoomNotFound);
-                            return false;
-                        }
-
-                        // Calculate nights
+                        BookingId = Guid.NewGuid(),
+                        TripId = trip.TripId,
+                        UserId = trip.UserId,
+                        ServiceId = hotelId,
+                        ServiceType = nameof(ConstantEnum.EntityType.Hotel),
+                        ScheduleDate = checkinDate,
+                        NumberOfGuests = trip.NumberOfPeople ?? 1,
+                        Status = nameof(ConstantEnum.BookingStatus.Pending),
+                    };
+        
+                    var hotelBookings = new List<HotelBooking>();
+                    decimal totalCost = 0;
+        
+                    foreach (var schedule in schedulesForHotel)
+                    {
+                        // Each schedule is a hotel room booking
                         var nights = (checkoutDate.DayNumber - checkinDate.DayNumber);
                         if (nights < 1) nights = 1;
-                        
-                        var numberOfGuests = trip.NumberOfPeople ?? 1;
-
-                        // Calculate required rooms based on max guests per room
-                        int requiredRooms = (int)Math.Ceiling((double) numberOfGuests / room.MaxGuests);
-                        if (room.NumberOfRoomsAvailable < requiredRooms)
-                        {
-                            response.SetMessage(MessageId.I00000, "Not enough rooms available to accommodate all guests.");
-                            return false;
-                        }
-
-
-                        // Insert hotel booking
+        
+                        int requiredRooms = 1; // Assume 1 room per schedule
+        
                         var hotelBooking = new HotelBooking
                         {
                             HotelBookingId = Guid.NewGuid(),
                             BookingId = booking.BookingId,
-                            RoomId = room.RoomId,
+                            RoomId = schedule!.ServiceId!.Value,
                             CheckinDate = checkinDate,
                             CheckoutDate = checkoutDate,
                             NumberOfRooms = requiredRooms,
-                            PricePerNight = room.PricePerNight,
+                            PricePerNight = schedule.EstimatedCost ?? 0,
                         };
-
-                        // Calculate total cost
-                        totalCost += room.PricePerNight * nights;
+        
+                        totalCost += hotelBooking.PricePerNight * nights;
                         hotelBookings.Add(hotelBooking);
                     }
+        
+                    booking.TotalCost = totalCost;
+                    booking.HotelBookings = hotelBookings;
+                    await _bookingRepository.AddAsync(booking);
                 }
-
-                booking.TotalCost = totalCost;
-                booking.HotelBookings = hotelBookings;
-                await _bookingRepository.AddAsync(booking);
             }
-            
+        
             // Insert other service bookings
             var otherServiceSchedules = tripSchedules
-                .Where(x => x.ServiceType != ConstantEnum.EntityType.Hotel.ToString());
-
+                .Where(x => x!.ServiceType != nameof(ConstantEnum.EntityType.Hotel));
+        
             foreach (var schedule in otherServiceSchedules)
             {
-                
                 var booking = new Booking
                 {
                     BookingId = Guid.NewGuid(),
                     UserId = Guid.Parse(identityEntity.UserId),
                     TripId = trip.TripId,
-                    ServiceId = schedule.ServiceId,
+                    ServiceId = schedule!.ServiceId,
                     ServiceType = schedule.ServiceType,
                     ScheduleDate = schedule.ScheduleDate,
                     StartTime = schedule.StartTime,
                     EndTime = schedule.EndTime,
                     TotalCost = schedule.EstimatedCost ?? 0,
                     NumberOfGuests = trip.NumberOfPeople ?? 1,
-                    Status = ConstantEnum.BookingStatus.Pending.ToString(),
+                    Status = nameof(ConstantEnum.BookingStatus.Pending),
                 };
                 await _bookingRepository.AddAsync(booking);
             }
-            
+        
             await _bookingRepository.SaveChangesAsync(identityEntity.Email);
-
+        
             response.Success = true;
             response.SetMessage(MessageId.I00001);
             return true;

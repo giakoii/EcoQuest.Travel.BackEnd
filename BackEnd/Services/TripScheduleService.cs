@@ -79,7 +79,6 @@ public class TripScheduleService : ITripScheduleService
                     {
                         estimatedCost = mappedCost;
                     }
-                    // Else: giữ nguyên detail.EstimatedCost từ AI response
                 }
                 // Else: Không có serviceId, giữ nguyên detail.EstimatedCost (custom activities)
 
@@ -154,15 +153,16 @@ public class TripScheduleService : ITripScheduleService
     private async Task<Dictionary<Guid, string>?> GetServiceTypeMappingAsync(Ecq110InsertTripScheduleRequest request)
     {
         var serviceTypeDict = new Dictionary<Guid, string>();
-        var serviceIds = request.TripScheduleDetails.Where(s => s.ServiceId != null).Select(s => s.ServiceId!.Value)
+        var serviceIds = request.TripScheduleDetails
+            .Where(s => s.ServiceId != null)
+            .Select(s => s.ServiceId!.Value)
             .Distinct();
         foreach (var id in serviceIds)
         {
-            var hotel = await _repositoryWrapper.HotelRepository.Find(x => x.HotelId == id && x.IsActive == true)
-                .FirstOrDefaultAsync();
-            if (hotel != null)
+            var hotelRoom = await _repositoryWrapper.HotelRoomRepository.Find(x => x.HotelId == id && x.IsActive == true).FirstOrDefaultAsync();
+            if (hotelRoom != null)
             {
-                serviceTypeDict[id] = ConstantEnum.EntityType.Hotel.ToString();
+                serviceTypeDict[id] = nameof(ConstantEnum.EntityType.Hotel);
                 continue;
             }
 
@@ -171,7 +171,7 @@ public class TripScheduleService : ITripScheduleService
                 .FirstOrDefaultAsync();
             if (restaurant != null)
             {
-                serviceTypeDict[id] = ConstantEnum.EntityType.Restaurant.ToString();
+                serviceTypeDict[id] = nameof(ConstantEnum.EntityType.Restaurant);
                 continue;
             }
 
@@ -180,7 +180,7 @@ public class TripScheduleService : ITripScheduleService
                 .FirstOrDefaultAsync();
             if (attraction != null)
             {
-                serviceTypeDict[id] = ConstantEnum.EntityType.Attraction.ToString();
+                serviceTypeDict[id] = nameof(ConstantEnum.EntityType.Attraction);
             }
         }
 
