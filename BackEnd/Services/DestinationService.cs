@@ -163,6 +163,7 @@ public class DestinationService : IDestinationService
                 CreatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.CreatedAt),
                 UpdatedAt = StringUtil.ConvertToDateAsDdMmYyyy(d.UpdatedAt)
             })
+            .OrderBy(x => x.Name)
             .ToListAsync();
 
         // For each destination, fetch images and related entity counts
